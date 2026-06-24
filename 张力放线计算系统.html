@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>输电线路张力放线计算系统</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<style>
+:root { --primary: #1976d2; --primary-dark: #1565c0; --success: #2e7d32; --warning: #ed6c02; --danger: #d32f2f; --bg: #f5f6fa; --card: #fff; --border: #e0e0e0; --text: #333; --text-light: #666; --shadow: 0 2px 8px rgba(0,0,0,0.08); }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+.header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 20px; text-align: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; }
+.header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 1px; }
+.header p { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; display: flex; gap: 20px; }
+.sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 90px; height: fit-content; }
+.step-nav { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+.step-item { padding: 14px 18px; cursor: pointer; border-left: 4px solid transparent; transition: all 0.2s; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
+.step-item:hover { background: #f0f7ff; }
+.step-item.active { border-left-color: var(--primary); background: #e3f2fd; color: var(--primary); font-weight: 600; }
+.step-item .num { width: 24px; height: 24px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
+.step-item.active .num { background: var(--primary); color: white; }
+.main { flex: 1; min-width: 0; }
+.card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; }
+.card-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); display: flex; align-items: center; gap: 8px; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.85rem; font-weight: 500; color: var(--text-light); }
+.form-group input, .form-group select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(25,118,210,0.1); }
+.input-hint { font-size: 0.75rem; color: #999; margin-top: 2px; }
+.btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #1b5e20; }
+.btn-danger { background: var(--danger); color: white; }
+.btn-warning { background: var(--warning); color: white; }
+.btn-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.table-wrap { overflow-x: auto; margin-top: 16px; border-radius: 8px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+th { background: #f8f9fa; padding: 10px 8px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); white-space: nowrap; }
+td { padding: 8px; text-align: center; border-bottom: 1px solid #eee; }
+tr:hover { background: #f8f9fa; }
+.table-input { width: 100%; padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; text-align: center; }
+.table-input:focus { border-color: var(--primary); outline: none; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+.badge-green { background: #e8f5e9; color: var(--success); }
+.badge-red { background: #ffebee; color: var(--danger); }
+.badge-yellow { background: #fff3e0; color: var(--warning); }
+.badge-blue { background: #e3f2fd; color: var(--primary); }
+.alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 0.9rem; }
+.alert-info { background: #e3f2fd; border-left: 4px solid var(--primary); color: #1565c0; }
+.alert-warning { background: #fff3e0; border-left: 4px solid var(--warning); color: #e65100; }
+.alert-danger { background: #ffebee; border-left: 4px solid var(--danger); color: #c62828; }
+.chart-container { position: relative; height: 400px; margin: 20px 0; }
+.result-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; }
+.result-card { background: #f8f9fa; border-radius: 10px; padding: 16px; text-align: center; border: 1px solid var(--border); }
+.result-card .value { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 4px 0; }
+.result-card .label { font-size: 0.8rem; color: var(--text-light); }
+.result-card .unit { font-size: 0.75rem; color: #999; }
+.hidden { display: none !important; }
+.step-content { display: none; }
+.step-content.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.section-divider { height: 1px; background: var(--border); margin: 24px 0; }
+.row-action { display: flex; gap: 4px; justify-content: center; }
+.row-action button { padding: 4px 8px; font-size: 0.75rem; border: none; border-radius: 4px; cursor: pointer; }
+.add-row { background: #e8f5e9; color: var(--success); }
+.del-row { background: #ffebee; color: var(--danger); }
+.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
+.tab-btn { padding: 10px 20px; border: none; background: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--text-light); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.check-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
+.check-item.pass { background: #e8f5e9; border-color: #a5d6a7; }
+.check-item.fail { background: #ffebee; border-color: #ef9a9a; }
+.check-icon { font-size: 1.2rem; }
+.check-text { flex: 1; font-size: 0.9rem; }
+.control-row { background: #fff8e1 !important; }
+@media (max-width: 900px) {
+  .container { flex-direction: column; }
+  .sidebar { width: 100%; position: static; }
+  .step-nav { display: flex; overflow-x: auto; }
+  .step-item { white-space: nowrap; border-left: none; border-bottom: 4px solid transparent; }
+  .step-item.active { border-left-color: transparent; border-bottom-color: var(--primary); }
+  .form-grid { grid-template-columns: 1fr; }
+}
+@media print {
+  .sidebar, .step-nav, .btn-group, .tab-bar, .header p { display: none !important; }
+  .step-content { display: block !important; animation: none !important; }
+  .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; margin-bottom: 12px; padding: 16px; }
+  body { background: white; }
+  .header { position: static; padding: 12px; }
+  .header h1 { font-size: 1.2rem; }
+  .container { padding: 10px; }
+  .main { width: 100%; }
+  .chart-container { height: 280px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>输电线路张力放线计算系统</h1>
+  <p>基于滑车磨阻递推法 / 支持控制档反算 / 牵引绳上扬检查 / 一键导出</p>
+</div>
+
+<div class="container">
+  <aside class="sidebar">
+    <div class="step-nav">
+      <div class="step-item active" onclick="showStep(0)"><span class="num">1</span>工程参数</div>
+      <div class="step-item" onclick="showStep(1)"><span class="num">2</span>杆塔数据</div>
+      <div class="step-item" onclick="showStep(2)"><span class="num">3</span>导线/绳参数</div>
+      <div class="step-item" onclick="showStep(3)"><span class="num">4</span>控制档与跨越</div>
+      <div class="step-item" onclick="showStep(4)"><span class="num">5</span>计算结果</div>
+      <div class="step-item" onclick="showStep(5)"><span class="num">6</span>校验报告</div>
+      <div class="step-item" onclick="showStep(6)"><span class="num">7</span>工器具选型</div>
+      <div class="step-item" onclick="showStep(7)"><span class="num">8</span>导出</div>
+    </div>
+  </aside>
+
+  <main class="main" id="printArea">
+
+    <!-- Step 1 -->
+    <div class="step-content active" id="step-0">
+      <div class="card">
+        <div class="card-title">工程基本信息</div>
+        <div class="form-grid">
+          <div class="form-group"><label>项目名称</label><input type="text" id="projName" placeholder="如：老挝500kV送出线路"></div>
+          <div class="form-group"><label>施工区段</label><input type="text" id="sectionName" placeholder="如：N1~N14"></div>
+          <div class="form-group">
+            <label>电压等级 (kV)</label>
+            <select id="voltageLevel">
+              <option value="110">110 kV</option><option value="220">220 kV</option><option value="330">330 kV</option>
+              <option value="500" selected>500 kV</option><option value="750">750 kV</option><option value="1000">1000 kV</option>
+            </select>
+          </div>
+          <div class="form-group"><label>导线型号</label><input type="text" id="conductorType" placeholder="如：LGJ-500/45"></div>
+          <div class="form-group">
+            <label>分裂数</label>
+            <select id="bundleCount">
+              <option value="1">单导线</option><option value="2" selected>2 分裂</option><option value="4">4 分裂</option>
+              <option value="6">6 分裂</option><option value="8">8 分裂</option>
+            </select>
+          </div>
+          <div class="form-group"><label>地线型号</label><input type="text" id="groundWireType" placeholder="如：JLB20A-150"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">计算控制参数</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>滑车对导线磨阻系数 epsilon</label>
+            <input type="number" id="frictionCond" value="1.015" step="0.001">
+            <div class="input-hint">常规 1.015~1.020</div>
+          </div>
+          <div class="form-group">
+            <label>滑车对牵引绳磨阻系数 epsilon</label>
+            <input type="number" id="frictionRope" value="1.015" step="0.001">
+          </div>
+          <div class="form-group">
+            <label>放线裕度 (m)</label>
+            <input type="number" id="margin" value="0.5" step="0.1">
+            <div class="input-hint">常规 0.5m</div>
+          </div>
+          <div class="form-group">
+            <label>对地安全距离要求 (m)</label>
+            <input type="number" id="safeDistance" value="8" step="0.5">
+            <div class="input-hint">500kV 一般大于等于8.5m</div>
+          </div>
+          <div class="form-group">
+            <label>计算方式</label>
+            <select id="calcMode" onchange="toggleCalcMode()">
+              <option value="manual" selected>手动指定张力机出口张力（推荐）</option>
+              <option value="auto">自动选择控制档（由控制档跨越物反算张力）</option>
+            </select>
+          </div>
+          <div class="form-group" id="manualTensionBox">
+            <label>张力机出口整定张力 (N)</label>
+            <input type="number" id="manualTension" value="15000" step="100">
+          </div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="showStep(1)">下一步 - 杆塔数据</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="step-content" id="step-1">
+      <div class="card">
+        <div class="card-title">杆塔数据录入</div>
+        <div class="alert alert-info">
+          提示：从<strong>张力机</strong>到<strong>牵引机</strong>依次录入各杆塔。每行杆塔的"与右档距""与右高差""跨越物数据"均属于<strong>该杆到右侧下一杆</strong>的线档参数。
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="addTower()">添加杆塔</button>
+          <button class="btn btn-primary" onclick="loadDemoData(1)">载入示例（老挝13档）</button>
+          <button class="btn btn-primary" onclick="loadDemoData(2)">载入示例（尼泊尔16档）</button>
+          <button class="btn btn-danger" onclick="clearTowers()">清空</button>
+        </div>
+        <div class="table-wrap">
+          <table id="towerTable">
+            <thead>
+              <tr><th>序号</th><th>杆塔号</th><th>与右档距(m)</th><th>与右高差(m)</th><th>转角(度)</th><th>跨越物距右杆(m)</th><th>跨越悬垂距(m)</th><th>操作</th></tr>
+            </thead>
+            <tbody id="towerBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="showStep(0)">上一步</button>
+          <button class="btn btn-primary" onclick="showStep(2)">下一步 - 导线参数</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="step-content" id="step-2">
+      <div class="card">
+        <div class="card-title">导线与牵引绳参数</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>导线型号（选择后自动填充参数）</label>
+            <select id="conductorModel" onchange="fillConductorParams()">
+              <option value="custom">-- 自定义 --</option>
+              <option value="LGJ-400/50" selected>LGJ-400/50 (14.81 N/m, 123400N)</option>
+              <option value="JL/G1A-400/35">JL/G1A-400/35 (13.21 N/m, 100440N)</option>
+              <option value="LGJ-500/45">LGJ-500/45 (16.80 N/m, 155000N)</option>
+              <option value="LGJ-300/40">LGJ-300/40 (11.30 N/m, 90000N)</option>
+            </select>
+          </div>
+          <div class="form-group"><label>导线单位重量 w (N/m)</label><input type="number" id="wCond" value="14.8078" step="0.0001"></div>
+          <div class="form-group"><label>导线保证计算拉断力 Tp (N)</label><input type="number" id="TpCond" value="123400" step="100"></div>
+          <div class="form-group">
+            <label>牵引绳型号（选择后自动填充参数）</label>
+            <select id="ropeModel" onchange="fillRopeParams()">
+              <option value="custom">-- 自定义 --</option>
+              <option value="phi24">phi24 防扭钢丝绳 (22.5 N/m, 350kN)</option>
+              <option value="phi18">phi18 防扭钢丝绳 (11.8 N/m, 190kN)</option>
+              <option value="phi15">phi15 防扭钢丝绳 (8.2 N/m, 140kN)</option>
+              <option value="phi13">phi13 防扭钢丝绳 (6.5 N/m, 100kN)</option>
+            </select>
+          </div>
+          <div class="form-group"><label>牵引绳单位重量 (N/m)</label><input type="number" id="wRope" value="22.5" step="0.1"></div>
+          <div class="form-group"><label>牵引绳综合破断力 (N)</label><input type="number" id="breakRope" value="148080" step="100"></div>
+          <div class="form-group">
+            <label>主牵引机额定牵引力系数 Kp</label>
+            <input type="number" id="kpPull" value="0.33" step="0.01">
+            <div class="input-hint">推荐 0.25~0.33</div>
+          </div>
+          <div class="form-group">
+            <label>主张力机额定制动张力系数 Kp</label>
+            <input type="number" id="kpTension" value="0.2" step="0.01">
+            <div class="input-hint">推荐 0.17~0.20</div>
+          </div>
+          <div class="form-group"><label>子导线间距 (mm)</label><input type="number" id="subSpacing" value="450" step="10"></div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="showStep(1)">上一步</button>
+          <button class="btn btn-primary" onclick="showStep(3)">下一步 - 控制档</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step-content" id="step-3">
+      <div class="card">
+        <div class="card-title">控制档与跨越物</div>
+        <div class="alert alert-info">
+          控制档是张力放线过程中弧垂最大的线档（通常是最大档距或跨越重要设施的档）。系统根据跨越物要求和档距自动推荐控制档，并<strong>由控制档安全距离反算出张力机出口张力</strong>。
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>控制档选择方式</label>
+            <select id="controlMode" onchange="updateControlUI()">
+              <option value="auto">自动推荐（有跨越优先）</option>
+              <option value="manual">手动指定</option>
+            </select>
+          </div>
+          <div class="form-group" id="controlTowerBox">
+            <label>控制档位置</label>
+            <select id="controlTowerSelect"></select>
+          </div>
+        </div>
+        <div class="section-divider"></div>
+        <div class="card-title">跨越物清单</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>跨越档</th><th>被跨越物</th><th>跨越点距右杆(m)</th><th>跨越点高差(m)</th><th>要求安全距(m)</th></tr></thead>
+            <tbody id="crossBody"></tbody>
+          </table>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="showStep(2)">上一步</button>
+          <button class="btn btn-success" onclick="calculateAll()">开始计算</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 5 -->
+    <div class="step-content" id="step-4">
+      <div class="card">
+        <div class="card-title">计算结果总览</div>
+        <div class="result-summary" id="resultSummary"></div>
+        <div class="tab-bar">
+          <button class="tab-btn active" onclick="showTab('tab-cond')">导线张力递推</button>
+          <button class="tab-btn" onclick="showTab('tab-rope')">牵引绳张力递推</button>
+          <button class="tab-btn" onclick="showTab('tab-sag')">弧垂与安全距</button>
+          <button class="tab-btn" onclick="showTab('tab-angle')">角度与包络角</button>
+          <button class="tab-btn" onclick="showTab('tab-chart')">曲线图</button>
+        </div>
+
+        <div class="tab-panel active" id="tab-cond">
+          <div class="table-wrap">
+            <table id="condTable">
+              <thead><tr><th>序号</th><th>档</th><th>档距(m)</th><th>高差(m)</th><th>cosPhi</th><th>epsilon</th><th>张力机侧张力(N)</th><th>牵引机侧张力(N)</th><th>轴向张力(N)</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-rope">
+          <div class="table-wrap">
+            <table id="ropeTable">
+              <thead><tr><th>序号</th><th>杆塔</th><th>距牵引机档数</th><th>epsilon</th><th>牵引绳张力(N)</th><th>垂直档距(m)</th><th>牵引绳上扬</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-sag">
+          <div class="table-wrap">
+            <table id="sagTable">
+              <thead><tr><th>序号</th><th>档</th><th>水平张力(N)</th><th>平视弧垂(m)</th><th>线长(m)</th><th>实际安全距(m)</th><th>要求安全距(m)</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-angle">
+          <div class="table-wrap">
+            <table id="angleTable">
+              <thead><tr><th>序号</th><th>杆塔</th><th>悬垂角A(度)</th><th>悬垂角B(度)</th><th>转角(度)</th><th>包络角(度)</th><th>双滑车</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="tab-chart">
+          <div class="chart-container"><canvas id="condChart"></canvas></div>
+          <div class="chart-container"><canvas id="ropeChart"></canvas></div>
+          <div class="chart-container"><canvas id="sagChart"></canvas></div>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="showStep(3)">上一步</button>
+          <button class="btn btn-primary" onclick="showStep(5)">下一步 - 校验</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 6 -->
+    <div class="step-content" id="step-5">
+      <div class="card">
+        <div class="card-title">施工校验报告</div>
+        <div id="checkReport"></div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="showStep(4)">上一步</button>
+          <button class="btn btn-primary" onclick="showStep(6)">下一步 - 工器具</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 7 -->
+    <div class="step-content" id="step-6">
+      <div class="card">
+        <div class="card-title">工器具选型</div>
+        <div class="alert alert-info">
+          根据《架空输电线路张力架线施工工艺导则》及相关规范，按导线拉断力计算各主要工器具的选型参数。
+        </div>
+        <div class="table-wrap">
+          <table id="equipTable">
+            <thead><tr><th>序号</th><th>计算项目</th><th>公式</th><th>要求值</th><th>推荐规格</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="showStep(5)">上一步</button>
+          <button class="btn btn-primary" onclick="showStep(7)">下一步 - 导出</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 8 -->
+    <div class="step-content" id="step-7">
+      <div class="card">
+        <div class="card-title">导出计算书</div>
+        <div class="alert alert-info">
+          生成计算书。推荐：使用"浏览器打印"（Ctrl+P）直接打印或保存为PDF，中文显示100%正常。
+        </div>
+        <div class="form-grid">
+          <div class="form-group"><label>计算书编号</label><input type="text" id="reportNo" value="JL-2024-001"></div>
+          <div class="form-group"><label>编写人</label><input type="text" id="author" placeholder="姓名"></div>
+          <div class="form-group"><label>校核人</label><input type="text" id="checker" placeholder="姓名"></div>
+          <div class="form-group"><label>批准人</label><input type="text" id="approver" placeholder="姓名"></div>
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-success" onclick="window.print()">浏览器打印 / 保存PDF</button>
+          <button class="btn btn-primary" onclick="exportPNG()">导出PNG截图</button>
+          <button class="btn btn-primary" onclick="exportJSON()">保存工程数据(JSON)</button>
+          <button class="btn btn-warning" onclick="importJSON()">导入工程数据</button>
+          <input type="file" id="importFile" style="display:none" accept=".json" onchange="handleImport(this)">
+        </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="showStep(6)">上一步</button>
+          <button class="btn btn-primary" onclick="showStep(0)">返回首页</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+
+let towers = [];
+let calcResults = null;
+let condChart = null, ropeChart = null, sagChart = null;
+
+function showStep(idx) {
+  document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+  document.getElementById('step-'+idx).classList.add('active');
+  document.querySelectorAll('.step-item').forEach((el, i) => {
+    el.classList.remove('active');
+    if (i === idx) el.classList.add('active');
+  });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (idx === 1) updateTowerSelect();
+  if (idx === 3) refreshCrossTable();
+}
+function showTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function toggleCalcMode() {
+  const mode = document.getElementById('calcMode').value;
+  document.getElementById('manualTensionBox').classList.toggle('hidden', mode !== 'manual');
+}
+
+function addTower(data) {
+  const tbody = document.getElementById('towerBody');
+  const idx = tbody.children.length;
+  const row = document.createElement('tr');
+  row.dataset.idx = idx;
+  const d = data || {};
+  row.innerHTML = `
+    <td>${idx}</td>
+    <td><input class="table-input" value="${d.name || ''}" placeholder="杆塔号"></td>
+    <td><input class="table-input" type="number" value="${d.span !== undefined ? d.span : ''}" placeholder="档距"></td>
+    <td><input class="table-input" type="number" value="${d.height !== undefined ? d.height : ''}" placeholder="高差"></td>
+    <td><input class="table-input" type="number" value="${d.angle !== undefined ? d.angle : 0}" step="0.01"></td>
+    <td><input class="table-input" type="number" value="${d.crossDist !== undefined ? d.crossDist : ''}" placeholder="无则留空"></td>
+    <td><input class="table-input" type="number" value="${d.crossHeight !== undefined ? d.crossHeight : ''}" placeholder="无则留空"></td>
+    <td class="row-action">
+      <button class="add-row" onclick="insertTower(${idx})">插入</button>
+      <button class="del-row" onclick="deleteTower(${idx})">删除</button>
+    </td>`;
+  tbody.appendChild(row);
+  towers.push({});
+  reindexTowers();
+}
+function insertTower(afterIdx) {
+  const tbody = document.getElementById('towerBody');
+  const newRow = document.createElement('tr');
+  newRow.innerHTML = `
+    <td>--</td>
+    <td><input class="table-input" placeholder="杆塔号"></td>
+    <td><input class="table-input" type="number" placeholder="档距"></td>
+    <td><input class="table-input" type="number" placeholder="高差"></td>
+    <td><input class="table-input" type="number" value="0" step="0.01"></td>
+    <td><input class="table-input" type="number" placeholder="无则留空"></td>
+    <td><input class="table-input" type="number" placeholder="无则留空"></td>
+    <td class="row-action">
+      <button class="add-row" onclick="insertTowerByElement(this)">插入</button>
+      <button class="del-row" onclick="deleteRow(this)">删除</button>
+    </td>`;
+  const refRow = tbody.children[afterIdx];
+  if (refRow && refRow.nextSibling) tbody.insertBefore(newRow, refRow.nextSibling);
+  else tbody.appendChild(newRow);
+  reindexTowers();
+}
+function insertTowerByElement(btn) {
+  const row = btn.closest('tr');
+  const tbody = document.getElementById('towerBody');
+  const allRows = Array.from(tbody.children);
+  const idx = allRows.indexOf(row);
+  insertTower(idx);
+}
+function deleteTower(idx) {
+  const tbody = document.getElementById('towerBody');
+  if (tbody.children.length <= 1) { alert('至少保留一个杆塔'); return; }
+  tbody.removeChild(tbody.children[idx]);
+  reindexTowers();
+}
+function deleteRow(btn) {
+  const row = btn.closest('tr');
+  const tbody = document.getElementById('towerBody');
+  if (tbody.children.length <= 1) { alert('至少保留一个杆塔'); return; }
+  row.remove();
+  reindexTowers();
+}
+function reindexTowers() {
+  const tbody = document.getElementById('towerBody');
+  Array.from(tbody.children).forEach((tr, i) => {
+    tr.dataset.idx = i;
+    tr.cells[0].textContent = i;
+    const btns = tr.querySelectorAll('.row-action button');
+    if (btns.length >= 2) {
+      btns[0].setAttribute('onclick', `insertTower(${i})`);
+      btns[1].setAttribute('onclick', `deleteTower(${i})`);
+    }
+  });
+  towers = new Array(tbody.children.length).fill({});
+  updateTowerSelect();
+}
+function clearTowers() {
+  document.getElementById('towerBody').innerHTML = '';
+  towers = [];
+}
+function updateTowerSelect() {
+  const sel = document.getElementById('controlTowerSelect');
+  if (!sel) return;
+  const data = getTowerData();
+  sel.innerHTML = '';
+  for (let i = 0; i < data.length - 1; i++) {
+    const left = data[i].name || '杆塔'+i;
+    const right = data[i+1].name || '杆塔'+(i+1);
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = `${left} ~ ${right} (第${i+1}档)`;
+    sel.appendChild(opt);
+  }
+}
+function getTowerData() {
+  const tbody = document.getElementById('towerBody');
+  return Array.from(tbody.children).map(tr => {
+    const inputs = tr.querySelectorAll('input');
+    return {
+      name: inputs[0]?.value || '',
+      span: parseFloat(inputs[1]?.value) || 0,
+      height: parseFloat(inputs[2]?.value) || 0,
+      angle: parseFloat(inputs[3]?.value) || 0,
+      crossDist: parseFloat(inputs[4]?.value) || 0,
+      crossHeight: parseFloat(inputs[5]?.value) || 0
+    };
+  });
+}
+function refreshCrossTable() {
+  const data = getTowerData();
+  const tbody = document.getElementById('crossBody');
+  tbody.innerHTML = '';
+  for (let i = 0; i < data.length - 1; i++) {
+    const t = data[i];
+    if (t.crossDist || t.crossHeight) {
+      const tr = document.createElement('tr');
+      
+      // 档名
+      const tdName = document.createElement('td');
+      tdName.textContent = `${t.name || '杆塔'+i} ~ ${data[i+1].name || '杆塔'+(i+1)}`;
+      tr.appendChild(tdName);
+      
+      // 被跨越物
+      const tdObj = document.createElement('td');
+      const objInput = document.createElement('input');
+      objInput.className = 'table-input';
+      objInput.value = '电力线/道路等';
+      objInput.style.width = '120px';
+      tdObj.appendChild(objInput);
+      tr.appendChild(tdObj);
+      
+      // 跨越距右杆
+      const tdDist = document.createElement('td');
+      tdDist.textContent = t.crossDist || '--';
+      tr.appendChild(tdDist);
+      
+      // 跨越悬垂距（可编辑，同步回写 towerBody）
+      const tdHeight = document.createElement('td');
+      const heightInput = document.createElement('input');
+      heightInput.className = 'table-input';
+      heightInput.type = 'number';
+      heightInput.value = t.crossHeight || '';
+      heightInput.style.width = '80px';
+      heightInput.onchange = function() {
+        // 同步回写 towerBody 中对应行的 crossHeight（第5个输入框）
+        const towerRows = document.querySelectorAll('#towerBody tr');
+        if (towerRows[i]) {
+          const inputs = towerRows[i].querySelectorAll('input');
+          if (inputs[5]) inputs[5].value = this.value;
+        }
+      };
+      tdHeight.appendChild(heightInput);
+      tr.appendChild(tdHeight);
+      
+      // 要求安全距（可编辑，同步更新全局 safeDistance）
+      const tdSafe = document.createElement('td');
+      const safeInput = document.createElement('input');
+      safeInput.className = 'table-input';
+      safeInput.type = 'number';
+      safeInput.value = document.getElementById('safeDistance').value || '8';
+      safeInput.style.width = '80px';
+      safeInput.onchange = function() {
+        document.getElementById('safeDistance').value = this.value;
+      };
+      tdSafe.appendChild(safeInput);
+      tr.appendChild(tdSafe);
+      
+      tbody.appendChild(tr);
+    }
+  }
+  if (tbody.children.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5">暂无跨越物数据，请在杆塔数据页录入"跨越物距离"和"悬垂距"</td></tr>';
+  }
+}
+
+function loadDemoData(id) {
+  clearTowers();
+  if (id === 1) {
+    const data = [
+      {name:'牵引机', span:115, height:6.27, angle:0, crossDist:0, crossHeight:0},
+      {name:'N1', span:569, height:17, angle:66.57, crossDist:215, crossHeight:45},
+      {name:'N2', span:365, height:14, angle:0, crossDist:0, crossHeight:0},
+      {name:'N3', span:321, height:7.76, angle:0, crossDist:0, crossHeight:0},
+      {name:'N4', span:525, height:54.36, angle:0, crossDist:0, crossHeight:0},
+      {name:'N5', span:738, height:-31.89, angle:0, crossDist:0, crossHeight:0},
+      {name:'N6', span:176, height:2.75, angle:0, crossDist:0, crossHeight:0},
+      {name:'N7', span:479, height:-37.47, angle:0, crossDist:0, crossHeight:0},
+      {name:'N8', span:481, height:0.67, angle:0, crossDist:0, crossHeight:0},
+      {name:'N9', span:452, height:111.1, angle:9.2, crossDist:0, crossHeight:0},
+      {name:'N10', span:304, height:-30.1, angle:0, crossDist:0, crossHeight:0},
+      {name:'N11', span:622, height:-89.96, angle:0, crossDist:0, crossHeight:0},
+      {name:'N12', span:172, height:-54.82, angle:0, crossDist:0, crossHeight:0},
+      {name:'N13', span:821, height:-71.19, angle:9.48, crossDist:0, crossHeight:0},
+      {name:'张力机', span:0, height:0, angle:0, crossDist:0, crossHeight:0}
+    ];
+    data.forEach(t => addTower(t));
+    document.getElementById('projName').value = '老挝500kV送出线路';
+    document.getElementById('sectionName').value = 'N1~N14';
+    document.getElementById('voltageLevel').value = '500';
+    document.getElementById('bundleCount').value = '4';
+    document.getElementById('conductorModel').value = 'JL/G1A-400/35';
+    document.getElementById('wCond').value = '13.475';
+    document.getElementById('TpCond').value = '123400';
+    document.getElementById('ropeModel').value = 'phi24';
+    document.getElementById('wRope').value = '22.5';
+    document.getElementById('frictionCond').value = '1.017';
+    document.getElementById('frictionRope').value = '1.015';
+    document.getElementById('calcMode').value = 'manual';
+    document.getElementById('manualTension').value = '15000';
+    toggleCalcMode();
+  } else {
+    const data = [
+      {name:'张力机', span:285, height:-9, angle:0, crossDist:0, crossHeight:0},
+      {name:'SP29-3', span:434, height:-61.9, angle:0, crossDist:0, crossHeight:0},
+      {name:'SP29-2', span:253, height:-28.3, angle:0, crossDist:0, crossHeight:0},
+      {name:'SP29-1', span:344, height:-65.5, angle:10.36, crossDist:120, crossHeight:37},
+      {name:'AP29', span:294, height:-89, angle:0, crossDist:0, crossHeight:0},
+      {name:'SP28-1', span:379, height:-99.3, angle:24.18, crossDist:35, crossHeight:12},
+      {name:'SP27-1', span:168, height:-29.7, angle:0, crossDist:0, crossHeight:0},
+      {name:'AP27', span:313, height:-71.2, angle:13.02, crossDist:90, crossHeight:40},
+      {name:'SP26-1', span:166, height:-27.6, angle:0, crossDist:0, crossHeight:0},
+      {name:'AP26', span:399, height:-152.7, angle:9.15, crossDist:0, crossHeight:0},
+      {name:'AP25', span:82, height:-8.7, angle:0, crossDist:0, crossHeight:0},
+      {name:'SP24-5', span:149, height:-74.9, angle:0, crossDist:0, crossHeight:0},
+      {name:'SP24-4', span:245, height:-127.2, angle:0, crossDist:0, crossHeight:0},
+      {name:'SP24-3', span:397, height:-152.7, angle:0, crossDist:0, crossHeight:0},
+      {name:'SP24-2', span:304, height:-42.5, angle:0, crossDist:0, crossHeight:0},
+      {name:'牵引机', span:0, height:0, angle:0, crossDist:0, crossHeight:0}
+    ];
+    data.forEach(t => addTower(t));
+    document.getElementById('projName').value = '尼泊尔上垂树里输变电项目';
+    document.getElementById('sectionName').value = 'SP24-1~AP30';
+    document.getElementById('voltageLevel').value = '220';
+    document.getElementById('bundleCount').value = '2';
+    document.getElementById('conductorModel').value = 'LGJ-400/50';
+    document.getElementById('wCond').value = '14.8078';
+    document.getElementById('TpCond').value = '123400';
+    document.getElementById('ropeModel').value = 'phi24';
+    document.getElementById('wRope').value = '22.5';
+    document.getElementById('frictionCond').value = '1.015';
+    document.getElementById('frictionRope').value = '1.015';
+    document.getElementById('calcMode').value = 'manual';
+    document.getElementById('manualTension').value = '18003.6';
+    toggleCalcMode();
+  }
+}
+
+// ==================== 核心计算引擎 ====================
+function calculateAll() {
+  try {
+  const towerData = getTowerData();
+  if (towerData.length < 2) { alert('请至少录入2个杆塔'); return; }
+
+  const params = {
+    wCond: parseFloat(document.getElementById('wCond').value) || 14.8,
+    wRope: parseFloat(document.getElementById('wRope').value) || 22.5,
+    frictionCond: parseFloat(document.getElementById('frictionCond').value) || 1.015,
+    frictionRope: parseFloat(document.getElementById('frictionRope').value) || 1.015,
+    bundle: parseInt(document.getElementById('bundleCount').value) || 2,
+    Tp: parseFloat(document.getElementById('TpCond').value) || 123400,
+    safeDist: parseFloat(document.getElementById('safeDistance').value) || 8,
+    margin: parseFloat(document.getElementById('margin').value) || 0.5,
+    calcMode: document.getElementById('calcMode').value,
+    manualTension: parseFloat(document.getElementById('manualTension').value) || 15000,
+    kpPull: parseFloat(document.getElementById('kpPull').value) || 0.33,
+    kpTension: parseFloat(document.getElementById('kpTension').value) || 0.2
+  };
+
+  // 构建各档参数
+  const spans = [];
+  for (let i = 0; i < towerData.length - 1; i++) {
+    const L = towerData[i].span || 0;
+    const h = towerData[i].height || 0;
+    const phi = L > 0 ? Math.atan(h / L) : 0;
+    spans.push({
+      idx: i,
+      leftTower: towerData[i].name,
+      rightTower: towerData[i+1].name,
+      L: L,
+      h: h,
+      phi: phi,
+      cosPhi: Math.cos(phi),
+      sinPhi: Math.sin(phi),
+      angle: towerData[i+1].angle || 0,
+      crossDist: towerData[i].crossDist || 0,
+      crossHeight: towerData[i].crossHeight || 0
+    });
+  }
+
+  // 确定控制档
+  const controlMode = document.getElementById('controlMode').value;
+  let controlIdx;
+  if (controlMode === 'manual') {
+    controlIdx = parseInt(document.getElementById('controlTowerSelect').value) || 0;
+  } else {
+    // 自动：有跨越的档中最大档距，或纯最大档距
+    let crossSpans = [];
+    for (let i = 0; i < spans.length; i++) {
+      if (spans[i].crossDist > 0 && spans[i].crossHeight > 0) crossSpans.push({ idx: i, L: spans[i].L });
+    }
+    if (crossSpans.length > 0) {
+      crossSpans.sort((a, b) => b.L - a.L);
+      controlIdx = crossSpans[0].idx;
+    } else {
+      controlIdx = 0;
+      let maxSpan = 0;
+      for (let i = 0; i < spans.length; i++) {
+        if (spans[i].L > maxSpan) { maxSpan = spans[i].L; controlIdx = i; }
+      }
+    }
+  }
+
+  const controlSpan = spans[controlIdx];
+
+  // 由控制档跨越物参数计算控制档最大允许弧垂，再反算水平张力
+  // 控制档最大允许弧垂 f_max：
+  //   有跨越物时：由跨越点位置和高差计算（抛物线公式）
+  //   无跨越物时：取全局安全距离+裕度作为默认值
+  let f_max, H_control;
+  if (controlSpan.crossHeight > 0 && controlSpan.crossDist > 0 && controlSpan.crossDist < controlSpan.L) {
+    // 跨越点距右杆 crossDist，距左杆 L - crossDist
+    // 抛物线：f(x) = 4 * f_max * x * (L-x) / L^2
+    // f_max = f(x) * L^2 / (4 * x * (L-x))
+    // 其中 f(x) = 跨越悬垂距 - 安全距离要求 = 跨越点允许的最大弧垂
+    const x = controlSpan.crossDist;
+    const L = controlSpan.L;
+    const fx_allowed = controlSpan.crossHeight - params.safeDist;
+    if (fx_allowed > 0) {
+      f_max = fx_allowed * L * L / (4 * x * (L - x));
+    } else {
+      f_max = params.safeDist + params.margin; // 安全距不足，fallback
+      alert('警告：控制档跨越物悬垂距不足以满足安全距离要求！');
+    }
+  } else {
+    // 无跨越物：无法由安全距离反算张力，使用用户设定的张力机出口张力
+    f_max = null; // 无意义
+    H_control = null; // 由递推计算得出
+  }
+
+  if (f_max !== null && f_max > controlSpan.L / 2) {
+    alert(`警告：控制档最大允许弧垂 ${f_max.toFixed(2)} m 超过档距的一半（${(controlSpan.L/2).toFixed(1)} m），抛物线公式可能失效。请增大安全距离要求或检查跨越物参数。`);
+  }
+
+  // 计算控制档水平张力
+  H_control = f_max !== null ? params.wCond * controlSpan.L * controlSpan.L / (8 * f_max * controlSpan.cosPhi) : null;
+
+  // 从控制档向张力机端反推：张力机出口张力
+  // 控制档水平张力 = T0 * epsilon^controlIdx / prod(cosPhi)
+  // T0 = H_control * prod(cosPhi) / epsilon^controlIdx
+  let epsProd = 1.0, cosProd = 1.0;
+  for (let i = 0; i < controlIdx; i++) {
+    epsProd *= params.frictionCond;
+    cosProd *= spans[i].cosPhi;
+  }
+  // 注意：控制档本身的cosPhi也要乘
+  cosProd *= controlSpan.cosPhi;
+  let T0_calc = H_control !== null ? H_control * cosProd / epsProd : null;
+
+  let T0 = T0_calc;
+  if (params.calcMode === 'manual' || f_max === null) {
+    T0 = params.manualTension;
+    if (f_max === null && params.calcMode !== 'manual') {
+      alert('提示：控制档 ' + controlSpan.leftTower + '~' + controlSpan.rightTower + ' 无跨越物数据，无法由安全距离反算张力机出口张力。系统将使用手动设定的张力机出口张力 ' + T0.toFixed(0) + ' N 进行计算。如需调整张力，请修改工程参数中的"张力机出口整定张力"。');
+    }
+  }
+
+  // 如果 H_control 为 null（无跨越物/手动模式），由 T0 递推计算控制档水平张力用于显示
+  let H_control_display = H_control;
+  if (H_control_display === null) {
+    let currentH = T0;
+    for (let i = 0; i <= controlIdx; i++) {
+      currentH = currentH * params.frictionCond / spans[i].cosPhi;
+    }
+    H_control_display = currentH / params.frictionCond;
+  }
+
+  // 导线张力递推：从张力机到牵引机方向（递增）
+  let currentT = T0;
+  const condResults = [];
+  for (let i = 0; i < spans.length; i++) {
+    const sp = spans[i];
+    const epsilon = params.frictionCond;
+    const T_in = currentT; // 进入该档（滑车张力侧）
+    const T_out = T_in * epsilon; // 经过滑车后（滑车牵引侧）
+    const T_axial = T_out / sp.cosPhi; // 高差修正后轴向张力
+
+    // 水平张力（用于弧垂计算）
+    const H_i = (i === 0) ? T0 / sp.cosPhi : condResults[i-1].H * epsilon / sp.cosPhi;
+
+    // 弧垂
+    const sag = params.wCond * sp.L * sp.L / (8 * H_i * sp.cosPhi);
+
+    // 线长
+    const lineLength = sp.L / sp.cosPhi + (params.wCond * params.wCond * Math.pow(sp.L, 3)) / (24 * H_i * H_i);
+
+    // 悬垂角
+    const thetaA = Math.atan((params.wCond * sp.L) / (2 * H_i) - sp.h / sp.L);
+    const thetaB = Math.atan((params.wCond * sp.L) / (2 * H_i) + sp.h / sp.L);
+
+    // 包络角
+    const angleRad = sp.angle * Math.PI / 180;
+    const wrapAngle = Math.abs(thetaA) + Math.abs(thetaB) + angleRad;
+
+    // 跨越安全距
+    let safeDistCalc = null;
+    let safeCheck = 'N/A';
+    if (sp.crossDist > 0 && sp.crossHeight > 0) {
+      const x = sp.crossDist;
+      const fx = 4 * sag * x * (sp.L - x) / (sp.L * sp.L);
+      safeDistCalc = sp.crossHeight - fx;
+      safeCheck = safeDistCalc >= params.safeDist ? 'OK' : 'FAIL';
+    }
+
+    condResults.push({
+      ...sp,
+      T_in: T_in,
+      T_out: T_out,
+      T_axial: T_axial,
+      H: H_i,
+      sag: sag,
+      lineLength: lineLength,
+      thetaA: thetaA * 180 / Math.PI,
+      thetaB: thetaB * 180 / Math.PI,
+      wrapAngle: wrapAngle * 180 / Math.PI,
+      doubleSheave: wrapAngle * 180 / Math.PI > 60 ? 'Y' : 'N',
+      safeDistCalc: safeDistCalc,
+      safeCheck: safeCheck
+    });
+
+    currentT = T_out;
+  }
+
+  // 牵引机最大牵引力 = 最后一档导线轴向张力 * 分裂数
+  const pullerTension = condResults[condResults.length - 1].T_axial;
+  const pullerMax = pullerTension * params.bundle;
+
+  // 牵引绳张力递推：从牵引机向张力机方向（递减）
+  // 牵引机端牵引绳张力 = 牵引机牵引力（按分裂数分摊到单根）
+  const ropePullerTension = pullerMax / params.bundle; // 单根牵引绳张力
+  const ropeResults = [];
+  let ropeT = ropePullerTension;
+  for (let i = spans.length - 1; i >= 0; i--) {
+    const sp = spans[i];
+    // 牵引绳经过杆塔（从牵引机到张力机方向），张力递减
+    const ropeT_in = ropeT; // 进入该档（从牵引机方向）
+    const ropeT_out = ropeT_in / params.frictionRope; // 经过滑车后（向张力机方向）
+    const ropeH = ropeT_out / sp.cosPhi; // 水平张力
+
+    // 牵引绳垂直档距（判断是否上扬）
+    const ropeVerticalSpan = sp.L + (2 * ropeH / params.wRope) * (sp.h / sp.L);
+    const ropeUp = ropeVerticalSpan < 0 ? 'Y' : 'N';
+
+    ropeResults.unshift({
+      idx: i,
+      leftTower: sp.leftTower,
+      rightTower: sp.rightTower,
+      L: sp.L,
+      h: sp.h,
+      cosPhi: sp.cosPhi,
+      T_in: ropeT_in,
+      T_out: ropeT_out,
+      H: ropeH,
+      verticalSpan: ropeVerticalSpan,
+      ropeUp: ropeUp
+    });
+
+    ropeT = ropeT_out;
+  }
+
+  // 汇总
+  calcResults = {
+    params: params,
+    towers: towerData,
+    spans: spans,
+    condResults: condResults,
+    ropeResults: ropeResults,
+    controlIdx: controlIdx,
+    T0: T0,
+    T0_calc: T0_calc,
+    H_control: H_control_display,
+    f_max: f_max,
+    pullerTension: pullerTension,
+    pullerMax: pullerMax,
+    totalLineLength: condResults.reduce((s, r) => s + r.lineLength, 0)
+  };
+
+  renderResults();
+  showStep(4);
+} catch (err) {
+  alert('计算过程中发生错误：' + err.message + '\n\n详细：' + err.stack);
+  console.error(err);
+}
+}
+
+// ==================== 结果渲染 ====================
+function renderResults() {
+  if (!calcResults) return;
+  const { condResults, ropeResults, spans, T0, T0_calc, H_control, f_max, pullerMax, totalLineLength, controlIdx, params } = calcResults;
+
+  // 汇总卡片
+  const summary = document.getElementById('resultSummary');
+  
+  // 计算模式说明
+  const hasCrossing = condResults[controlIdx]?.crossHeight > 0 && condResults[controlIdx]?.crossDist > 0;
+  const calcModeDesc = hasCrossing && params.calcMode !== 'manual'
+    ? `自动模式：控制档 ${condResults[controlIdx]?.leftTower}~${condResults[controlIdx]?.rightTower} 有跨越物，由跨越参数反算出张力机出口张力 ${T0.toFixed(0)} N`
+    : `手动模式：使用设定的张力机出口张力 ${T0.toFixed(0)} N（控制档无跨越物，无法由安全距离反算）`;
+  
+  summary.innerHTML = `
+    <div style="grid-column:1/-1; margin-bottom:12px; padding:12px 16px; border-radius:8px; background:#e3f2fd; border-left:4px solid #1976d2; font-size:0.9rem;">
+      <strong>计算模式说明：</strong>${calcModeDesc}
+    </div>
+    <div class="result-card"><div class="label">张力机出口张力</div><div class="value">${T0.toFixed(0)}</div><div class="unit">N</div></div>
+    <div class="result-card"><div class="label">控制档水平张力</div><div class="value">${H_control !== null ? H_control.toFixed(0) : 'N/A'}</div><div class="unit">N</div></div>
+    <div class="result-card"><div class="label">控制档弧垂限值</div><div class="value">${f_max !== null ? f_max.toFixed(2) : '手动设定'}</div><div class="unit">m</div></div>
+    <div class="result-card"><div class="label">牵引机最大牵引力</div><div class="value">${(pullerMax/1000).toFixed(2)}</div><div class="unit">kN</div></div>
+    <div class="result-card"><div class="label">控制档</div><div class="value">${condResults[controlIdx]?.leftTower||''}~${condResults[controlIdx]?.rightTower||''}</div><div class="unit">第${controlIdx+1}档</div></div>
+    <div class="result-card"><div class="label">放线总线长</div><div class="value">${totalLineLength.toFixed(1)}</div><div class="unit">m</div></div>
+    <div class="result-card"><div class="label">档数</div><div class="value">${spans.length}</div><div class="unit">档</div></div>`;
+
+  // 导线张力递推表
+  const cBody = document.querySelector('#condTable tbody');
+  cBody.innerHTML = condResults.map((s, i) => {
+    const epsAcc = Math.pow(params.frictionCond, i);
+    const isControl = i === controlIdx ? '<span class="badge badge-yellow">控制档</span>' : '';
+    return `
+    <tr class="${i===controlIdx?'control-row':''}">
+      <td>${i+1}</td>
+      <td>${s.leftTower}~${s.rightTower} ${isControl}</td>
+      <td>${s.L.toFixed(1)}</td>
+      <td>${s.h.toFixed(2)}</td>
+      <td>${s.cosPhi.toFixed(4)}</td>
+      <td>${epsAcc.toFixed(4)}</td>
+      <td>${s.T_in.toFixed(1)}</td>
+      <td>${s.T_out.toFixed(1)}</td>
+      <td>${s.T_axial.toFixed(1)}</td>
+    </tr>`;
+  }).join('');
+
+  // 牵引绳张力递推表
+  const rBody = document.querySelector('#ropeTable tbody');
+  rBody.innerHTML = ropeResults.map((s, i) => {
+    const epsAcc = Math.pow(params.frictionRope, spans.length - i);
+    const isControl = i === controlIdx ? '<span class="badge badge-yellow">控制档</span>' : '';
+    return `
+    <tr class="${i===controlIdx?'control-row':''}">
+      <td>${i+1}</td>
+      <td>${s.rightTower}</td>
+      <td>${spans.length - i}</td>
+      <td>${epsAcc.toFixed(4)}</td>
+      <td>${s.T_out.toFixed(1)}</td>
+      <td>${s.verticalSpan.toFixed(1)}</td>
+      <td><span class="badge ${s.ropeUp==='Y'?'badge-red':'badge-green'}">${s.ropeUp==='Y'?'上扬':'正常'}</span></td>
+    </tr>`;
+  }).join('');
+
+  // 弧垂表
+  const sBody = document.querySelector('#sagTable tbody');
+  sBody.innerHTML = condResults.map((s, i) => {
+    const isControl = i === controlIdx ? '<span class="badge badge-yellow">控制档</span>' : '';
+    return `
+    <tr class="${i===controlIdx?'control-row':''}">
+      <td>${i+1}</td>
+      <td>${s.leftTower}~${s.rightTower} ${isControl}</td>
+      <td>${s.H.toFixed(1)}</td>
+      <td>${s.sag.toFixed(3)}</td>
+      <td>${s.lineLength.toFixed(2)}</td>
+      <td>${s.safeDistCalc !== null ? s.safeDistCalc.toFixed(2) : 'N/A'}</td>
+      <td>${s.crossHeight > 0 ? params.safeDist.toFixed(1) : 'N/A'}</td>
+    </tr>`;
+  }).join('');
+
+  // 角度表
+  const aBody = document.querySelector('#angleTable tbody');
+  aBody.innerHTML = condResults.map((s, i) => `
+    <tr class="${i===controlIdx?'control-row':''}">
+      <td>${i+1}</td>
+      <td>${s.rightTower}</td>
+      <td>${s.thetaA.toFixed(2)}</td>
+      <td>${s.thetaB.toFixed(2)}</td>
+      <td>${s.angle}</td>
+      <td>${s.wrapAngle.toFixed(2)}</td>
+      <td><span class="badge ${s.doubleSheave==='Y'?'badge-red':'badge-green'}">${s.doubleSheave==='Y'?'需双滑车':'单滑车'}</span></td>
+    </tr>`).join('');
+
+  renderCheckReport();
+  renderEquipment();
+  renderCharts();
+}
+
+function renderCheckReport() {
+  const { condResults, ropeResults, controlIdx, params, spans, f_max } = calcResults;
+
+  const checks = [];
+
+  // 1. 张力机出口张力（信息展示，非判定）
+  const tensionerRated = params.Tp * params.kpTension; // 主张力机单根额定制动张力（选型值）
+  checks.push({
+    name: '张力机出口张力',
+    pass: true, // 纯信息展示，不判定
+    info: true,
+    desc: `计算出口张力 ${calcResults.T0.toFixed(1)} N（主张力机单根额定制动张力选型值 ${tensionerRated.toFixed(0)} N，见工器具选型表）`
+  });
+
+  // 2. 控制档弧垂合理性检查
+  const controlSag = condResults[controlIdx]?.sag || 0;
+  const controlL = condResults[controlIdx]?.L || 0;
+  const sagRatio = controlL > 0 ? controlSag / controlL : 0;
+  checks.push({
+    name: '控制档弧垂合理性',
+    pass: sagRatio < 0.5,
+    desc: `控制档弧垂 ${controlSag.toFixed(2)} m / 档距 ${controlL.toFixed(1)} m = ${(sagRatio*100).toFixed(1)}%，要求 < 50%`
+  });
+
+  // 3. 牵引机牵引力检查
+  const pullerMax = calcResults.pullerMax;
+  checks.push({
+    name: '牵引机牵引力检查',
+    pass: pullerMax < 200000,
+    desc: `计算牵引力 ${(pullerMax/1000).toFixed(2)} kN`
+  });
+
+  // 4. 安全距离控制参数（信息展示，不是检查）
+  checks.push({
+    name: '安全距离控制参数',
+    pass: true,
+    info: true,
+    desc: f_max !== null 
+      ? `控制档要求安全距 ${params.safeDist.toFixed(1)} m + 裕度 ${params.margin.toFixed(1)} m → 控制档弧垂限值 ${f_max.toFixed(2)} m → 张力机出口张力 ${calcResults.T0.toFixed(0)} N → 牵引机最大牵引力 ${(calcResults.pullerMax/1000).toFixed(2)} kN`
+      : `手动设定张力机出口张力 ${calcResults.T0.toFixed(0)} N → 牵引机最大牵引力 ${(calcResults.pullerMax/1000).toFixed(2)} kN（控制档无跨越物，未由安全距离反算）`
+  });
+
+  // 5. 牵引绳上扬检查
+  const ropeUpY = ropeResults.filter(s => s.ropeUp === 'Y');
+  checks.push({
+    name: '牵引绳上扬检查',
+    pass: ropeUpY.length === 0,
+    desc: ropeUpY.length > 0 ? `${ropeUpY.length} 处牵引绳上扬需处理` : '无牵引绳上扬'
+  });
+
+  // 6. 双滑车
+  const dsY = condResults.filter(s => s.doubleSheave === 'Y');
+  checks.push({
+    name: '双滑车检查',
+    pass: true,
+    info: true,
+    desc: dsY.length > 0 ? `${dsY.length} 处需增设双滑车` : '无需要'
+  });
+
+  const container = document.getElementById('checkReport');
+  container.innerHTML = `
+    <div style="margin-bottom:20px"><strong>一、总体检查结论</strong></div>
+    ${checks.map(c => `
+    <div class="check-item ${c.info ? '' : (c.pass ? 'pass' : 'fail')}">
+      <span class="check-icon">${c.info ? 'ℹ' : (c.pass ? 'OK' : 'FAIL')}</span>
+      <span class="check-text"><strong>${c.name}</strong> - ${c.desc}</span>
+    </div>`).join('')}
+
+    <div class="section-divider"></div>
+    <div style="margin-bottom:12px"><strong>二、逐档校验明细表</strong></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>序号</th><th>档</th><th>导线张力(N)</th><th>弧垂(m)</th><th>跨越悬垂距(m)</th><th>实际安全距(m)</th><th>要求安全距(m)</th>
+            <th>双滑车</th><th>牵引绳上扬</th><th>结论</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${condResults.map((s, i) => {
+            const ropeUp = ropeResults[i]?.ropeUp || 'N';
+            const issues = [];
+            if (s.doubleSheave === 'Y') issues.push('需双滑车');
+            if (ropeUp === 'Y') issues.push('牵引绳上扬');
+            const conclusion = issues.length === 0 ? '正常' : issues.join('、');
+            const actualSafe = s.safeDistCalc !== null ? s.safeDistCalc.toFixed(2) : 'N/A';
+            const crossH = s.crossHeight > 0 ? s.crossHeight.toFixed(1) : 'N/A';
+            return `<tr class="${i===controlIdx?'control-row':''}">
+              <td>${i+1}</td>
+              <td>${s.leftTower}~${s.rightTower}${i===controlIdx?' <span class="badge badge-yellow">控制档</span>':''}</td>
+              <td>${s.T_axial.toFixed(0)}</td>
+              <td>${s.sag.toFixed(2)}</td>
+              <td>${crossH}</td>
+              <td>${actualSafe}</td>
+              <td>${s.safeCheck !== 'N/A' ? params.safeDist.toFixed(1) : 'N/A'}</td>
+              <td><span class="badge ${s.doubleSheave==='Y'?'badge-red':'badge-green'}">${s.doubleSheave==='Y'?'需双滑车':'单滑车'}</span></td>
+              <td><span class="badge ${ropeUp==='Y'?'badge-red':'badge-green'}">${ropeUp==='Y'?'牵引绳上扬':'正常'}</span></td>
+              <td><strong>${conclusion}</strong></td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderEquipment() {
+  const { params } = calcResults;
+  const Tp = params.Tp;
+  const bundle = params.bundle;
+  const kpPull = params.kpPull;
+  const kpTension = params.kpTension;
+
+  const items = [
+    { name: '主牵引机额定牵引力', formula: 'P >= m*Kp*Tp', req: bundle * kpPull * Tp, unit: 'N', rec: `>= ${(bundle * kpPull * Tp / 1000).toFixed(1)} kN` },
+    { name: '牵引机过载保安值', formula: 'Pg = P + 1000', req: bundle * kpPull * Tp + 1000, unit: 'N', rec: `>= ${((bundle * kpPull * Tp + 1000)/1000).toFixed(1)} kN` },
+    { name: '主张力机单根额定制动张力', formula: 'T = Kp*Tp', req: kpTension * Tp, unit: 'N', rec: `>= ${(kpTension * Tp / 1000).toFixed(1)} kN` },
+    { name: '牵引绳综合破断力', formula: 'Qp >= 3n*Tp/5', req: 3 * bundle * Tp / 5, unit: 'N', rec: `>= ${(3 * bundle * Tp / 5 / 1000).toFixed(1)} kN` },
+    { name: '导引绳综合破断力', formula: 'Pp >= Qp/4', req: 3 * bundle * Tp / 20, unit: 'N', rec: `>= ${(3 * bundle * Tp / 20 / 1000).toFixed(1)} kN` },
+    { name: '小牵引机额定牵引力', formula: 'P >= Qp/10', req: 3 * bundle * Tp / 50, unit: 'N', rec: `>= ${(3 * bundle * Tp / 50 / 1000).toFixed(1)} kN` },
+    { name: '小张力机额定制动张力', formula: 't >= Qp/15', req: 3 * bundle * Tp / 75, unit: 'N', rec: `>= ${(3 * bundle * Tp / 75 / 1000).toFixed(1)} kN` }
+  ];
+
+  const tbody = document.querySelector('#equipTable tbody');
+  tbody.innerHTML = items.map((it, i) => `
+    <tr><td>${i+1}</td><td>${it.name}</td><td style="font-family:monospace">${it.formula}</td>
+    <td>${it.req.toFixed(0)} ${it.unit}</td><td>${it.rec}</td></tr>`).join('');
+}
+
+function renderCharts() {
+  const { condResults, ropeResults } = calcResults;
+  const labels = condResults.map((s, i) => `${s.leftTower}~${s.rightTower}`);
+  const condData = condResults.map(s => s.T_axial);
+  const ropeData = ropeResults.map(s => s.T_out);
+  const sagData = condResults.map(s => s.sag);
+
+  if (condChart) condChart.destroy();
+  if (ropeChart) ropeChart.destroy();
+  if (sagChart) sagChart.destroy();
+
+  const ctx1 = document.getElementById('condChart').getContext('2d');
+  condChart = new Chart(ctx1, {
+    type: 'line',
+    data: { labels: labels, datasets: [{ label: '导线轴向张力 (N)', data: condData, borderColor: '#1976d2', backgroundColor: 'rgba(25,118,210,0.1)', fill: true, tension: 0.3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '导线张力递推曲线（张力机→牵引机）' } }, scales: { y: { beginAtZero: false } } }
+  });
+
+  const ctx2 = document.getElementById('ropeChart').getContext('2d');
+  ropeChart = new Chart(ctx2, {
+    type: 'line',
+    data: { labels: labels, datasets: [{ label: '牵引绳张力 (N)', data: ropeData, borderColor: '#ed6c02', backgroundColor: 'rgba(237,108,2,0.1)', fill: true, tension: 0.3 }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '牵引绳张力递推曲线（牵引机→张力机）' } }, scales: { y: { beginAtZero: false } } }
+  });
+
+  const ctx3 = document.getElementById('sagChart').getContext('2d');
+  sagChart = new Chart(ctx3, {
+    type: 'bar',
+    data: { labels: labels, datasets: [{ label: '弧垂 (m)', data: sagData, backgroundColor: 'rgba(46,125,50,0.7)' }] },
+    options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: '各档弧垂对比' } } }
+  });
+}
+
+function exportPNG() {
+  if (!calcResults) { alert('请先进行计算'); return; }
+  alert('正在生成截图，请稍候...');
+  const main = document.querySelector('.main');
+  html2canvas(main, { scale: 2, useCORS: true, allowTaint: true }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `张力计算_${document.getElementById('sectionName').value||'data'}_${new Date().toISOString().slice(0,10)}.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }).catch(err => { alert('导出失败：' + err.message); });
+}
+
+function exportJSON() {
+  const data = {
+    project: {
+      name: document.getElementById('projName').value,
+      section: document.getElementById('sectionName').value,
+      voltage: document.getElementById('voltageLevel').value,
+      bundle: document.getElementById('bundleCount').value
+    },
+    towers: getTowerData(),
+    params: {
+      wCond: document.getElementById('wCond').value,
+      Tp: document.getElementById('TpCond').value,
+      friction: document.getElementById('frictionCond').value,
+      safeDistance: document.getElementById('safeDistance').value
+    },
+    results: calcResults
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `张力计算_${document.getElementById('sectionName').value || 'data'}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importJSON() {
+  document.getElementById('importFile').click();
+}
+
+function handleImport(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data.project) {
+        document.getElementById('projName').value = data.project.name || '';
+        document.getElementById('sectionName').value = data.project.section || '';
+        document.getElementById('voltageLevel').value = data.project.voltage || '500';
+        document.getElementById('bundleCount').value = data.project.bundle || '2';
+      }
+      if (data.towers) {
+        clearTowers();
+        data.towers.forEach(t => addTower(t));
+      }
+      if (data.params) {
+        document.getElementById('wCond').value = data.params.wCond || '14.8';
+        document.getElementById('TpCond').value = data.params.Tp || '123400';
+        document.getElementById('frictionCond').value = data.params.friction || '1.015';
+        document.getElementById('safeDistance').value = data.params.safeDistance || '8';
+      }
+      if (data.results) {
+        calcResults = data.results;
+        renderResults();
+      }
+      alert('导入成功');
+    } catch (err) { alert('导入失败：' + err.message); }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+const CONDUCTOR_DATA = {
+  'LGJ-400/50':   { w: 14.8078, Tp: 123400 },
+  'JL/G1A-400/35':{ w: 13.2126, Tp: 100440 },
+  'LGJ-500/45':   { w: 16.8000, Tp: 155000 },
+  'LGJ-300/40':   { w: 11.3000, Tp: 90000  }
+};
+const ROPE_DATA = {
+  'phi24': { w: 22.5, break: 350000 },
+  'phi18': { w: 11.8, break: 190000 },
+  'phi15': { w: 8.2,  break: 140000 },
+  'phi13': { w: 6.5,  break: 100000 }
+};
+function fillConductorParams() {
+  const model = document.getElementById('conductorModel').value;
+  if (model === 'custom') return;
+  const d = CONDUCTOR_DATA[model];
+  if (!d) return;
+  document.getElementById('wCond').value = d.w.toFixed(4);
+  document.getElementById('TpCond').value = d.Tp;
+}
+function fillRopeParams() {
+  const model = document.getElementById('ropeModel').value;
+  if (model === 'custom') return;
+  const d = ROPE_DATA[model];
+  if (!d) return;
+  document.getElementById('wRope').value = d.w;
+  document.getElementById('breakRope').value = d.break;
+}
+
+addTower();
+addTower();
+</script>
+
+</body>
+</html>
