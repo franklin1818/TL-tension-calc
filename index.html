@@ -86,33 +86,6 @@ tr:hover { background: #f8f9fa; }
 .check-text { flex: 1; font-size: 0.9rem; }
 .control-row { background: #fff8e1 !important; }
 
-/* Activation Modal */
-.activation-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.65); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
-.activation-overlay.active { display: flex; }
-.activation-modal { background: white; border-radius: 16px; padding: 32px; max-width: 480px; width: 90%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalIn 0.3s ease; }
-@keyframes modalIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-.activation-modal h2 { text-align: center; margin-bottom: 8px; color: var(--primary); }
-.activation-modal .subtitle { text-align: center; color: var(--text-light); font-size: 0.9rem; margin-bottom: 24px; }
-.activation-modal .price-tag { text-align: center; font-size: 2rem; font-weight: 700; color: var(--success); margin: 16px 0; }
-.activation-modal .price-tag span { font-size: 0.9rem; color: var(--text-light); font-weight: 400; }
-.activation-modal .feature-list { background: #f8f9fa; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; }
-.activation-modal .feature-list li { list-style: none; padding: 6px 0; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
-.activation-modal .feature-list li::before { content: "✓"; color: var(--success); font-weight: 700; }
-.gumroad-btn { display: block; width: 100%; padding: 14px; background: linear-gradient(135deg, #ff6b6b, #ee5a5a); color: white; border: none; border-radius: 10px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; margin-bottom: 20px; transition: all 0.2s; }
-.gumroad-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(238,90,90,0.3); }
-.activation-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; color: #999; font-size: 0.85rem; }
-.activation-divider::before, .activation-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-.license-input-group { display: flex; gap: 10px; margin-bottom: 12px; }
-.license-input-group input { flex: 1; padding: 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; text-align: center; letter-spacing: 2px; text-transform: uppercase; }
-.license-input-group input::placeholder { text-transform: none; letter-spacing: normal; }
-.activation-modal .note { text-align: center; font-size: 0.8rem; color: #999; margin-top: 12px; }
-.activation-modal .error-msg { color: var(--danger); font-size: 0.85rem; text-align: center; margin-top: 8px; display: none; }
-.activation-modal .error-msg.visible { display: block; }
-
-/* Locked content indicator */
-.locked-hint { background: #fff3e0; border: 2px dashed var(--warning); border-radius: 12px; padding: 40px 20px; text-align: center; margin: 20px 0; }
-.locked-hint h3 { color: var(--warning); margin-bottom: 8px; }
-.locked-hint p { color: var(--text-light); font-size: 0.9rem; margin-bottom: 16px; }
 
 /* Footer */
 .page-footer { text-align: center; padding: 30px 20px; margin-top: 20px; border-top: 2px solid var(--border); background: #f8f9fa; border-radius: 12px; }
@@ -128,7 +101,7 @@ tr:hover { background: #f8f9fa; }
   .header-topbar { flex-direction: column; gap: 10px; }
 }
 @media print {
-  .sidebar, .step-nav, .btn-group, .tab-bar, .header p, .lang-switch, .activation-overlay, .page-footer { display: none !important; }
+  .sidebar, .step-nav, .btn-group, .tab-bar, .header p, .lang-switch, .page-footer { display: none !important; }
   .step-content { display: block !important; animation: none !important; }
   .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; margin-bottom: 12px; padding: 16px; }
   body { background: white; }
@@ -154,29 +127,6 @@ tr:hover { background: #f8f9fa; }
   <p id="headerSubtitle">基于滑车磨阻递推法 / 支持控制档反算 / 牵引绳上扬检查 / 一键导出</p>
 </div>
 
-<!-- Activation Overlay -->
-<div class="activation-overlay" id="activationOverlay">
-  <div class="activation-modal">
-    <h2 id="actTitle">🔒 解锁完整功能</h2>
-    <p class="subtitle" id="actSubtitle">购买后激活码将自动发送到您的邮箱，输入即可解锁全部功能</p>
-    <div class="price-tag" id="actPrice">$2.99 <span id="actPriceNote">一次性买断 / 终身使用</span></div>
-    <ul class="feature-list" id="actFeatures">
-      <li>滑车磨阻递推法精确计算</li>
-      <li>控制档自动推荐与安全距离反算</li>
-      <li>牵引绳上扬与双滑车自动判定</li>
-      <li>导出 PNG / PDF / JSON 计算书</li>
-      <li>中英文双语界面</li>
-    </ul>
-    <a href="https://franklin1818.gumroad.com/l/avzazs" target="_blank" class="gumroad-btn" id="actBuyBtn">🛒 立即购买 (Gumroad)</a>
-    <div class="activation-divider" id="actDivider">或输入激活码</div>
-    <div class="license-input-group">
-      <input type="text" id="licenseKey" placeholder="输入激活码，如 TL-XXXX-XXXX-XXXX" maxlength="19">
-      <button class="btn btn-primary" onclick="activateWithKey()" id="actVerifyBtn">激活</button>
-    </div>
-    <p class="error-msg" id="actError">激活码无效，请检查或联系 support@example.com</p>
-    <p class="note" id="actNote">激活后所有计算在本地浏览器完成，无需联网，数据不上传服务器</p>
-  </div>
-</div>
 
 <div class="container">
   <aside class="sidebar">
@@ -383,7 +333,7 @@ tr:hover { background: #f8f9fa; }
         </div>
         <div class="btn-group">
           <button class="btn btn-primary" onclick="showStep(2)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-success" onclick="handleCalculate()" data-i18n="btn_calc">开始计算</button>
+          <button class="btn btn-success" onclick="calculateAll()" data-i18n="btn_calc">开始计算</button>
         </div>
       </div>
     </div>
@@ -483,12 +433,6 @@ tr:hover { background: #f8f9fa; }
         </div>
       </div>
 
-      <!-- Locked placeholder for non-activated users -->
-      <div class="locked-hint hidden" id="resultsLocked">
-        <h3 data-i18n="lock_title">🔒 计算结果已锁定</h3>
-        <p data-i18n="lock_desc">购买激活后即可查看完整的张力递推、弧垂、角度分析与图表</p>
-        <button class="btn btn-success" onclick="showActivation()" data-i18n="btn_unlock">立即解锁 $2.99</button>
-      </div>
     </div>
 
     <!-- Step 6: Check Report -->
@@ -500,11 +444,6 @@ tr:hover { background: #f8f9fa; }
           <button class="btn btn-primary" onclick="showStep(4)" data-i18n="btn_prev">上一步</button>
           <button class="btn btn-primary" onclick="showStep(6)" data-i18n="btn_next_equip">下一步 - 工器具</button>
         </div>
-      </div>
-      <div class="locked-hint hidden" id="checkLocked">
-        <h3 data-i18n="lock_title2">🔒 校验报告已锁定</h3>
-        <p data-i18n="lock_desc2">购买激活后即可查看牵引绳上扬、双滑车、安全距离等完整校验报告</p>
-        <button class="btn btn-success" onclick="showActivation()" data-i18n="btn_unlock">立即解锁 $2.99</button>
       </div>
     </div>
 
@@ -532,11 +471,6 @@ tr:hover { background: #f8f9fa; }
           <button class="btn btn-primary" onclick="showStep(7)" data-i18n="btn_next_export">下一步 - 导出</button>
         </div>
       </div>
-      <div class="locked-hint hidden" id="equipLocked">
-        <h3 data-i18n="lock_title3">🔒 工器具选型已锁定</h3>
-        <p data-i18n="lock_desc3">购买激活后即可查看牵引机、张力机、钢丝绳等工器具选型推荐</p>
-        <button class="btn btn-success" onclick="showActivation()" data-i18n="btn_unlock">立即解锁 $2.99</button>
-      </div>
     </div>
 
     <!-- Step 8: Export -->
@@ -563,11 +497,6 @@ tr:hover { background: #f8f9fa; }
           <button class="btn btn-primary" onclick="showStep(6)" data-i18n="btn_prev">上一步</button>
           <button class="btn btn-primary" onclick="showStep(0)" data-i18n="btn_backHome">返回首页</button>
         </div>
-      </div>
-      <div class="locked-hint hidden" id="exportLocked">
-        <h3 data-i18n="lock_title4">🔒 导出功能已锁定</h3>
-        <p data-i18n="lock_desc4">购买激活后即可导出 PDF、PNG、JSON 格式的完整计算书</p>
-        <button class="btn btn-success" onclick="showActivation()" data-i18n="btn_unlock">立即解锁 $2.99</button>
       </div>
     </div>
 
@@ -650,7 +579,6 @@ const I18N = {
     btn_png: '导出PNG截图',
     btn_json: '保存工程数据(JSON)',
     btn_import: '导入工程数据',
-    btn_unlock: '立即解锁 $2.99',
     hint_eps: '常规 1.015~1.020',
     hint_margin: '常规 0.5m',
     hint_safeDist: '500kV 一般大于等于8.5m',
@@ -700,29 +628,6 @@ const I18N = {
     tab_sag: '弧垂与安全距',
     tab_angle: '角度与包络角',
     tab_chart: '曲线图',
-    lock_title: '🔒 计算结果已锁定',
-    lock_desc: '购买激活后即可查看完整的张力递推、弧垂、角度分析与图表',
-    lock_title2: '🔒 校验报告已锁定',
-    lock_desc2: '购买激活后即可查看牵引绳上扬、双滑车、安全距离等完整校验报告',
-    lock_title3: '🔒 工器具选型已锁定',
-    lock_desc3: '购买激活后即可查看牵引机、张力机、钢丝绳等工器具选型推荐',
-    lock_title4: '🔒 导出功能已锁定',
-    lock_desc4: '购买激活后即可导出 PDF、PNG、JSON 格式的完整计算书',
-    act_title: '🔒 解锁完整功能',
-    act_subtitle: '购买后激活码将自动发送到您的邮箱，输入即可解锁全部功能',
-    act_price_note: '一次性买断 / 终身使用',
-    act_buy: '🛒 立即购买 (Gumroad)',
-    act_divider: '或输入激活码',
-    act_placeholder: '输入激活码，如 TL-XXXX-XXXX-XXXX',
-    act_verify: '激活',
-    act_error: '激活码无效，请检查或联系开发者',
-    act_note: '激活后所有计算在本地浏览器完成，无需联网，数据不上传服务器',
-    act_feat1: '滑车磨阻递推法精确计算',
-    act_feat2: '控制档自动推荐与安全距离反算',
-    act_feat3: '牵引绳上扬与双滑车自动判定',
-    act_feat4: '导出 PNG / PDF / JSON 计算书',
-    act_feat5: '中英文双语界面',
-    msg_needActivate: '请先购买激活以使用计算功能',
     msg_minTowers: '请至少录入2个杆塔',
     msg_keepOne: '至少保留一个杆塔',
     msg_warnSag: '警告：控制档最大允许弧垂 {fmax} m 超过档距的一半（{half} m），抛物线公式可能失效。请增大安全距离要求或检查跨越物参数。',
@@ -817,7 +722,6 @@ const I18N = {
     btn_png: 'Export PNG',
     btn_json: 'Save Project (JSON)',
     btn_import: 'Import Project',
-    btn_unlock: 'Unlock Now $2.99',
     hint_eps: 'Typical 1.015~1.020',
     hint_margin: 'Typical 0.5m',
     hint_safeDist: '500kV typically >= 8.5m',
@@ -867,29 +771,6 @@ const I18N = {
     tab_sag: 'Sag & Clearance',
     tab_angle: 'Angles',
     tab_chart: 'Charts',
-    lock_title: '🔒 Results Locked',
-    lock_desc: 'Purchase to unlock full tension recursion, sag, angle analysis and charts',
-    lock_title2: '🔒 Check Report Locked',
-    lock_desc2: 'Purchase to unlock rope uplift, double sheave, clearance check reports',
-    lock_title3: '🔒 Equipment Selection Locked',
-    lock_desc3: 'Purchase to unlock puller, tensioner, rope equipment recommendations',
-    lock_title4: '🔒 Export Locked',
-    lock_desc4: 'Purchase to export PDF, PNG, JSON reports',
-    act_title: '🔒 Unlock Full Features',
-    act_subtitle: 'After purchase, the license key will be auto-delivered to your email, exports, and all features',
-    act_price_note: 'Auto-delivered to your email. Enter to unlock / Lifetime access',
-    act_buy: '🛒 Buy Now (Gumroad)',
-    act_divider: 'Or enter license key',
-    act_placeholder: 'Enter license key, e.g. TL-XXXX-XXXX-XXXX',
-    act_verify: 'Activate',
-    act_error: 'Invalid license key. Please check or contact developer.',
-    act_note: 'All calculations run locally in your browser. No data uploaded.',
-    act_feat1: 'Precise sheave friction recursive calculation',
-    act_feat2: 'Auto control span & clearance reverse calc',
-    act_feat3: 'Rope uplift & double sheave auto-check',
-    act_feat4: 'Export PNG / PDF / JSON reports',
-    act_feat5: 'Chinese / English bilingual UI',
-    msg_needActivate: 'Please purchase to activate calculation features',
     msg_minTowers: 'Please enter at least 2 towers',
     msg_keepOne: 'Keep at least one tower',
     msg_warnSag: 'Warning: Control span max allowed sag {fmax} m exceeds half span ({half} m). Parabola formula may fail. Increase clearance requirement or check crossing data.',
@@ -951,7 +832,6 @@ function applyI18N() {
     }
   });
 
-  // Activation modal
   document.getElementById('actTitle').textContent = t('act_title');
   document.getElementById('actSubtitle').textContent = t('act_subtitle');
   document.getElementById('actPriceNote').textContent = t('act_price_note');
@@ -974,101 +854,12 @@ function applyI18N() {
   }
 
   // Update locked hints
-  ['resultsLocked','checkLocked','equipLocked','exportLocked'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const h3 = el.querySelector('h3');
-    const p = el.querySelector('p');
-    const btn = el.querySelector('button');
-    if (h3) h3.textContent = t(id.replace('Locked','_title').replace('results','lock').replace('check','lock2').replace('equip','lock3').replace('export','lock4'));
-    if (p) p.textContent = t(id.replace('Locked','_desc').replace('results','lock').replace('check','lock2').replace('equip','lock3').replace('export','lock4'));
-    if (btn) btn.textContent = t('btn_unlock');
   });
 }
 
-// ==================== Activation System ====================
 const ACT_KEY = 'tl_activated_v2';
 const ACT_TS_KEY = 'tl_activated_ts';
 
-function isActivated() {
-  return localStorage.getItem(ACT_KEY) === 'true';
-}
-
-function showActivation() {
-  document.getElementById('activationOverlay').classList.add('active');
-  document.getElementById('actError').classList.remove('visible');
-}
-
-function hideActivation() {
-  document.getElementById('activationOverlay').classList.remove('active');
-}
-
-function activateWithKey() {
-  const key = document.getElementById('licenseKey').value.trim().toUpperCase();
-  if (verifyLicenseKey(key)) {
-    localStorage.setItem(ACT_KEY, 'true');
-    localStorage.setItem(ACT_TS_KEY, Date.now().toString());
-    hideActivation();
-    updateLockedUI();
-    alert(currentLang === 'zh' ? '激活成功！感谢您的支持。' : 'Activation successful! Thank you for your support.');
-  } else {
-    document.getElementById('actError').classList.add('visible');
-  }
-}
-
-// License key verification - simple hash-based check
-// Format: TL-XXXX-XXXX-XXXX where last 4 chars are checksum
-function verifyLicenseKey(key) {
-  if (!key) return false;
-  const pattern = /^TL-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
-  if (!pattern.test(key)) return false;
-  const parts = key.split('-');
-  const body = parts.slice(1, 3).join('');
-  const check = parts[3];
-  // Compute simple checksum
-  let sum = 0;
-  for (let i = 0; i < body.length; i++) {
-    const c = body.charCodeAt(i);
-    sum = ((sum * 31) + c) & 0xFFFF;
-  }
-  const expected = (sum % 9000 + 1000).toString(36).toUpperCase().padStart(4, '0');
-  return check === expected;
-}
-
-// Demo keys for testing (will be regenerated on each release)
-// These are just examples - real keys are distributed via Gumroad
-function getDemoKeys() {
-  return ['TL-ABCD-EFGH-IJ99', 'TL-2024-DEMO-XXXX'];
-}
-
-function updateLockedUI() {
-  const activated = isActivated();
-  const resultCard = document.getElementById('resultsCard');
-  const resultsLocked = document.getElementById('resultsLocked');
-  const checkCard = document.getElementById('checkCard');
-  const checkLocked = document.getElementById('checkLocked');
-  const equipCard = document.getElementById('equipCard');
-  const equipLocked = document.getElementById('equipLocked');
-  const exportCard = document.getElementById('exportCard');
-  const exportLocked = document.getElementById('exportLocked');
-
-  if (resultCard) resultCard.classList.toggle('hidden', !activated);
-  if (resultsLocked) resultsLocked.classList.toggle('hidden', activated);
-  if (checkCard) checkCard.classList.toggle('hidden', !activated);
-  if (checkLocked) checkLocked.classList.toggle('hidden', activated);
-  if (equipCard) equipCard.classList.toggle('hidden', !activated);
-  if (equipLocked) equipLocked.classList.toggle('hidden', activated);
-  if (exportCard) exportCard.classList.toggle('hidden', !activated);
-  if (exportLocked) exportLocked.classList.toggle('hidden', activated);
-}
-
-function handleCalculate() {
-  if (!isActivated()) {
-    showActivation();
-    return;
-  }
-  calculateAll();
-}
 
 // ==================== Core Logic ====================
 let towers = [];
@@ -1356,7 +1147,7 @@ function loadDemoData(id) {
 
 // ==================== Core Calculation Engine ====================
 function calculateAll() {
-  if (!isActivated()) { showActivation(); return; }
+  
   try {
     const towerData = getTowerData();
     if (towerData.length < 2) { alert(t('msg_minTowers')); return; }
@@ -1915,9 +1706,6 @@ function fillRopeParams() {
 }
 
 // Close modal on overlay click
-document.getElementById('activationOverlay').addEventListener('click', function(e) {
-  if (e.target === this) hideActivation();
-});
 
 // Init
 const savedLang = localStorage.getItem('tl_lang');
@@ -1926,8 +1714,6 @@ if (savedLang === 'en' || savedLang === 'zh') {
 } else {
   currentLang = navigator.language.startsWith('zh') ? 'zh' : 'en';
 }
-setLang(currentLang);
-updateLockedUI();
 addTower();
 addTower();
 </script>
