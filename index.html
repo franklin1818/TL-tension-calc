@@ -349,6 +349,7 @@ tr:hover { background: #f8f9fa; }
           <button class="tab-btn" onclick="showTab('tab-sag')" data-i18n="tab_sag">弧垂与安全距</button>
           <button class="tab-btn" onclick="showTab('tab-angle')" data-i18n="tab_angle">角度与包络角</button>
           <button class="tab-btn" onclick="showTab('tab-chart')" data-i18n="tab_chart">曲线图</button>
+          <button class="tab-btn" onclick="showTab('tab-wiring')" data-i18n="tab_wiring">布线分析</button>
         </div>
 
         <div class="tab-panel active" id="tab-cond">
@@ -425,6 +426,53 @@ tr:hover { background: #f8f9fa; }
           <div class="chart-container"><canvas id="condChart"></canvas></div>
           <div class="chart-container"><canvas id="ropeChart"></canvas></div>
           <div class="chart-container"><canvas id="sagChart"></canvas></div>
+        </div>
+
+        <div class="tab-panel" id="tab-wiring">
+          <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
+            <div class="form-group" style="margin:0; min-width:160px;">
+              <label data-i18n="label_reelLen">导线单盘长度 (m)</label>
+              <input type="number" id="reelLength" value="2500" min="100" step="10" onchange="renderWiringAnalysis()">
+            </div>
+            <div style="color:#666; font-size:0.85rem;">
+              <span data-i18n="th_totalLen">总长度</span>: <strong id="wiringTotalLen">0</strong> m
+            </div>
+          </div>
+
+          <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title1">线长计算表</div>
+          <div class="table-wrap">
+            <table id="wiringLenTable">
+              <thead><tr>
+                <th data-i18n="th_no">序号</th>
+                <th data-i18n="th_spanName">档</th>
+                <th data-i18n="th_spanL">档距(m)</th>
+                <th data-i18n="th_diffH">高差(m)</th>
+                <th data-i18n="th_slantLen">斜距(m)</th>
+                <th data-i18n="th_lineLength">线长(m)</th>
+                <th data-i18n="th_accumDist">累加距离(m)</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="section-divider"></div>
+          <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title2">导线盘分配与接头位置</div>
+          <div class="table-wrap">
+            <table id="wiringReelTable">
+              <thead><tr>
+                <th data-i18n="th_reelNo">盘号</th>
+                <th data-i18n="th_reelLen">单盘长度(m)</th>
+                <th data-i18n="th_reelCover">覆盖档范围</th>
+                <th data-i18n="th_jointPos">接头位置</th>
+                <th data-i18n="th_reelLeft">剩余(m)</th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="section-divider"></div>
+          <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title3">用量统计</div>
+          <div class="result-summary" id="wiringSummary"></div>
         </div>
 
         <div class="btn-group">
@@ -628,6 +676,22 @@ const I18N = {
     tab_sag: '弧垂与安全距',
     tab_angle: '角度与包络角',
     tab_chart: '曲线图',
+    tab_wiring: '布线分析',
+    th_slantLen: '斜距(m)',
+    th_lineLength: '线长(m)',
+    th_accumDist: '累加距离(m)',
+    th_reelNo: '盘号',
+    th_reelLen: '单盘长度(m)',
+    th_jointPos: '接头位置',
+    th_reelCover: '覆盖档',
+    th_reelLeft: '剩余(m)',
+    th_totalReels: '总盘数',
+    th_totalLen: '总长度(m)',
+    label_reelLen: '导线单盘长度 (m)',
+    wiring_title1: '线长计算表',
+    wiring_title2: '导线盘分配与接头位置',
+    wiring_title3: '用量统计',
+    msg_minTowers: '请至少录入2个杆塔',
     msg_minTowers: '请至少录入2个杆塔',
     msg_keepOne: '至少保留一个杆塔',
     msg_warnSag: '警告：控制档最大允许弧垂 {fmax} m 超过档距的一半（{half} m），抛物线公式可能失效。请增大安全距离要求或检查跨越物参数。',
@@ -771,6 +835,22 @@ const I18N = {
     tab_sag: 'Sag & Clearance',
     tab_angle: 'Angles',
     tab_chart: 'Charts',
+    tab_wiring: 'Wiring',
+    th_slantLen: 'Slant Length (m)',
+    th_lineLength: 'Line Length (m)',
+    th_accumDist: 'Accum. Distance (m)',
+    th_reelNo: 'Reel No.',
+    th_reelLen: 'Reel Length (m)',
+    th_jointPos: 'Joint Position',
+    th_reelCover: 'Cover Spans',
+    th_reelLeft: 'Leftover (m)',
+    th_totalReels: 'Total Reels',
+    th_totalLen: 'Total Length (m)',
+    label_reelLen: 'Reel Length (m)',
+    wiring_title1: 'Line Length Calculation',
+    wiring_title2: 'Conductor Reel Assignment & Joint Positions',
+    wiring_title3: 'Quantity Summary',
+    msg_minTowers: 'Please enter at least 2 towers',
     msg_minTowers: 'Please enter at least 2 towers',
     msg_keepOne: 'Keep at least one tower',
     msg_warnSag: 'Warning: Control span max allowed sag {fmax} m exceeds half span ({half} m). Parabola formula may fail. Increase clearance requirement or check crossing data.',
@@ -1417,6 +1497,146 @@ function renderResults() {
   renderCheckReport();
   renderEquipment();
   renderCharts();
+  renderWiringAnalysis();
+}
+
+function renderWiringAnalysis() {
+  if (!calcResults) return;
+  const { condResults, spans } = calcResults;
+  const reelLen = parseFloat(document.getElementById('reelLength').value) || 2500;
+
+  // 1. Line length calculation table
+  const lenRows = [];
+  let accum = 0;
+  for (let i = 0; i < spans.length; i++) {
+    const sp = spans[i];
+    const slantLen = Math.sqrt(sp.L * sp.L + sp.h * sp.h);
+    const lineLen = condResults[i]?.lineLength || slantLen;
+    accum += lineLen;
+    lenRows.push({
+      idx: i,
+      name: sp.leftTower + '~' + sp.rightTower,
+      L: sp.L,
+      h: sp.h,
+      slant: slantLen,
+      lineLen: lineLen,
+      accum: accum
+    });
+  }
+
+  const lenBody = document.querySelector('#wiringLenTable tbody');
+  if (lenBody) {
+    lenBody.innerHTML = lenRows.map(r => `
+      <tr>
+        <td>${r.idx + 1}</td>
+        <td>${r.name}</td>
+        <td>${r.L.toFixed(1)}</td>
+        <td>${r.h.toFixed(2)}</td>
+        <td>${r.slant.toFixed(2)}</td>
+        <td>${r.lineLen.toFixed(2)}</td>
+        <td>${r.accum.toFixed(2)}</td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('wiringTotalLen').textContent = accum.toFixed(1);
+
+  // 2. Reel assignment table
+  const reelRows = [];
+  let remaining = reelLen;
+  let reelNo = 1;
+  let spanStart = 0;
+  let spanStartAccum = 0;
+  let currentAccum = 0;
+
+  for (let i = 0; i < lenRows.length; i++) {
+    const row = lenRows[i];
+    currentAccum = row.accum;
+    const spanLen = row.lineLen;
+
+    if (remaining >= spanLen) {
+      remaining -= spanLen;
+      if (i === lenRows.length - 1) {
+        // Last span, close the reel
+        reelRows.push({
+          reelNo: reelNo,
+          reelLen: reelLen,
+          cover: `${spans[spanStart].leftTower}~${spans[i].rightTower}`,
+          joint: currentLang === 'en' ? 'End of section' : '本段终点',
+          leftover: remaining.toFixed(1)
+        });
+      }
+    } else {
+      // Need to put joint in this span
+      const jointDistInSpan = remaining;
+      const jointAccum = spanStartAccum + jointDistInSpan;
+      reelRows.push({
+        reelNo: reelNo,
+        reelLen: reelLen,
+        cover: `${spans[spanStart].leftTower}~${spans[i].rightTower}`,
+        joint: `${spans[i].leftTower}~${spans[i].rightTower} ${currentLang==='en'?'+' : '距张力机端'} ${jointAccum.toFixed(1)} m`,
+        leftover: '0'
+      });
+      reelNo++;
+      remaining = reelLen;
+      spanStart = i;
+      spanStartAccum = jointAccum;
+      // Re-process this span with new reel
+      if (remaining >= spanLen) {
+        remaining -= spanLen;
+        if (i === lenRows.length - 1) {
+          reelRows.push({
+            reelNo: reelNo,
+            reelLen: reelLen,
+            cover: `${spans[spanStart].leftTower}~${spans[i].rightTower}`,
+            joint: currentLang === 'en' ? 'End of section' : '本段终点',
+            leftover: remaining.toFixed(1)
+          });
+        }
+      } else {
+        // Even one span longer than reelLen - warn and split
+        reelRows.push({
+          reelNo: reelNo,
+          reelLen: reelLen,
+          cover: `${spans[spanStart].leftTower}~${spans[i].rightTower}`,
+          joint: `${spans[i].leftTower}~${spans[i].rightTower} ${currentLang==='en'?'+' : '距张力机端'} ${(spanStartAccum + reelLen).toFixed(1)} m`,
+          leftover: '0'
+        });
+        reelNo++;
+        remaining = reelLen;
+        spanStart = i;
+        spanStartAccum += reelLen;
+        // Continue loop will re-check
+      }
+    }
+  }
+
+  const reelBody = document.querySelector('#wiringReelTable tbody');
+  if (reelBody) {
+    reelBody.innerHTML = reelRows.map(r => `
+      <tr>
+        <td>${r.reelNo}</td>
+        <td>${r.reelLen}</td>
+        <td>${r.cover}</td>
+        <td>${r.joint}</td>
+        <td>${r.leftover}</td>
+      </tr>`).join('');
+  }
+
+  // 3. Summary
+  const totalReels = reelRows.length;
+  const lastLeftover = reelRows.length > 0 ? parseFloat(reelRows[reelRows.length - 1].leftover) : 0;
+  const totalReelLen = totalReels * reelLen;
+
+  const summary = document.getElementById('wiringSummary');
+  if (summary) {
+    summary.innerHTML = `
+      <div class="result-card"><div class="label">${currentLang==='en'?'Total Line Length':'放线总线长'}</div><div class="value">${accum.toFixed(1)}</div><div class="unit">m</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Reel Length':'单盘长度'}</div><div class="value">${reelLen}</div><div class="unit">m</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Total Reels':'总盘数'}</div><div class="value">${totalReels}</div><div class="unit">${currentLang==='en'?'reels':'盘'}</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Total Conductor Length':'导线总用量'}</div><div class="value">${totalReelLen.toFixed(1)}</div><div class="unit">m</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Leftover (last reel)':'末盘剩余'}</div><div class="value">${lastLeftover.toFixed(1)}</div><div class="unit">m</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Waste Rate':'损耗率'}</div><div class="value">${((totalReelLen - accum) / totalReelLen * 100).toFixed(2)}</div><div class="unit">%</div></div>`;
+  }
 }
 
 function renderCheckReport() {
