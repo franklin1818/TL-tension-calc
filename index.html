@@ -205,6 +205,23 @@ tr:hover { background: #f8f9fa; }
             <label data-i18n="label_manualT">张力机出口整定张力 (N)</label>
             <input type="number" id="manualTension" value="15000" step="100">
           </div>
+          <div class="form-group">
+            <label data-i18n="label_reelLen">导线单盘长度 (m)</label>
+            <input type="number" id="reelLengthInput" value="2500" min="100" step="10">
+          </div>
+          <div class="form-group">
+            <label data-i18n="label_bundleCount2">分裂数 (根)</label>
+            <input type="number" id="bundleCount2" value="2" min="1" step="1">
+          </div>
+          <div class="form-group">
+            <label data-i18n="label_circuitCount">回路数</label>
+            <input type="number" id="circuitCount" value="1" min="1" step="1">
+          </div>
+          <div class="form-group">
+            <label data-i18n="label_clampClearance">线夹禁区距离 (m)</label>
+            <input type="number" id="clampClearance" value="7.5" min="0" step="0.5">
+            <div class="input-hint" data-i18n="hint_clampClearance">一般7.5m或15m</div>
+          </div>
         </div>
         <div class="btn-group">
           <button class="btn btn-primary" onclick="showStep(1)" data-i18n="btn_next_towers">下一步 - 杆塔数据</button>
@@ -236,6 +253,7 @@ tr:hover { background: #f8f9fa; }
                 <th data-i18n="th_angle">转角(度)</th>
                 <th data-i18n="th_crossDist">跨越物距右杆(m)</th>
                 <th data-i18n="th_crossHeight">跨越悬垂距(m)</th>
+                <th data-i18n="th_isTension">耐张塔</th>
                 <th data-i18n="th_op">操作</th>
               </tr>
             </thead>
@@ -464,6 +482,8 @@ tr:hover { background: #f8f9fa; }
                 <th data-i18n="th_reelLen">单盘长度(m)</th>
                 <th data-i18n="th_reelCover">覆盖档范围</th>
                 <th data-i18n="th_jointPos">接头位置</th>
+                <th data-i18n="th_jointToLeft">距左塔(m)</th>
+                <th data-i18n="th_jointToRight">距右塔(m)</th>
                 <th data-i18n="th_reelLeft">剩余(m)</th>
               </tr></thead>
               <tbody></tbody>
@@ -715,6 +735,19 @@ const I18N = {
     conclusion_normal: '正常',
     mode_auto: '自动模式',
     mode_manual: '手动模式',
+    label_reelLen: '导线单盘长度 (m)',
+    label_bundleCount2: '分裂数 (根)',
+    label_circuitCount: '回路数',
+    label_clampClearance: '线夹禁区距离 (m)',
+    hint_clampClearance: '一般7.5m或15m',
+    th_isTension: '耐张塔',
+    th_isCrossSpan: '跨越档',
+    th_jointToLeft: '距左塔(m)',
+    th_jointToRight: '距右塔(m)',
+    th_isForbidden: '禁区档',
+    wiring_tip_forbidden: '禁区档（跨越/孤立档）内不能布置接头',
+    wiring_tip_tension: '耐张塔处可直接布置接头（紧线时剪掉挂线）',
+    wiring_surplus: '余量',
     footer: 'Transmission Line Tension Stringing Calculator \u00a9 2024 | 本地计算，数据不上传'
   },
   en: {
@@ -874,6 +907,19 @@ const I18N = {
     conclusion_normal: 'Normal',
     mode_auto: 'Auto Mode',
     mode_manual: 'Manual Mode',
+    label_reelLen: 'Reel Length (m)',
+    label_bundleCount2: 'Bundle Count',
+    label_circuitCount: 'Circuit Count',
+    label_clampClearance: 'Clamp Clearance (m)',
+    hint_clampClearance: 'Typically 7.5m or 15m',
+    th_isTension: 'Tension Tower',
+    th_isCrossSpan: 'Crossing Span',
+    th_jointToLeft: 'To Left Tower (m)',
+    th_jointToRight: 'To Right Tower (m)',
+    th_isForbidden: 'Forbidden Span',
+    wiring_tip_forbidden: 'No joints allowed in crossing/isolated spans',
+    wiring_tip_tension: 'Joints allowed at tension tower (cut during stringing)',
+    wiring_surplus: 'Surplus',
     footer: 'TL Tension Calc \u00a9 2024 | Local calculation, no data upload'
   }
 };
@@ -978,6 +1024,7 @@ function insertTower(afterIdx) {
     <td><input class="table-input" type="number" value="0" step="0.01"></td>
     <td><input class="table-input" type="number" placeholder="${currentLang==='en'?'None':'无'}"></td>
     <td><input class="table-input" type="number" placeholder="${currentLang==='en'?'None':'无'}"></td>
+    <td style="text-align:center"><input type="checkbox" title="${currentLang==='en'?'Tension Tower':'耐张塔'}"></td>
     <td class="row-action">
       <button class="add-row" onclick="insertTowerByElement(this)">${currentLang==='en'?'Insert':'插入'}</button>
       <button class="del-row" onclick="deleteRow(this)">${currentLang==='en'?'Del':'删除'}</button>
@@ -1056,7 +1103,8 @@ function getTowerData() {
       height: parseFloat(inputs[2]?.value) || 0,
       angle: parseFloat(inputs[3]?.value) || 0,
       crossDist: parseFloat(inputs[4]?.value) || 0,
-      crossHeight: parseFloat(inputs[5]?.value) || 0
+      crossHeight: parseFloat(inputs[5]?.value) || 0,
+      isTension: inputs[6]?.checked || false
     };
   });
 }
@@ -1502,17 +1550,26 @@ function renderResults() {
 
 function renderWiringAnalysis() {
   if (!calcResults) return;
-  const { condResults, spans } = calcResults;
-  const reelLen = parseFloat(document.getElementById('reelLength').value) || 2500;
+  const { condResults, spans, towers } = calcResults;
+  const reelLen = parseFloat(document.getElementById('reelLengthInput').value) || 2500;
+  const bundle = parseInt(document.getElementById('bundleCount2').value) || 2;
+  const circuit = parseInt(document.getElementById('circuitCount').value) || 1;
+  const clampClearance = parseFloat(document.getElementById('clampClearance').value) || 7.5;
 
-  // 1. Line length calculation table
+  // ===================== 1. Line length calculation =====================
   const lenRows = [];
   let accum = 0;
   for (let i = 0; i < spans.length; i++) {
     const sp = spans[i];
     const slantLen = Math.sqrt(sp.L * sp.L + sp.h * sp.h);
     const lineLen = condResults[i]?.lineLength || slantLen;
+    const accumStart = accum;
     accum += lineLen;
+
+    const leftTower = towers[i];
+    const rightTower = towers[i+1];
+    const isCrossing = (leftTower.crossDist > 0 && leftTower.crossHeight > 0);
+
     lenRows.push({
       idx: i,
       name: sp.leftTower + '~' + sp.rightTower,
@@ -1520,96 +1577,195 @@ function renderWiringAnalysis() {
       h: sp.h,
       slant: slantLen,
       lineLen: lineLen,
-      accum: accum
+      accumStart: accumStart,
+      accumEnd: accum,
+      leftTower: leftTower,
+      rightTower: rightTower,
+      isForbidden: isCrossing
     });
   }
 
   const lenBody = document.querySelector('#wiringLenTable tbody');
   if (lenBody) {
     lenBody.innerHTML = lenRows.map(r => `
-      <tr>
+      <tr class="${r.isForbidden ? 'forbidden-row' : ''}">
         <td>${r.idx + 1}</td>
         <td>${r.name}</td>
         <td>${r.L.toFixed(1)}</td>
         <td>${r.h.toFixed(2)}</td>
         <td>${r.slant.toFixed(2)}</td>
         <td>${r.lineLen.toFixed(2)}</td>
-        <td>${r.accum.toFixed(2)}</td>
+        <td>${r.accumEnd.toFixed(2)}</td>
       </tr>`).join('');
   }
 
   document.getElementById('wiringTotalLen').textContent = accum.toFixed(1);
 
-  // 2. Reel assignment table
-  const reelRows = [];
-  let remaining = reelLen;
-  let reelNo = 1;
-  let spanStart = 0;
-  let spanStartAccum = 0;
-  let currentAccum = 0;
+  // ===================== 2. Joint position adjustment logic =====================
+  function findSpanByGlobalPos(pos) {
+    return lenRows.find(s => s.accumStart <= pos && pos < s.accumEnd);
+  }
 
-  for (let i = 0; i < lenRows.length; i++) {
-    const row = lenRows[i];
-    currentAccum = row.accum;
-    const spanLen = row.lineLen;
+  function checkSafe(posInSpan, span) {
+    const spanLen = span.lineLen;
+    const toLeft = posInSpan;
+    const toRight = spanLen - posInSpan;
 
-    if (remaining >= spanLen) {
-      remaining -= spanLen;
-      if (i === lenRows.length - 1) {
-        // Last span, close the reel
-        reelRows.push({
-          reelNo: reelNo,
-          reelLen: reelLen,
-          cover: `${spans[spanStart].leftTower}~${spans[i].rightTower}`,
-          joint: currentLang === 'en' ? 'End of section' : '本段终点',
-          leftover: remaining.toFixed(1)
-        });
+    if (span.isForbidden) return false;
+    if (toLeft < clampClearance && !span.leftTower.isTension) return false;
+    if (toRight < clampClearance && !span.rightTower.isTension) return false;
+    return true;
+  }
+
+  function adjustJoint(posInSpan, span) {
+    const spanLen = span.lineLen;
+
+    // Strategy: prioritize tension tower mouths
+    if (span.rightTower.isTension) {
+      // Put joint at right tower mouth
+      return spanLen;
+    }
+    if (span.leftTower.isTension) {
+      // Put joint at left tower mouth
+      return 0;
+    }
+
+    // If forbidden span (crossing), must avoid entirely
+    if (span.isForbidden) {
+      return 0; // Shift to span start (previous span end)
+    }
+
+    // If too close to left tower
+    if (posInSpan < clampClearance) {
+      if (spanLen >= 2 * clampClearance) {
+        return clampClearance;
       }
-    } else {
-      // Need to put joint in this span
-      const jointDistInSpan = remaining;
-      const jointAccum = spanStartAccum + jointDistInSpan;
-      reelRows.push({
-        reelNo: reelNo,
-        reelLen: reelLen,
-        cover: `${spans[spanStart].leftTower}~${spans[i].rightTower}`,
-        joint: `${spans[i].leftTower}~${spans[i].rightTower} ${currentLang==='en'?'+' : '距张力机端'} ${jointAccum.toFixed(1)} m`,
-        leftover: '0'
-      });
-      reelNo++;
-      remaining = reelLen;
-      spanStart = i;
-      spanStartAccum = jointAccum;
-      // Re-process this span with new reel
-      if (remaining >= spanLen) {
-        remaining -= spanLen;
-        if (i === lenRows.length - 1) {
-          reelRows.push({
-            reelNo: reelNo,
-            reelLen: reelLen,
-            cover: `${spans[spanStart].leftTower}~${spans[i].rightTower}`,
-            joint: currentLang === 'en' ? 'End of section' : '本段终点',
-            leftover: remaining.toFixed(1)
-          });
-        }
+      return 0; // Whole span is unsafe
+    }
+
+    // If too close to right tower
+    if (spanLen - posInSpan < clampClearance) {
+      if (spanLen >= 2 * clampClearance) {
+        return spanLen - clampClearance;
+      }
+      return 0;
+    }
+
+    return posInSpan;
+  }
+
+  // ===================== 3. Determine joint positions =====================
+  const totalLen = accum;
+  const joints = []; // { spanIdx, posInSpan, toLeft, toRight, isAtTower }
+  let prevJointGlobal = 0;
+
+  for (let pos = reelLen; pos < totalLen; pos += reelLen) {
+    const span = findSpanByGlobalPos(pos);
+    if (!span) continue;
+
+    let posInSpan = pos - span.accumStart;
+    let isSafe = checkSafe(posInSpan, span);
+
+    if (!isSafe) {
+      posInSpan = adjustJoint(posInSpan, span);
+    }
+
+    const globalPos = span.accumStart + posInSpan;
+
+    // Ensure we don't go backward
+    if (globalPos <= prevJointGlobal) {
+      // Try next span start
+      const nextSpan = lenRows[span.idx + 1];
+      if (nextSpan) {
+        posInSpan = 0;
       } else {
-        // Even one span longer than reelLen - warn and split
-        reelRows.push({
-          reelNo: reelNo,
-          reelLen: reelLen,
-          cover: `${spans[spanStart].leftTower}~${spans[i].rightTower}`,
-          joint: `${spans[i].leftTower}~${spans[i].rightTower} ${currentLang==='en'?'+' : '距张力机端'} ${(spanStartAccum + reelLen).toFixed(1)} m`,
-          leftover: '0'
-        });
-        reelNo++;
-        remaining = reelLen;
-        spanStart = i;
-        spanStartAccum += reelLen;
-        // Continue loop will re-check
+        continue;
       }
+    }
+
+    prevJointGlobal = globalPos;
+
+    joints.push({
+      spanIdx: span.idx,
+      posInSpan: posInSpan,
+      toLeft: posInSpan,
+      toRight: span.lineLen - posInSpan,
+      isAtLeftTower: posInSpan === 0,
+      isAtRightTower: Math.abs(posInSpan - span.lineLen) < 0.01,
+      spanName: span.name,
+      isForbidden: span.isForbidden
+    });
+  }
+
+  // ===================== 4. Reel assignment =====================
+  const reelRows = [];
+  let prevPos = 0;
+
+  for (let i = 0; i < joints.length; i++) {
+    const j = joints[i];
+    const globalPos = lenRows[j.spanIdx].accumStart + j.posInSpan;
+    const used = globalPos - prevPos;
+
+    // Determine cover range
+    let coverStartSpan = 0;
+    for (let s = 0; s < lenRows.length; s++) {
+      if (lenRows[s].accumStart <= prevPos && prevPos < lenRows[s].accumEnd) {
+        coverStartSpan = s;
+        break;
+      }
+    }
+
+    let jointDesc;
+    if (j.isAtLeftTower) {
+      jointDesc = currentLang === 'en'
+        ? `${j.spanName} at left tower mouth (cut for tension stringing)`
+        : `${j.spanName} 左塔滑车口处（可直接剪断挂线）`;
+    } else if (j.isAtRightTower) {
+      jointDesc = currentLang === 'en'
+        ? `${j.spanName} at right tower mouth (cut for tension stringing)`
+        : `${j.spanName} 右塔滑车口处（可直接剪断挂线）`;
+    } else {
+      jointDesc = currentLang === 'en'
+        ? `${j.spanName} to left tower ${j.toLeft.toFixed(1)}m / to right tower ${j.toRight.toFixed(1)}m`
+        : `${j.spanName} 距左塔 ${j.toLeft.toFixed(1)}m / 距右塔 ${j.toRight.toFixed(1)}m`;
+    }
+
+    reelRows.push({
+      reelNo: i + 1,
+      reelLen: reelLen,
+      cover: `${lenRows[coverStartSpan].leftTower.name || ('T'+(coverStartSpan+1))}~${j.spanName.split('~')[1]}`,
+      joint: jointDesc,
+      toLeft: j.isAtLeftTower ? '0' : j.toLeft.toFixed(1),
+      toRight: j.isAtRightTower ? '0' : j.toRight.toFixed(1),
+      leftover: (reelLen - used).toFixed(1),
+      used: used.toFixed(1)
+    });
+
+    prevPos = globalPos;
+  }
+
+  // Last reel
+  const lastUsed = totalLen - prevPos;
+  let lastCoverStart = 0;
+  for (let s = 0; s < lenRows.length; s++) {
+    if (lenRows[s].accumStart <= prevPos && prevPos < lenRows[s].accumEnd) {
+      lastCoverStart = s;
+      break;
     }
   }
 
+  reelRows.push({
+    reelNo: reelRows.length + 1,
+    reelLen: reelLen,
+    cover: `${lenRows[lastCoverStart].leftTower.name || ('T'+(lastCoverStart+1))}~${lenRows[lenRows.length-1].rightTower.name || ('T'+lenRows.length)}`,
+    joint: currentLang === 'en' ? 'End of section' : '本段终点',
+    toLeft: '-',
+    toRight: '-',
+    leftover: (reelLen - lastUsed).toFixed(1),
+    used: lastUsed.toFixed(1)
+  });
+
+  // ===================== 5. Render reel table =====================
   const reelBody = document.querySelector('#wiringReelTable tbody');
   if (reelBody) {
     reelBody.innerHTML = reelRows.map(r => `
@@ -1618,24 +1774,28 @@ function renderWiringAnalysis() {
         <td>${r.reelLen}</td>
         <td>${r.cover}</td>
         <td>${r.joint}</td>
+        <td>${r.toLeft}</td>
+        <td>${r.toRight}</td>
         <td>${r.leftover}</td>
       </tr>`).join('');
   }
 
-  // 3. Summary
-  const totalReels = reelRows.length;
-  const lastLeftover = reelRows.length > 0 ? parseFloat(reelRows[reelRows.length - 1].leftover) : 0;
-  const totalReelLen = totalReels * reelLen;
+  // ===================== 6. Quantity summary =====================
+  const reelsPerPhase = reelRows.length;
+  const totalReels = reelsPerPhase * bundle * circuit;
+  const totalReelLen = reelsPerPhase * reelLen;
+  const surplus = totalReelLen - totalLen;
+  const surplusRate = totalLen > 0 ? (surplus / totalLen * 100) : 0;
 
   const summary = document.getElementById('wiringSummary');
   if (summary) {
     summary.innerHTML = `
-      <div class="result-card"><div class="label">${currentLang==='en'?'Total Line Length':'放线总线长'}</div><div class="value">${accum.toFixed(1)}</div><div class="unit">m</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Total Line Length':'放线总线长'}</div><div class="value">${totalLen.toFixed(1)}</div><div class="unit">m</div></div>
       <div class="result-card"><div class="label">${currentLang==='en'?'Reel Length':'单盘长度'}</div><div class="value">${reelLen}</div><div class="unit">m</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Total Reels':'总盘数'}</div><div class="value">${totalReels}</div><div class="unit">${currentLang==='en'?'reels':'盘'}</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Total Conductor Length':'导线总用量'}</div><div class="value">${totalReelLen.toFixed(1)}</div><div class="unit">m</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Leftover (last reel)':'末盘剩余'}</div><div class="value">${lastLeftover.toFixed(1)}</div><div class="unit">m</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Waste Rate':'损耗率'}</div><div class="value">${((totalReelLen - accum) / totalReelLen * 100).toFixed(2)}</div><div class="unit">%</div></div>`;
+      <div class="result-card"><div class="label">${currentLang==='en'?'Reels per Phase':'单相盘数'}</div><div class="value">${reelsPerPhase}</div><div class="unit">${currentLang==='en'?'reels':'盘'}</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Bundle x Circuit':'分裂x回路'}</div><div class="value">${bundle}x${circuit}</div><div class="unit">${currentLang==='en'?'':'组'}</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Total Reels to Site':'需运至现场总盘数'}</div><div class="value">${totalReels}</div><div class="unit">${currentLang==='en'?'reels':'盘'}</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Surplus Rate':'余量百分比'}</div><div class="value">${surplusRate.toFixed(2)}</div><div class="unit">%</div></div>`;
   }
 }
 
