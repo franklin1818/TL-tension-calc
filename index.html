@@ -448,14 +448,20 @@ tr:hover { background: #f8f9fa; }
 
         <div class="tab-panel" id="tab-wiring">
           <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
-            <div class="form-group" style="margin:0; min-width:160px;">
+            <div class="form-group" style="margin:0; min-width:140px;">
               <label data-i18n="label_reelLen">导线单盘长度 (m)</label>
-              <input type="number" id="reelLength" value="2500" min="100" step="10" onchange="renderWiringAnalysis()">
+              <input type="number" id="reelLengthInput" value="2500" min="100" step="10" onchange="renderWiringAnalysis()">
+            </div>
+            <div class="form-group" style="margin:0; min-width:180px;">
+              <label>${currentLang==='en'?'Carry-in lengths (m, comma sep.)':'带入余线长度(m，逗号分隔)'}</label>
+              <input type="text" id="carryInInput" placeholder="2500, 1800" onchange="renderWiringAnalysis()">
             </div>
             <div style="color:#666; font-size:0.85rem;">
               <span data-i18n="th_totalLen">总长度</span>: <strong id="wiringTotalLen">0</strong> m
             </div>
           </div>
+
+          <div id="wiringAlerts"></div>
 
           <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title1">线长计算表</div>
           <div class="table-wrap">
@@ -479,20 +485,30 @@ tr:hover { background: #f8f9fa; }
             <table id="wiringReelTable">
               <thead><tr>
                 <th data-i18n="th_reelNo">盘号</th>
-                <th data-i18n="th_reelLen">单盘长度(m)</th>
-                <th data-i18n="th_reelCover">覆盖档范围</th>
-                <th data-i18n="th_jointPos">接头位置</th>
+                <th data-i18n="th_reelLen">盘来源</th>
+                <th data-i18n="th_reelLen">本盘长度(m)</th>
+                <th data-i18n="th_reelCover">实放(m)</th>
+                <th data-i18n="th_reelLeft">剩余(m)</th>
+                <th data-i18n="th_jointPos">接头所在档</th>
                 <th data-i18n="th_jointToLeft">距左塔(m)</th>
                 <th data-i18n="th_jointToRight">距右塔(m)</th>
-                <th data-i18n="th_reelLeft">剩余(m)</th>
+                <th>合规</th>
               </tr></thead>
               <tbody></tbody>
             </table>
           </div>
 
           <div class="section-divider"></div>
-          <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title3">用量统计</div>
+          <div class="card-title" style="font-size:1rem; margin-bottom:8px;">布线条带图</div>
+          <div id="wiringDiag" style="overflow-x:auto; margin-bottom:16px;"></div>
+
+          <div class="section-divider"></div>
+          <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title3">用量统计（一相）</div>
           <div class="result-summary" id="wiringSummary"></div>
+
+          <div class="btn-group" style="margin-top:16px;">
+            <button class="btn btn-primary" onclick="exportWiringCSV()">${currentLang==='en'?'Export Wiring CSV':'导出布线CSV'}</button>
+          </div>
         </div>
 
         <div class="btn-group">
@@ -1398,7 +1414,9 @@ function calculateAll() {
         wrapAngle: wrapAngle * 180 / Math.PI,
         doubleSheave: wrapAngle * 180 / Math.PI > 60 ? 'Y' : 'N',
         safeDistCalc: safeDistCalc,
-        safeCheck: safeCheck
+        safeCheck: safeCheck,
+        leftT: towerData[i].isTension || false,
+        rightT: towerData[i+1].isTension || false
       });
 
       currentT = T_out;
@@ -1450,6 +1468,7 @@ function calculateAll() {
       pullerMax: pullerMax,
       totalLineLength: condResults.reduce((s, r) => s + r.lineLength, 0)
     };
+    window.wiringResult = null;
 
     renderResults();
     showStep(4);
@@ -1550,253 +1569,318 @@ function renderResults() {
 
 function renderWiringAnalysis() {
   if (!calcResults) return;
-  const { condResults, spans, towers } = calcResults;
+  const { condResults, towers } = calcResults;
+
+  // Read params
   const reelLen = parseFloat(document.getElementById('reelLengthInput').value) || 2500;
   const bundle = parseInt(document.getElementById('bundleCount2').value) || 2;
   const circuit = parseInt(document.getElementById('circuitCount').value) || 1;
   const clampClearance = parseFloat(document.getElementById('clampClearance').value) || 7.5;
+  const carryInStr = document.getElementById('carryInInput')?.value || '';
+  const carryIn = carryInStr.split(/[,，;；\s]+/).map(s => parseFloat(s)).filter(x => x > 0);
 
   // ===================== 1. Line length calculation =====================
-  const lenRows = [];
+  const segs = [];
   let accum = 0;
-  for (let i = 0; i < spans.length; i++) {
-    const sp = spans[i];
-    const slantLen = Math.sqrt(sp.L * sp.L + sp.h * sp.h);
-    const lineLen = condResults[i]?.lineLength || slantLen;
-    const accumStart = accum;
-    accum += lineLen;
-
-    const leftTower = towers[i];
-    const rightTower = towers[i+1];
-    const isCrossing = (leftTower.crossDist > 0 && leftTower.crossHeight > 0);
-
-    lenRows.push({
+  for (let i = 0; i < condResults.length; i++) {
+    const s = condResults[i];
+    const lineLen = s.lineLength;
+    const isForbidden = (s.crossDist > 0 && s.crossHeight > 0);
+    segs.push({
       idx: i,
-      name: sp.leftTower + '~' + sp.rightTower,
-      L: sp.L,
-      h: sp.h,
-      slant: slantLen,
-      lineLen: lineLen,
-      accumStart: accumStart,
-      accumEnd: accum,
-      leftTower: leftTower,
-      rightTower: rightTower,
-      isForbidden: isCrossing
+      name: s.leftTower + '~' + s.rightTower,
+      L: s.L,
+      h: s.h,
+      len: lineLen,
+      a: accum,
+      b: accum + lineLen,
+      leftT: s.leftT,
+      rightT: s.rightT,
+      forbid: isForbidden,
+      crossDist: s.crossDist,
+      crossHeight: s.crossHeight
     });
+    accum += lineLen;
   }
+  const TOTAL = accum;
 
+  // Render line length table
   const lenBody = document.querySelector('#wiringLenTable tbody');
   if (lenBody) {
-    lenBody.innerHTML = lenRows.map(r => `
-      <tr class="${r.isForbidden ? 'forbidden-row' : ''}">
-        <td>${r.idx + 1}</td>
-        <td>${r.name}</td>
-        <td>${r.L.toFixed(1)}</td>
-        <td>${r.h.toFixed(2)}</td>
-        <td>${r.slant.toFixed(2)}</td>
-        <td>${r.lineLen.toFixed(2)}</td>
-        <td>${r.accumEnd.toFixed(2)}</td>
+    lenBody.innerHTML = segs.map((s, i) => `
+      <tr class="${s.forbid ? 'forbidden-row' : ''}">
+        <td>${i + 1}</td>
+        <td>${s.name}</td>
+        <td>${s.L.toFixed(1)}</td>
+        <td>${s.h.toFixed(2)}</td>
+        <td>${Math.sqrt(s.L*s.L + s.h*s.h).toFixed(2)}</td>
+        <td>${s.len.toFixed(2)}</td>
+        <td>${s.b.toFixed(2)}</td>
       </tr>`).join('');
   }
 
-  document.getElementById('wiringTotalLen').textContent = accum.toFixed(1);
+  document.getElementById('wiringTotalLen').textContent = TOTAL.toFixed(1);
 
-  // ===================== 2. Joint position adjustment logic =====================
-  function findSpanByGlobalPos(pos) {
-    return lenRows.find(s => s.accumStart <= pos && pos < s.accumEnd);
-  }
-
-  function checkSafe(posInSpan, span) {
-    const spanLen = span.lineLen;
-    const toLeft = posInSpan;
-    const toRight = spanLen - posInSpan;
-
-    if (span.isForbidden) return false;
-    if (toLeft < clampClearance && !span.leftTower.isTension) return false;
-    if (toRight < clampClearance && !span.rightTower.isTension) return false;
-    return true;
-  }
-
-  function adjustJoint(posInSpan, span) {
-    const spanLen = span.lineLen;
-
-    // Strategy: prioritize tension tower mouths
-    if (span.rightTower.isTension) {
-      // Put joint at right tower mouth
-      return spanLen;
-    }
-    if (span.leftTower.isTension) {
-      // Put joint at left tower mouth
-      return 0;
-    }
-
-    // If forbidden span (crossing), must avoid entirely
-    if (span.isForbidden) {
-      return 0; // Shift to span start (previous span end)
-    }
-
-    // If too close to left tower
-    if (posInSpan < clampClearance) {
-      if (spanLen >= 2 * clampClearance) {
-        return clampClearance;
-      }
-      return 0; // Whole span is unsafe
-    }
-
-    // If too close to right tower
-    if (spanLen - posInSpan < clampClearance) {
-      if (spanLen >= 2 * clampClearance) {
-        return spanLen - clampClearance;
-      }
-      return 0;
-    }
-
-    return posInSpan;
-  }
-
-  // ===================== 3. Determine joint positions =====================
-  const totalLen = accum;
-  const joints = []; // { spanIdx, posInSpan, toLeft, toRight, isAtTower }
-  let prevJointGlobal = 0;
-
-  for (let pos = reelLen; pos < totalLen; pos += reelLen) {
-    const span = findSpanByGlobalPos(pos);
-    if (!span) continue;
-
-    let posInSpan = pos - span.accumStart;
-    let isSafe = checkSafe(posInSpan, span);
-
-    if (!isSafe) {
-      posInSpan = adjustJoint(posInSpan, span);
-    }
-
-    const globalPos = span.accumStart + posInSpan;
-
-    // Ensure we don't go backward
-    if (globalPos <= prevJointGlobal) {
-      // Try next span start
-      const nextSpan = lenRows[span.idx + 1];
-      if (nextSpan) {
-        posInSpan = 0;
-      } else {
-        continue;
-      }
-    }
-
-    prevJointGlobal = globalPos;
-
-    joints.push({
-      spanIdx: span.idx,
-      posInSpan: posInSpan,
-      toLeft: posInSpan,
-      toRight: span.lineLen - posInSpan,
-      isAtLeftTower: posInSpan === 0,
-      isAtRightTower: Math.abs(posInSpan - span.lineLen) < 0.01,
-      spanName: span.name,
-      isForbidden: span.isForbidden
-    });
-  }
-
-  // ===================== 4. Reel assignment =====================
-  const reelRows = [];
-  let prevPos = 0;
-
-  for (let i = 0; i < joints.length; i++) {
-    const j = joints[i];
-    const globalPos = lenRows[j.spanIdx].accumStart + j.posInSpan;
-    const used = globalPos - prevPos;
-
-    // Determine cover range
-    let coverStartSpan = 0;
-    for (let s = 0; s < lenRows.length; s++) {
-      if (lenRows[s].accumStart <= prevPos && prevPos < lenRows[s].accumEnd) {
-        coverStartSpan = s;
-        break;
-      }
-    }
-
-    let jointDesc;
-    if (j.isAtLeftTower) {
-      jointDesc = currentLang === 'en'
-        ? `${j.spanName} at left tower mouth (cut for tension stringing)`
-        : `${j.spanName} 左塔滑车口处（可直接剪断挂线）`;
-    } else if (j.isAtRightTower) {
-      jointDesc = currentLang === 'en'
-        ? `${j.spanName} at right tower mouth (cut for tension stringing)`
-        : `${j.spanName} 右塔滑车口处（可直接剪断挂线）`;
-    } else {
-      jointDesc = currentLang === 'en'
-        ? `${j.spanName} to left tower ${j.toLeft.toFixed(1)}m / to right tower ${j.toRight.toFixed(1)}m`
-        : `${j.spanName} 距左塔 ${j.toLeft.toFixed(1)}m / 距右塔 ${j.toRight.toFixed(1)}m`;
-    }
-
-    reelRows.push({
-      reelNo: i + 1,
-      reelLen: reelLen,
-      cover: `${lenRows[coverStartSpan].leftTower.name || ('T'+(coverStartSpan+1))}~${j.spanName.split('~')[1]}`,
-      joint: jointDesc,
-      toLeft: j.isAtLeftTower ? '0' : j.toLeft.toFixed(1),
-      toRight: j.isAtRightTower ? '0' : j.toRight.toFixed(1),
-      leftover: (reelLen - used).toFixed(1),
-      used: used.toFixed(1)
-    });
-
-    prevPos = globalPos;
-  }
-
-  // Last reel
-  const lastUsed = totalLen - prevPos;
-  let lastCoverStart = 0;
-  for (let s = 0; s < lenRows.length; s++) {
-    if (lenRows[s].accumStart <= prevPos && prevPos < lenRows[s].accumEnd) {
-      lastCoverStart = s;
-      break;
-    }
-  }
-
-  reelRows.push({
-    reelNo: reelRows.length + 1,
-    reelLen: reelLen,
-    cover: `${lenRows[lastCoverStart].leftTower.name || ('T'+(lastCoverStart+1))}~${lenRows[lenRows.length-1].rightTower.name || ('T'+lenRows.length)}`,
-    joint: currentLang === 'en' ? 'End of section' : '本段终点',
-    toLeft: '-',
-    toRight: '-',
-    leftover: (reelLen - lastUsed).toFixed(1),
-    used: lastUsed.toFixed(1)
+  // ===================== 2. Legal zones =====================
+  const zones = [];
+  segs.forEach(s => {
+    if (s.forbid) return;
+    const lo = s.a + (s.leftT ? 0 : clampClearance);
+    const hi = s.b - (s.rightT ? 0 : clampClearance);
+    if (hi > lo) zones.push({ t: 'iv', lo, hi });
+    if (s.leftT) zones.push({ t: 'pt', p: s.a, i: s.idx, side: 'L', name: s.leftTower });
+    if (s.rightT) zones.push({ t: 'pt', p: s.b, i: s.idx, side: 'R', name: s.rightTower });
   });
 
-  // ===================== 5. Render reel table =====================
-  const reelBody = document.querySelector('#wiringReelTable tbody');
-  if (reelBody) {
-    reelBody.innerHTML = reelRows.map(r => `
-      <tr>
-        <td>${r.reelNo}</td>
-        <td>${r.reelLen}</td>
-        <td>${r.cover}</td>
-        <td>${r.joint}</td>
-        <td>${r.toLeft}</td>
-        <td>${r.toRight}</td>
-        <td>${r.leftover}</td>
-      </tr>`).join('');
+  function latestLegal(cur, cap) {
+    let best = null, bestPt = null;
+    zones.forEach(z => {
+      if (z.t === 'iv') {
+        const p = Math.min(z.hi, cap);
+        if (p > cur && p >= z.lo && (best === null || p > best)) best = p;
+      } else if (cur < z.p && z.p <= cap && (bestPt === null || z.p > bestPt)) {
+        bestPt = z;
+      }
+    });
+    if (best === null && bestPt === null) return null;
+    if (bestPt && best !== null && best > bestPt.p && (best - bestPt.p) <= 150) {
+      return { p: bestPt.p, pt: true, z: bestPt };
+    }
+    if (best !== null) return { p: best, pt: false };
+    return { p: bestPt.p, pt: true, z: bestPt };
   }
 
-  // ===================== 6. Quantity summary =====================
-  const reelsPerPhase = reelRows.length;
-  const totalReels = reelsPerPhase * bundle * circuit;
-  const totalReelLen = reelsPerPhase * reelLen;
-  const surplus = totalReelLen - totalLen;
-  const surplusRate = totalLen > 0 ? (surplus / totalLen * 100) : 0;
+  function segAt(p) {
+    for (const s of segs) if (p >= s.a - 1e-6 && p <= s.b + 1e-6) return s;
+    return segs[segs.length - 1];
+  }
+
+  // ===================== 3. Reel planning =====================
+  let pid = 0;
+  const stock = carryIn.map((len, k) => ({
+    id: ++pid, len, origin: `${currentLang==='en'?'Carry-in':'带入'} #${k+1}`,
+    reuse: true, status: 'kept', usedBy: '', bornPhase: 0
+  }));
+  const waste = [];
+  let newCount = 0, reusedLen = 0, genLeftover = 0;
+  const reelRows = [];
+  let problems = [];
+
+  let cur = 0;
+  while (cur < TOTAL - 1e-6) {
+    const remain = TOTAL - cur;
+    const isFinal = remain <= reelLen;
+    const fullTarget = isFinal ? { p: TOTAL } : latestLegal(cur, cur + reelLen);
+
+    // Try stock pieces first
+    const cands = [];
+    stock.forEach(pc => {
+      if (pc.status !== 'kept' || !pc.reuse) return;
+      const cap = Math.min(cur + pc.len, TOTAL);
+      if (cap >= TOTAL - 1e-6) {
+        cands.push({ pc, p: TOTAL, final: true });
+      } else {
+        const r = latestLegal(cur, cap);
+        if (r) cands.push({ pc, p: r.p, pt: r.pt });
+      }
+    });
+
+    let pick = null, pj = null, isPt = false;
+    const ok = fullTarget ? cands.filter(c => c.p >= fullTarget.p - 1e-6) : [];
+    if (ok.length) {
+      ok.sort((a, b) => a.pc.len - b.pc.len);
+      pick = ok[0].pc; pj = ok[0].p; isPt = !!ok[0].pt;
+    } else if (cands.length) {
+      cands.sort((a, b) => a.pc.len - b.pc.len);
+      pick = cands[0].pc; pj = cands[0].p; isPt = !!cands[0].pt;
+    }
+
+    let chosen, src;
+    if (pick) {
+      chosen = pick.len;
+      src = pick.origin;
+      pick.status = 'reused';
+      pick.usedBy = '1';
+      reusedLen += chosen;
+      stock.splice(stock.indexOf(pick), 1);
+    } else {
+      newCount++;
+      chosen = reelLen;
+      src = (currentLang === 'en' ? 'New' : '新盘') + ' ' + newCount;
+      if (isFinal) {
+        pj = TOTAL;
+      } else {
+        const r = latestLegal(cur, cur + reelLen);
+        if (!r) {
+          problems.push({ pos: cur });
+          pj = Math.min(cur + reelLen, TOTAL);
+          isPt = false;
+        } else {
+          pj = r.p; isPt = r.pt;
+        }
+      }
+    }
+
+    const used = pj - cur;
+    const left = Math.max(0, chosen - used);
+    const sg = segAt(pj);
+
+    let kind;
+    if (pj >= TOTAL - 1e-6) kind = 'final';
+    else if (problems.length && Math.abs(problems[problems.length - 1].pos - cur) < 1e-6) kind = 'viol';
+    else if (isPt) kind = 'snap';
+    else if (Math.abs(used - reelLen) < 1e-6) kind = 'full';
+    else kind = 'cut';
+    if (kind === 'cut' && left < 1e-6 && pick) kind = 'reused';
+
+    reelRows.push({
+      reelNo: reelRows.length + 1,
+      src, chosen, used, left,
+      pos: pj, seg: sg,
+      toL: pj - sg.a, toR: sg.b - pj,
+      kind
+    });
+
+    if (left >= 1e-6) {
+      if (left >= 12) { // minimum 12m for jumper reuse
+        genLeftover += left;
+        stock.push({
+          id: ++pid, len: left,
+          origin: `${currentLang==='en'?'Cut':'余线'} #${reelRows.length}`,
+          reuse: left >= 100, status: 'kept', usedBy: '', bornPhase: 1
+        });
+      } else {
+        genLeftover += left;
+        waste.push({ len: left, origin: src });
+      }
+    }
+
+    cur = pj;
+  }
+
+  // Classify final stock
+  const internalStrain = segs.slice(0, -1).filter(s => s.rightT).length;
+  const jumperNeed = 12 * internalStrain; // 12m per jumper
+  stock.forEach(p => {
+    if (p.status !== 'kept') return;
+    if (p.len >= 300) p.finalClass = 'next';
+    else if (p.len >= 12) p.finalClass = 'jump';
+    else { p.finalClass = 'waste'; waste.push({ len: p.len, origin: p.origin }); p.status = 'waste'; }
+  });
+
+  const finalStock = stock.filter(p => p.status === 'kept');
+  const finalLen = finalStock.reduce((s, p) => s + p.len, 0);
+  const nextLen = finalStock.filter(p => p.finalClass === 'next').reduce((s, p) => s + p.len, 0);
+  const jumpLen = finalStock.filter(p => p.finalClass === 'jump').reduce((s, p) => s + p.len, 0);
+  const wasteLen = waste.reduce((s, p) => s + p.len, 0);
+  const newLen = newCount * reelLen;
+  const carryLen = carryIn.reduce((s, x) => s + x, 0);
+
+  window.wiringResult = {
+    reelLen, segs, TOTAL, reelRows, problems,
+    newCount, newLen, carryLen, reusedLen, finalLen, nextLen, jumpLen, wasteLen,
+    jumperNeed, internalStrain
+  };
+
+  // ===================== 4. Render reel table =====================
+  const reelBody = document.querySelector('#wiringReelTable tbody');
+  if (reelBody) {
+    reelBody.innerHTML = reelRows.map(r => {
+      const okJoint = r.kind === 'final' || (r.kind !== 'viol' && !r.seg.forbid &&
+        (r.kind === 'snap' || (r.toL >= clampClearance - 1e-6 && r.toR >= clampClearance - 1e-6)));
+      const jc = r.kind === 'final' ? '--' : r.seg.name;
+      return `<tr class="${r.kind === 'viol' ? 'forbidden-row' : ''}">
+        <td>${r.reelNo}</td>
+        <td>${r.src}</td>
+        <td>${r.chosen.toFixed(1)}</td>
+        <td>${r.used.toFixed(1)}</td>
+        <td>${r.left.toFixed(1)}</td>
+        <td>${jc}</td>
+        <td>${r.kind === 'final' ? '--' : r.toL.toFixed(2)}</td>
+        <td>${r.kind === 'final' ? '--' : r.toR.toFixed(2)}</td>
+        <td><span class="badge ${okJoint ? 'badge-green' : 'badge-red'}">${okJoint ? (currentLang==='en'?'OK':'合规') : (currentLang==='en'?'VIOL':'不合规')}</span></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // ===================== 5. Strip diagram =====================
+  const diagBox = document.getElementById('wiringDiag');
+  if (diagBox) {
+    const pxW = Math.max(800, TOTAL * 0.12);
+    const pct = p => (p / TOTAL * 100).toFixed(2);
+    let axis = `<div style="width:${pxW}px">
+      <div style="display:flex;position:relative;height:20px">
+        <span style="position:absolute;left:0;top:2px;font-size:.68rem;color:#666;transform:translateX(-2px)">${segs[0].name.split('~')[0]}</span>`;
+    let cum = 0;
+    segs.forEach(s => {
+      cum += s.len;
+      axis += `<span style="position:absolute;left:${pct(cum)}%;top:2px;font-size:.68rem;color:#666;transform:translateX(-50%)">${s.name.split('~')[1]}</span>`;
+    });
+    axis += `</div>`;
+
+    let strip = '';
+    let start = 0;
+    reelRows.forEach((r, ri) => {
+      const alt = ri % 2;
+      strip += `<div class="reel-strip" style="left:${pct(start)}%;width:${pct(r.used)}%;background:${alt ? 'rgba(25,118,210,.13)' : 'rgba(25,118,210,.07)'};border:1px solid rgba(25,118,210,.25)" title="${r.src} | ${currentLang==='en'?'used':'实放'} ${r.used.toFixed(1)}m, ${currentLang==='en'?'left':'余'} ${r.left.toFixed(1)}m">${r.used / TOTAL > 0.04 ? r.reelNo : ''}</div>`;
+      if (r.kind !== 'final') {
+        strip += `<div class="joint-mark ${r.kind === 'viol' ? 'bad' : (r.kind === 'snap' ? 'snap' : '')}" style="left:${pct(r.pos)}%" title="${r.seg.name} | ${currentLang==='en'?'to L':'距左'} ${r.toL.toFixed(1)}m / ${currentLang==='en'?'to R':'距右'} ${r.toR.toFixed(1)}m"></div>`;
+      }
+      start = r.pos;
+    });
+
+    diagBox.innerHTML = axis + `<div style="position:relative;height:36px;margin:4px 0">${strip}</div></div>`;
+  }
+
+  // ===================== 6. Summary =====================
+  const surplus = (finalLen + wasteLen) / TOTAL * 100;
+  const loss = wasteLen / TOTAL * 100;
 
   const summary = document.getElementById('wiringSummary');
   if (summary) {
     summary.innerHTML = `
-      <div class="result-card"><div class="label">${currentLang==='en'?'Total Line Length':'放线总线长'}</div><div class="value">${totalLen.toFixed(1)}</div><div class="unit">m</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Reel Length':'单盘长度'}</div><div class="value">${reelLen}</div><div class="unit">m</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Reels per Phase':'单相盘数'}</div><div class="value">${reelsPerPhase}</div><div class="unit">${currentLang==='en'?'reels':'盘'}</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Bundle x Circuit':'分裂x回路'}</div><div class="value">${bundle}x${circuit}</div><div class="unit">${currentLang==='en'?'':'组'}</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Total Reels to Site':'需运至现场总盘数'}</div><div class="value">${totalReels}</div><div class="unit">${currentLang==='en'?'reels':'盘'}</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Surplus Rate':'余量百分比'}</div><div class="value">${surplusRate.toFixed(2)}</div><div class="unit">%</div></div>`;
+      <div class="result-card"><div class="label">${currentLang==='en'?'Length/phase':'单相线长'}</div><div class="value">${TOTAL.toFixed(1)}</div><div class="unit">m</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'New reels':'需新盘数'}</div><div class="value">${newCount}</div><div class="unit">${currentLang==='en'?'reels':'盘'}</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Carry-in used':'带入复用'}</div><div class="value">${carryLen > 0 ? (reusedLen / carryLen * 100).toFixed(0) : 0}</div><div class="unit">%</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'For next section':'可下档利用'}</div><div class="value">${nextLen.toFixed(1)}</div><div class="unit">m</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'For jumpers':'可做跳线'}</div><div class="value">${jumpLen.toFixed(1)}</div><div class="unit">m</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Scrap':'损耗短头'}</div><div class="value">${wasteLen.toFixed(2)}</div><div class="unit">m</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Surplus %':'余量百分比'}</div><div class="value">${surplus.toFixed(2)}</div><div class="unit">%</div></div>
+      <div class="result-card"><div class="label">${currentLang==='en'?'Loss %':'真实损耗率'}</div><div class="value">${loss.toFixed(3)}</div><div class="unit">%</div></div>`;
   }
+
+  // Alerts
+  const alertBox = document.getElementById('wiringAlerts');
+  if (alertBox) {
+    let ah = '';
+    if (problems.length) {
+      ah += `<div class="alert alert-danger">${currentLang==='en'?('⚠ ' + problems.length + ' unreachable no-joint zones') : ('⚠ 有 ' + problems.length + ' 处禁接区无法避开，需更长盘或人工调整')}</div>`;
+    }
+    const diff = Math.abs((newLen + carryLen) - (TOTAL + finalLen + wasteLen));
+    ah += `<div class="alert alert-info">${currentLang==='en'?'Balance':'物料平衡'}: ${currentLang==='en'?'Input':'投入'} ${(newLen + carryLen).toFixed(1)}m = ${currentLang==='en'?'Net':'净长'} ${TOTAL.toFixed(1)}m + ${currentLang==='en'?'Leftovers':'余线'} ${finalLen.toFixed(1)}m + ${currentLang==='en'?'Scrap':'损耗'} ${wasteLen.toFixed(2)}m (Δ ${diff.toFixed(2)}m)</div>`;
+    alertBox.innerHTML = ah;
+  }
+}
+
+
+
+function exportWiringCSV() {
+  if (!window.wiringResult) { alert(t('msg_needCalc')); return; }
+  const W = window.wiringResult;
+  const rows = [['盘号', '盘来源', '本盘长度m', '实放m', '剩余m', '接头档', '距左塔m', '距右塔m', '状态']];
+  W.reelRows.forEach(r => {
+    rows.push([r.reelNo, r.src, r.chosen.toFixed(1), r.used.toFixed(1), r.left.toFixed(1),
+      r.kind === 'final' ? '' : r.seg.name,
+      r.kind === 'final' ? '' : r.toL.toFixed(2),
+      r.kind === 'final' ? '' : r.toR.toFixed(2),
+      r.kind]);
+  });
+  const blob = new Blob(['\ufeff' + rows.map(r => r.join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'wiring_' + (document.getElementById('sectionName').value || 'section') + '.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 
 function renderCheckReport() {
