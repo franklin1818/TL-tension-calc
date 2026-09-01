@@ -136,9 +136,10 @@ tr:hover { background: #f8f9fa; }
       <div class="step-item" onclick="showStep(2)"><span class="num">3</span><span class="step-label" data-i18n="nav_params">导线/绳参数</span></div>
       <div class="step-item" onclick="showStep(3)"><span class="num">4</span><span class="step-label" data-i18n="nav_control">控制档与跨越</span></div>
       <div class="step-item" onclick="showStep(4)"><span class="num">5</span><span class="step-label" data-i18n="nav_results">计算结果</span></div>
-      <div class="step-item" onclick="showStep(5)"><span class="num">6</span><span class="step-label" data-i18n="nav_check">校验报告</span></div>
-      <div class="step-item" onclick="showStep(6)"><span class="num">7</span><span class="step-label" data-i18n="nav_equip">工器具选型</span></div>
-      <div class="step-item" onclick="showStep(7)"><span class="num">8</span><span class="step-label" data-i18n="nav_export">导出</span></div>
+      <div class="step-item" onclick="showStep(5)"><span class="num">6</span><span class="step-label" data-i18n="nav_wiring">布线分析</span></div>
+      <div class="step-item" onclick="showStep(6)"><span class="num">7</span><span class="step-label" data-i18n="nav_check">校验报告</span></div>
+      <div class="step-item" onclick="showStep(7)"><span class="num">8</span><span class="step-label" data-i18n="nav_equip">工器具选型</span></div>
+      <div class="step-item" onclick="showStep(8)"><span class="num">9</span><span class="step-label" data-i18n="nav_export">导出</span></div>
     </div>
   </aside>
 
@@ -367,7 +368,6 @@ tr:hover { background: #f8f9fa; }
           <button class="tab-btn" onclick="showTab('tab-sag')" data-i18n="tab_sag">弧垂与安全距</button>
           <button class="tab-btn" onclick="showTab('tab-angle')" data-i18n="tab_angle">角度与包络角</button>
           <button class="tab-btn" onclick="showTab('tab-chart')" data-i18n="tab_chart">曲线图</button>
-          <button class="tab-btn" onclick="showTab('tab-wiring')" data-i18n="tab_wiring">布线分析</button>
         </div>
 
         <div class="tab-panel active" id="tab-cond">
@@ -446,93 +446,122 @@ tr:hover { background: #f8f9fa; }
           <div class="chart-container"><canvas id="sagChart"></canvas></div>
         </div>
 
-        <div class="tab-panel" id="tab-wiring">
-          <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap; margin-bottom:16px;">
-            <div class="form-group" style="margin:0; min-width:140px;">
-              <label data-i18n="label_reelLen">导线单盘长度 (m)</label>
-              <input type="number" id="reelLengthInput" value="2500" min="100" step="10" onchange="renderWiringAnalysis()">
-            </div>
-            <div class="form-group" style="margin:0; min-width:180px;">
-              <label>${currentLang==='en'?'Carry-in lengths (m, comma sep.)':'带入余线长度(m，逗号分隔)'}</label>
-              <input type="text" id="carryInInput" placeholder="2500, 1800" onchange="renderWiringAnalysis()">
-            </div>
-            <div style="color:#666; font-size:0.85rem;">
-              <span data-i18n="th_totalLen">总长度</span>: <strong id="wiringTotalLen">0</strong> m
-            </div>
-          </div>
-
-          <div id="wiringAlerts"></div>
-
-          <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title1">线长计算表</div>
-          <div class="table-wrap">
-            <table id="wiringLenTable">
-              <thead><tr>
-                <th data-i18n="th_no">序号</th>
-                <th data-i18n="th_spanName">档</th>
-                <th data-i18n="th_spanL">档距(m)</th>
-                <th data-i18n="th_diffH">高差(m)</th>
-                <th data-i18n="th_slantLen">斜距(m)</th>
-                <th data-i18n="th_lineLength">线长(m)</th>
-                <th data-i18n="th_accumDist">累加距离(m)</th>
-              </tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <div class="section-divider"></div>
-          <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title2">导线盘分配与接头位置</div>
-          <div class="table-wrap">
-            <table id="wiringReelTable">
-              <thead><tr>
-                <th data-i18n="th_reelNo">盘号</th>
-                <th data-i18n="th_reelLen">盘来源</th>
-                <th data-i18n="th_reelLen">本盘长度(m)</th>
-                <th data-i18n="th_reelCover">实放(m)</th>
-                <th data-i18n="th_reelLeft">剩余(m)</th>
-                <th data-i18n="th_jointPos">接头所在档</th>
-                <th data-i18n="th_jointToLeft">距左塔(m)</th>
-                <th data-i18n="th_jointToRight">距右塔(m)</th>
-                <th>合规</th>
-              </tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-
-          <div class="section-divider"></div>
-          <div class="card-title" style="font-size:1rem; margin-bottom:8px;">布线条带图</div>
-          <div id="wiringDiag" style="overflow-x:auto; margin-bottom:16px;"></div>
-
-          <div class="section-divider"></div>
-          <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title3">用量统计（一相）</div>
-          <div class="result-summary" id="wiringSummary"></div>
-
-          <div class="btn-group" style="margin-top:16px;">
-            <button class="btn btn-primary" onclick="exportWiringCSV()">${currentLang==='en'?'Export Wiring CSV':'导出布线CSV'}</button>
-          </div>
-        </div>
+                </div>
 
         <div class="btn-group">
           <button class="btn btn-primary" onclick="showStep(3)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(5)" data-i18n="btn_next_check">下一步 - 校验</button>
+          <button class="btn btn-primary" onclick="showStep(5)" data-i18n="btn_next_wiring">下一步 - 布线分析</button>
         </div>
       </div>
 
     </div>
 
-    <!-- Step 6: Check Report -->
+        <!-- Step 5: Wiring Analysis -->
     <div class="step-content" id="step-5">
+      <div class="card">
+        <div class="card-title" data-i18n="nav_wiring">布线分析</div>
+        <div class="alert alert-info" data-i18n="alert_wiring">
+          输入布线参数后系统自动分配导线盘、计算接头位置，并避开跨越档和线夹禁区。耐张塔滑车口处可直接布置接头（紧线时剪断挂线）。
+        </div>
+
+        <div class="form-grid" style="margin-bottom:16px;">
+          <div class="form-group">
+            <label data-i18n="label_reelLen">导线单盘长度 (m)</label>
+            <input type="number" id="reelLengthInput" value="2500" min="100" step="10" onchange="renderWiringAnalysis()">
+          </div>
+          <div class="form-group">
+            <label>${currentLang==='en'?'Carry-in reel lengths (m, comma sep.)':'带入余线长度 (m，逗号分隔)'}</label>
+            <input type="text" id="carryInInput" placeholder="2500, 1800, 1200" onchange="renderWiringAnalysis()">
+          </div>
+          <div class="form-group">
+            <label data-i18n="label_clampClearance">线夹禁区距离 (m)</label>
+            <input type="number" id="clampClearance" value="7.5" min="0" step="0.5" onchange="renderWiringAnalysis()">
+          </div>
+          <div class="form-group">
+            <label>${currentLang==='en'?'Min jumper length (m)':'跳线最小长度 (m)'}</label>
+            <input type="number" id="jumperLen" value="12" min="0" step="1" onchange="renderWiringAnalysis()">
+          </div>
+          <div class="form-group">
+            <label>${currentLang==='en'?'Min reuse length (m)':'可复用最小长度 (m)'}</label>
+            <input type="number" id="minReuse" value="100" min="0" step="10" onchange="renderWiringAnalysis()">
+          </div>
+          <div class="form-group">
+            <label>${currentLang==='en'?'Next section min (m)':'可下档利用最小长度 (m)'}</label>
+            <input type="number" id="nextMin" value="300" min="0" step="10" onchange="renderWiringAnalysis()">
+          </div>
+        </div>
+
+        <div id="wiringAlerts"></div>
+
+        <div class="card-title" style="font-size:1rem; margin-bottom:8px; margin-top:20px;" data-i18n="wiring_title1">线长计算表</div>
+        <div class="table-wrap">
+          <table id="wiringLenTable">
+            <thead><tr>
+              <th data-i18n="th_no">序号</th>
+              <th data-i18n="th_spanName">档</th>
+              <th data-i18n="th_spanL">档距(m)</th>
+              <th data-i18n="th_diffH">高差(m)</th>
+              <th data-i18n="th_slantLen">斜距(m)</th>
+              <th data-i18n="th_lineLength">线长(m)</th>
+              <th data-i18n="th_accumDist">累加距离(m)</th>
+              <th data-i18n="th_isForbidden">禁接</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="section-divider"></div>
+        <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title2">导线盘分配与接头位置</div>
+        <div class="table-wrap">
+          <table id="wiringReelTable">
+            <thead><tr>
+              <th data-i18n="th_reelNo">盘号</th>
+              <th data-i18n="th_reelLen">盘来源</th>
+              <th data-i18n="th_reelLen">本盘长度(m)</th>
+              <th data-i18n="th_reelCover">实放(m)</th>
+              <th data-i18n="th_reelLeft">剩余(m)</th>
+              <th data-i18n="th_jointPos">接头所在档</th>
+              <th data-i18n="th_jointToLeft">距左塔(m)</th>
+              <th data-i18n="th_jointToRight">距右塔(m)</th>
+              <th>合规</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="section-divider"></div>
+        <div class="card-title" style="font-size:1rem; margin-bottom:8px;">布线条带图</div>
+        <div id="wiringDiag" style="overflow-x:auto; margin-bottom:16px; padding:8px 0;"></div>
+
+        <div class="section-divider"></div>
+        <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title3">用量统计（一相）</div>
+        <div class="result-summary" id="wiringSummary"></div>
+
+        <div class="btn-group" style="margin-top:16px;">
+          <button class="btn btn-primary" onclick="exportWiringCSV()">${currentLang==='en'?'Export Wiring CSV':'导出布线CSV'}</button>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="showStep(4)" data-i18n="btn_prev">上一步</button>
+          <button class="btn btn-primary" onclick="showStep(6)" data-i18n="btn_next_check">下一步 - 校验</button>
+        </div>
+      </div>
+    </div>
+
+<!-- Step 6: Check Report -->
+    <div class="step-content" id="step-6">
       <div class="card" id="checkCard">
         <div class="card-title" data-i18n="check_report">施工校验报告</div>
         <div id="checkReport"></div>
         <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(4)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(6)" data-i18n="btn_next_equip">下一步 - 工器具</button>
+          <button class="btn btn-primary" onclick="showStep(5)" data-i18n="btn_prev">上一步</button>
+          <button class="btn btn-primary" onclick="showStep(7)" data-i18n="btn_next_equip">下一步 - 工器具</button>
         </div>
       </div>
     </div>
 
     <!-- Step 7: Equipment -->
-    <div class="step-content" id="step-6">
+    <div class="step-content" id="step-7">
       <div class="card" id="equipCard">
         <div class="card-title" data-i18n="equip_sel">工器具选型</div>
         <div class="alert alert-info" data-i18n="alert_equip">
@@ -551,14 +580,14 @@ tr:hover { background: #f8f9fa; }
           </table>
         </div>
         <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(5)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(7)" data-i18n="btn_next_export">下一步 - 导出</button>
+          <button class="btn btn-primary" onclick="showStep(6)" data-i18n="btn_prev">上一步</button>
+          <button class="btn btn-primary" onclick="showStep(9)" data-i18n="btn_next_export">下一步 - 导出</button>
         </div>
       </div>
     </div>
 
     <!-- Step 8: Export -->
-    <div class="step-content" id="step-7">
+    <div class="step-content" id="step-8">
       <div class="card" id="exportCard">
         <div class="card-title" data-i18n="export_report">导出计算书</div>
         <div class="alert alert-info" data-i18n="alert_export">
@@ -602,6 +631,12 @@ const I18N = {
     nav_params: '导线/绳参数',
     nav_control: '控制档与跨越',
     nav_results: '计算结果',
+    nav_wiring: '布线分析',
+    alert_wiring: '输入布线参数后系统自动分配导线盘、计算接头位置，并避开跨越档和线夹禁区。耐张塔滑车口处可直接布置接头（紧线时剪断挂线）。',
+    btn_next_wiring: '下一步 - 布线分析',
+    nav_wiring: 'Wiring',
+    alert_wiring: 'Enter wiring parameters to auto-assign reels, compute joint positions, avoiding crossing spans and clamp clearances. Joints allowed at tension towers.',
+    btn_next_wiring: 'Next - Wiring',
     nav_check: '校验报告',
     nav_equip: '工器具选型',
     nav_export: '导出',
@@ -774,6 +809,12 @@ const I18N = {
     nav_params: 'Conductor/Rope',
     nav_control: 'Control Span',
     nav_results: 'Results',
+    nav_wiring: '布线分析',
+    alert_wiring: '输入布线参数后系统自动分配导线盘、计算接头位置，并避开跨越档和线夹禁区。耐张塔滑车口处可直接布置接头（紧线时剪断挂线）。',
+    btn_next_wiring: '下一步 - 布线分析',
+    nav_wiring: 'Wiring',
+    alert_wiring: 'Enter wiring parameters to auto-assign reels, compute joint positions, avoiding crossing spans and clamp clearances. Joints allowed at tension towers.',
+    btn_next_wiring: 'Next - Wiring',
     nav_check: 'Check Report',
     nav_equip: 'Equipment',
     nav_export: 'Export',
