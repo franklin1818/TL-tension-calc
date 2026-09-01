@@ -489,6 +489,10 @@ tr:hover { background: #f8f9fa; }
             <label>${currentLang==='en'?'Next section min (m)':'可下档利用最小长度 (m)'}</label>
             <input type="number" id="nextMin" value="300" min="0" step="10" onchange="renderWiringAnalysis()">
           </div>
+          <div class="form-group">
+            <label>${currentLang==='en'?'Total line length':'单相线长'}</label>
+            <div id="wiringTotalLen" style="font-size:1.2rem; font-weight:700; color:var(--primary);">0</div>
+          </div>
         </div>
 
         <div id="wiringAlerts"></div>
