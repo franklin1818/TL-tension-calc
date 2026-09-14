@@ -3,2203 +3,1091 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title id="pageTitle">输电线路张力放线计算系统</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<title id="pageTitle">输电线路张力放线 · 布线一体化计算系统</title>
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap">
 <style>
-:root { --primary: #1976d2; --primary-dark: #1565c0; --success: #2e7d32; --warning: #ed6c02; --danger: #d32f2f; --bg: #f5f6fa; --card: #fff; --border: #e0e0e0; --text: #333; --text-light: #666; --shadow: 0 2px 8px rgba(0,0,0,0.08); }
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
-.header { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 20px; text-align: center; box-shadow: var(--shadow); position: sticky; top: 0; z-index: 100; }
-.header h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: 1px; }
-.header p { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
-.header-topbar { display: flex; justify-content: space-between; align-items: center; max-width: 1400px; margin: 0 auto; }
-.lang-switch { display: flex; gap: 6px; background: rgba(255,255,255,0.15); padding: 4px; border-radius: 20px; }
-.lang-btn { padding: 4px 12px; border: none; border-radius: 16px; cursor: pointer; font-size: 0.8rem; font-weight: 500; background: transparent; color: rgba(255,255,255,0.8); transition: all 0.2s; }
-.lang-btn:hover { color: white; }
-.lang-btn.active { background: white; color: var(--primary); }
-.container { max-width: 1400px; margin: 0 auto; padding: 20px; display: flex; gap: 20px; }
-.sidebar { width: 220px; flex-shrink: 0; position: sticky; top: 90px; height: fit-content; }
-.step-nav { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
-.step-item { padding: 14px 18px; cursor: pointer; border-left: 4px solid transparent; transition: all 0.2s; font-size: 0.9rem; display: flex; align-items: center; gap: 10px; }
-.step-item:hover { background: #f0f7ff; }
-.step-item.active { border-left-color: var(--primary); background: #e3f2fd; color: var(--primary); font-weight: 600; }
-.step-item .num { width: 24px; height: 24px; border-radius: 50%; background: #e0e0e0; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
-.step-item.active .num { background: var(--primary); color: white; }
-.main { flex: 1; min-width: 0; }
-.card { background: var(--card); border-radius: 12px; box-shadow: var(--shadow); padding: 24px; margin-bottom: 20px; }
-.card-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid var(--primary); display: flex; align-items: center; gap: 8px; }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label { font-size: 0.85rem; font-weight: 500; color: var(--text-light); }
-.form-group input, .form-group select { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; transition: border-color 0.2s; }
-.form-group input:focus, .form-group select:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(25,118,210,0.1); }
-.input-hint { font-size: 0.75rem; color: #999; margin-top: 2px; }
-.btn { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px; }
-.btn-primary { background: var(--primary); color: white; }
-.btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
-.btn-success { background: var(--success); color: white; }
-.btn-success:hover { background: #1b5e20; }
-.btn-danger { background: var(--danger); color: white; }
-.btn-warning { background: var(--warning); color: white; }
-.btn-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-.table-wrap { overflow-x: auto; margin-top: 16px; border-radius: 8px; border: 1px solid var(--border); }
-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-th { background: #f8f9fa; padding: 10px 8px; text-align: center; font-weight: 600; border-bottom: 2px solid var(--border); white-space: nowrap; }
-td { padding: 8px; text-align: center; border-bottom: 1px solid #eee; }
-tr:hover { background: #f8f9fa; }
-.table-input { width: 100%; padding: 6px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.85rem; text-align: center; }
-.table-input:focus { border-color: var(--primary); outline: none; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
-.badge-green { background: #e8f5e9; color: var(--success); }
-.badge-red { background: #ffebee; color: var(--danger); }
-.badge-yellow { background: #fff3e0; color: var(--warning); }
-.badge-blue { background: #e3f2fd; color: var(--primary); }
-.alert { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 0.9rem; }
-.alert-info { background: #e3f2fd; border-left: 4px solid var(--primary); color: #1565c0; }
-.alert-warning { background: #fff3e0; border-left: 4px solid var(--warning); color: #e65100; }
-.alert-danger { background: #ffebee; border-left: 4px solid var(--danger); color: #c62828; }
-.chart-container { position: relative; height: 400px; margin: 20px 0; }
-.result-summary { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin: 16px 0; }
-.result-card { background: #f8f9fa; border-radius: 10px; padding: 16px; text-align: center; border: 1px solid var(--border); }
-.result-card .value { font-size: 1.5rem; font-weight: 700; color: var(--primary); margin: 4px 0; }
-.result-card .label { font-size: 0.8rem; color: var(--text-light); }
-.result-card .unit { font-size: 0.75rem; color: #999; }
-.hidden { display: none !important; }
-.step-content { display: none; }
-.step-content.active { display: block; animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-.section-divider { height: 1px; background: var(--border); margin: 24px 0; }
-.row-action { display: flex; gap: 4px; justify-content: center; }
-.row-action button { padding: 4px 8px; font-size: 0.75rem; border: none; border-radius: 4px; cursor: pointer; }
-.add-row { background: #e8f5e9; color: var(--success); }
-.del-row { background: #ffebee; color: var(--danger); }
-.tab-bar { display: flex; gap: 4px; margin-bottom: 16px; border-bottom: 2px solid var(--border); }
-.tab-btn { padding: 10px 20px; border: none; background: none; cursor: pointer; font-size: 0.9rem; font-weight: 500; color: var(--text-light); border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
-.tab-btn.active { color: var(--primary); border-bottom-color: var(--primary); }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-.check-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; border: 1px solid var(--border); }
-.check-item.pass { background: #e8f5e9; border-color: #a5d6a7; }
-.check-item.fail { background: #ffebee; border-color: #ef9a9a; }
-.check-icon { font-size: 1.2rem; }
-.check-text { flex: 1; font-size: 0.9rem; }
-.control-row { background: #fff8e1 !important; }
-
-
-/* Footer */
-.page-footer { text-align: center; padding: 30px 20px; margin-top: 20px; border-top: 2px solid var(--border); background: #f8f9fa; border-radius: 12px; }
-.page-footer p { color: #999; font-size: 0.8rem; }
-
-@media (max-width: 900px) {
-  .container { flex-direction: column; }
-  .sidebar { width: 100%; position: static; }
-  .step-nav { display: flex; overflow-x: auto; }
-  .step-item { white-space: nowrap; border-left: none; border-bottom: 4px solid transparent; }
-  .step-item.active { border-left-color: transparent; border-bottom-color: var(--primary); }
-  .form-grid { grid-template-columns: 1fr; }
-  .header-topbar { flex-direction: column; gap: 10px; }
+:root{
+  --ink:#1b2733; --muted:#5b6b7b; --line:#d9e0e6; --bg:#eceff2; --card:#ffffff;
+  --pri:#0e4d64; --pri-d:#0a3a4d; --pri-soft:#e7f1f4; --copper:#c8651b; --copper-soft:#fdf0e4;
+  --ok:#2f855a; --ok-soft:#e6f4ec; --danger:#c1121f; --danger-soft:#fdecec; --warn:#b7791f; --warn-soft:#fdf6e3;
+  --forbid:#fde8e8; --clamp:#fff3e0; --shadow:0 1px 3px rgba(16,42,58,.08),0 4px 14px rgba(16,42,58,.06);
+  --mono:ui-monospace,"Cascadia Mono",Consolas,"Courier New",monospace;
 }
-@media print {
-  .sidebar, .step-nav, .btn-group, .tab-bar, .header p, .lang-switch, .page-footer { display: none !important; }
-  .step-content { display: block !important; animation: none !important; }
-  .card { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; margin-bottom: 12px; padding: 16px; }
-  body { background: white; }
-  .header { position: static; padding: 12px; }
-  .header h1 { font-size: 1.2rem; }
-  .container { padding: 10px; }
-  .main { width: 100%; }
-  .chart-container { height: 280px; }
-}
+*{box-sizing:border-box;margin:0;padding:0}
+html{min-width:1024px}
+body{font-family:"Noto Sans SC",-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);line-height:1.55;font-size:14px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+/* ---------- shell ---------- */
+.hdr{background:var(--pri);color:#fff;padding:14px 24px;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(10,58,77,.3)}
+.hdr-in{max-width:1560px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.hdr h1{font-size:1.05rem;font-weight:700;letter-spacing:.5px;display:flex;align-items:center;gap:10px}
+.hdr .sub{font-size:.76rem;opacity:.82;margin-top:2px}
+.logo-mark{width:26px;height:26px;flex:none}
+.lang-sw{display:flex;gap:4px;background:rgba(255,255,255,.14);padding:3px;border-radius:16px}
+.lang-btn{padding:3px 12px;border:0;border-radius:14px;cursor:pointer;font-size:.78rem;background:transparent;color:rgba(255,255,255,.85)}
+.lang-btn.active{background:#fff;color:var(--pri);font-weight:700}
+.wrap{max-width:1560px;margin:0 auto;padding:18px 24px 40px;display:flex;gap:18px;align-items:flex-start}
+.nav{width:196px;flex:none;position:sticky;top:84px;background:var(--card);border-radius:10px;box-shadow:var(--shadow);overflow:hidden}
+.nav-item{padding:11px 16px;cursor:pointer;border-left:3px solid transparent;display:flex;gap:10px;align-items:center;font-size:.86rem;color:var(--muted)}
+.nav-item:hover{background:var(--pri-soft)}
+.nav-item.active{border-left-color:var(--copper);background:var(--pri-soft);color:var(--pri);font-weight:700}
+.nav-item .n{width:21px;height:21px;border-radius:50%;background:#e4eaee;color:var(--muted);font-size:.72rem;display:flex;align-items:center;justify-content:center;font-weight:700;flex:none}
+.nav-item.active .n{background:var(--pri);color:#fff}
+.main{flex:1;min-width:0}
+.card{background:var(--card);border-radius:10px;box-shadow:var(--shadow);padding:20px 22px;margin-bottom:16px}
+.ct{font-size:1rem;font-weight:700;margin-bottom:14px;padding-bottom:9px;border-bottom:2px solid var(--pri);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ct .tag{font-size:.72rem;font-weight:400;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:1px 9px}
+/* ---------- forms ---------- */
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(218px,1fr));gap:13px 16px}
+.f{display:flex;flex-direction:column;gap:4px}
+.f label{font-size:.8rem;color:var(--muted);font-weight:500}
+.f input,.f select{padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:.88rem;font-family:inherit;color:var(--ink);background:#fff}
+.f input:focus,.f select:focus{outline:none;border-color:var(--pri);box-shadow:0 0 0 3px rgba(14,77,100,.12)}
+.f .hint{font-size:.72rem;color:#8a98a5}
+.f.inline{flex-direction:row;align-items:center;gap:8px}
+.f.inline label{margin:0}
+.row-check{display:flex;align-items:center;gap:7px;font-size:.85rem;padding:8px 10px;background:var(--pri-soft);border-radius:6px}
+.btn{padding:9px 18px;border:0;border-radius:6px;cursor:pointer;font-size:.86rem;font-weight:500;font-family:inherit;display:inline-flex;align-items:center;gap:6px;transition:.15s}
+.btn-p{background:var(--pri);color:#fff}.btn-p:hover{background:var(--pri-d)}
+.btn-s{background:var(--ok);color:#fff}.btn-s:hover{background:#276d4a}
+.btn-w{background:#f0ead8;color:#6b5320;border:1px solid #e0d3a8}.btn-w:hover{background:#e9dfc2}
+.btn-o{background:#fff;color:var(--pri);border:1px solid var(--pri)}.btn-o:hover{background:var(--pri-soft)}
+.btn-d{background:#fff;color:var(--danger);border:1px solid #ecc}.btn-d:hover{background:var(--danger-soft)}
+.btns{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.alert{padding:10px 14px;border-radius:6px;font-size:.83rem;margin-bottom:14px;line-height:1.6}
+.alert-i{background:var(--pri-soft);border-left:3px solid var(--pri);color:#234}
+.alert-w{background:var(--warn-soft);border-left:3px solid var(--warn);color:#6b4e10}
+.alert-d{background:var(--danger-soft);border-left:3px solid var(--danger);color:#8a141d}
+/* ---------- tables ---------- */
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:8px;margin-top:12px}
+table{width:100%;border-collapse:collapse;font-size:.82rem}
+th{background:#f3f6f8;padding:8px 7px;text-align:center;font-weight:700;color:#3a4a58;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:6px 7px;text-align:center;border-bottom:1px solid #edf1f4;white-space:nowrap}
+tbody tr:hover{background:#f7fafb}
+.ti{width:100%;min-width:54px;padding:5px 6px;border:1px solid #dce3e8;border-radius:4px;font-size:.81rem;text-align:center;font-family:inherit}
+.ti:focus{border-color:var(--pri);outline:none}
+select.ti{padding:4px}
+tr.ctrl-row{background:#fbf3e2 !important}
+tr.fbid-row td{background:var(--forbid)}
+tr.fbid-row:hover td{background:#fbdcdc}
+.badge{display:inline-block;padding:1px 8px;border-radius:10px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.b-ok{background:var(--ok-soft);color:var(--ok)}.b-no{background:var(--danger-soft);color:var(--danger)}
+.b-w{background:var(--warn-soft);color:var(--warn)}.b-i{background:var(--pri-soft);color:var(--pri)}
+.b-cu{background:var(--copper-soft);color:var(--copper)}
+.r-act button{padding:3px 9px;font-size:.74rem;border:0;border-radius:4px;cursor:pointer;margin:0 2px}
+.r-ins{background:var(--ok-soft);color:var(--ok)}.r-del{background:var(--danger-soft);color:var(--danger)}
+/* ---------- result cards ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:11px;margin:12px 0}
+.kpi{background:#f7fafb;border:1px solid var(--line);border-radius:8px;padding:12px;text-align:center}
+.kpi .v{font-size:1.32rem;font-weight:700;color:var(--pri);font-family:var(--mono);margin:2px 0;line-height:1.2}
+.kpi .v.cu{color:var(--copper)}.kpi .v.dg{color:var(--danger)}.kpi .v.ok{color:var(--ok)}
+.kpi .l{font-size:.75rem;color:var(--muted)}.kpi .u{font-size:.7rem;color:#93a1ad}
+.tabs{display:flex;gap:2px;border-bottom:2px solid var(--line);margin:6px 0 0;flex-wrap:wrap}
+.tab{padding:9px 16px;border:0;background:none;cursor:pointer;font-size:.85rem;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;font-family:inherit}
+.tab.active{color:var(--pri);border-bottom-color:var(--copper);font-weight:700}
+.tpane{display:none}.tpane.active{display:block}
+.sec-t{font-size:.9rem;font-weight:700;margin:16px 0 4px;color:var(--pri);display:flex;align-items:center;gap:8px}
+.sec-t::before{content:"";width:4px;height:15px;background:var(--copper);border-radius:2px}
+/* ---------- wiring diagram ---------- */
+.diag-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:#fcfdfd;padding:10px 0 6px}
+.phase-axis{display:flex;height:22px;position:relative;font-size:.7rem}
+.lgd-wrap{width:max-content;min-width:100%}
+.lgd-line{display:flex;align-items:stretch;margin:3px 0}
+.lgd-gutter{width:48px;flex:none;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#0e4d64}
+.lgd-grid{position:relative;display:grid}
+.lgd-towers{position:relative;height:28px}
+.tw-name.alt{top:14px}
+.tw-name{position:absolute;top:3px;font-size:.66rem;color:#506270;transform:translateX(-50%);white-space:nowrap}
+.tw-name:first-child{transform:translateX(-2px)}
+.tw-name.strain{color:#0e4d64;font-weight:700}
+.sp-hd{border-right:1px dashed #c3ced6;border-left:1px dashed transparent;padding:2px 3px;text-align:center;overflow:hidden;background:#eef3f5}
+.sp-hd .sp-nm{font-size:.62rem;color:#3a4a58;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-hd .sp-ln{font-size:.62rem;color:#7a8896;font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sp-hd.fb{background:repeating-linear-gradient(45deg,#f6d9d9,#f6d9d9 5px,#fbecec 5px,#fbecec 10px)}
+.sp-hd.fb .sp-nm,.sp-hd.fb .sp-ln{color:#a3332a;font-weight:700}
+.lgd-cell{height:56px;border-right:1px dashed #c3ced6}
+.lgd-cell.r-strain{border-right:2.5px solid #0e4d64}
+.lgd-cell.fb{background:repeating-linear-gradient(45deg,var(--forbid),var(--forbid) 6px,#fbdbdb 6px,#fbdbdb 12px)}
+.lgd-cell.alt{background:#f4f8f9}
+.lgd-ov{position:absolute;inset:0;grid-column:1/-1;pointer-events:none}
+.lgd-ov .reel-bg{top:21px;height:22px;pointer-events:auto}
+.jmk{position:absolute;top:0;bottom:0;width:0;border-left:2px solid var(--copper);z-index:3}
+.jmk .dmd{position:absolute;left:-5px;top:50%;width:9px;height:9px;transform:translateY(-50%) rotate(45deg);background:var(--copper);border:1.5px solid #fff;box-shadow:0 0 0 1px var(--copper)}
+.jmk.bad{border-left-color:var(--danger)}.jmk.bad .dmd{background:var(--danger);box-shadow:0 0 0 1px var(--danger)}
+.jmk.snap{border-left-color:var(--pri);border-left-style:solid}.jmk.snap .dmd{background:var(--pri);box-shadow:0 0 0 1px var(--pri)}
+.jlb{position:absolute;font-size:.62rem;line-height:1.15;color:var(--copper);white-space:nowrap;font-family:var(--mono);background:rgba(255,255,255,.82);border-radius:2px;padding:0 2px;transform:translateX(-50%)}
+.jlb small{color:#8a6240}
+.jlb.lv0{top:1px}.jlb.lv1{bottom:1px;color:#0e4d64}.jlb.lv1 small{color:#5b7686}
+.jlb.jl-l{transform:translateX(0)}.jlb.jl-r{transform:translateX(-100%)}
+.jmk.bad .jlb{color:var(--danger)}
+.lgd-legend{display:flex;gap:18px;flex-wrap:wrap;font-size:.68rem;color:#506270;margin:6px 0 2px 48px}
+.lgd-legend i{display:inline-block;width:12px;height:12px;margin-right:4px;vertical-align:-2px}
+.lg-dmd{transform:rotate(45deg);background:var(--copper);border:1.5px solid #fff;box-shadow:0 0 0 1px var(--copper)}
+.lg-fb{background:repeating-linear-gradient(45deg,var(--forbid),var(--forbid) 4px,#fbdbdb 4px,#fbdbdb 8px)}
+.lg-st{background:#0e4d64;width:3px!important}
+.tick{position:absolute;top:-4px;width:1px;height:calc(100% + 8px);background:#9fb2bd}
+.tick-l{position:absolute;top:-19px;transform:translateX(-50%);font-size:.68rem;color:#506270;white-space:nowrap}
+.reel-bg{position:absolute;top:19px;height:20px;border-radius:3px;display:flex;align-items:center;padding:0 6px;font-size:.68rem;white-space:nowrap;overflow:hidden}
+.jmark{position:absolute;top:14px;width:11px;height:11px;transform:translateX(-50%) rotate(45deg);background:var(--copper);border:1.5px solid #fff;box-shadow:0 0 0 1px var(--copper);z-index:2}
+.jmark.bad{background:var(--danger);box-shadow:0 0 0 1px var(--danger)}
+.jmark.snap{background:var(--pri);box-shadow:0 0 0 1px var(--pri)}
+.jlab{position:absolute;top:-2px;transform:translateX(-50%);font-size:.64rem;color:var(--copper);white-space:nowrap;font-family:var(--mono)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.75rem;color:var(--muted);margin-top:8px;align-items:center}
+.lg{display:flex;align-items:center;gap:5px}
+.lg-sw{width:16px;height:11px;border-radius:2px;border:1px solid #ccc}
+/* ---------- checks ---------- */
+.ck{display:flex;gap:11px;align-items:flex-start;padding:9px 13px;border-radius:6px;margin-bottom:7px;border:1px solid var(--line);font-size:.84rem}
+.ck.pass{background:var(--ok-soft);border-color:#bfe3cd}.ck.fail{background:var(--danger-soft);border-color:#f0c1c4}.ck.info{background:var(--pri-soft);border-color:#c3dbe3}
+.ck b{min-width:150px;flex:none}
+.divider{height:1px;background:var(--line);margin:18px 0}
+.foot{text-align:center;color:#93a1ad;font-size:.75rem;padding:18px}
+textarea.ta{width:100%;min-height:96px;border:1px solid var(--line);border-radius:6px;padding:9px;font-family:var(--mono);font-size:.81rem;resize:vertical}
+.pill{font-size:.72rem;padding:2px 9px;border-radius:10px;background:var(--pri-soft);color:var(--pri);font-weight:700}
+@media print{.nav,.btns,.tabs,.hdr .lang-sw,.foot{display:none!important}.tpane{display:block!important}.card{box-shadow:none;border:1px solid #ccc;page-break-inside:avoid}.wrap{display:block;padding:0}.hdr{position:static;background:#fff;color:#000}.hdr .sub{color:#555}}
 </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-topbar">
-    <div></div>
-    <h1 id="headerTitle">输电线路张力放线计算系统</h1>
-    <div class="lang-switch">
+<div class="hdr">
+  <div class="hdr-in">
+    <h1>
+      <svg class="logo-mark" viewBox="0 0 24 24" fill="none"><path d="M3 7h18M3 12h18M3 17h18" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><circle cx="7" cy="7" r="2.4" fill="#fff"/><circle cx="17" cy="12" r="2.4" fill="#dd6b20"/><circle cx="11" cy="17" r="2.4" fill="#fff"/></svg>
+      <span><span id="hdrTitle">输电线路张力放线 · 布线一体化计算系统</span><div class="sub" id="hdrSub">滑车磨阻递推 / 控制档反算 / 禁接区自动避让布线 / 余线跨相复用 / 压接管定位</div></span>
+    </h1>
+    <div class="lang-sw">
       <button class="lang-btn active" data-lang="zh" onclick="setLang('zh')">中文</button>
-      <button class="lang-btn" data-lang="en" onclick="setLang('en')">English</button>
+      <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
     </div>
   </div>
-  <p id="headerSubtitle">基于滑车磨阻递推法 / 支持控制档反算 / 牵引绳上扬检查 / 一键导出</p>
 </div>
 
+<div class="wrap">
+  <nav class="nav" id="navBox"></nav>
+  <main class="main" id="mainBox">
 
-<div class="container">
-  <aside class="sidebar">
-    <div class="step-nav">
-      <div class="step-item active" onclick="showStep(0)"><span class="num">1</span><span class="step-label" data-i18n="nav_project">工程参数</span></div>
-      <div class="step-item" onclick="showStep(1)"><span class="num">2</span><span class="step-label" data-i18n="nav_towers">杆塔数据</span></div>
-      <div class="step-item" onclick="showStep(2)"><span class="num">3</span><span class="step-label" data-i18n="nav_params">导线/绳参数</span></div>
-      <div class="step-item" onclick="showStep(3)"><span class="num">4</span><span class="step-label" data-i18n="nav_control">控制档与跨越</span></div>
-      <div class="step-item" onclick="showStep(4)"><span class="num">5</span><span class="step-label" data-i18n="nav_results">计算结果</span></div>
-      <div class="step-item" onclick="showStep(5)"><span class="num">6</span><span class="step-label" data-i18n="nav_wiring">布线分析</span></div>
-      <div class="step-item" onclick="showStep(6)"><span class="num">7</span><span class="step-label" data-i18n="nav_check">校验报告</span></div>
-      <div class="step-item" onclick="showStep(7)"><span class="num">8</span><span class="step-label" data-i18n="nav_equip">工器具选型</span></div>
-      <div class="step-item" onclick="showStep(8)"><span class="num">9</span><span class="step-label" data-i18n="nav_export">导出</span></div>
-    </div>
-  </aside>
-
-  <main class="main" id="printArea">
-
-    <!-- Step 1: Project Info -->
-    <div class="step-content active" id="step-0">
+    <!-- ============ STEP 0 工程参数 ============ -->
+    <section class="step" id="step-0">
       <div class="card">
-        <div class="card-title" data-i18n="project_info">工程基本信息</div>
-        <div class="form-grid">
-          <div class="form-group"><label data-i18n="label_projName">项目名称</label><input type="text" id="projName" placeholder="如：老挝500kV送出线路" data-placeholder-en="e.g. Laos 500kV Transmission Line"></div>
-          <div class="form-group"><label data-i18n="label_section">施工区段</label><input type="text" id="sectionName" placeholder="如：N1~N14" data-placeholder-en="e.g. N1~N14"></div>
-          <div class="form-group">
-            <label data-i18n="label_voltage">电压等级 (kV)</label>
-            <select id="voltageLevel">
-              <option value="110">110 kV</option><option value="220">220 kV</option><option value="330">330 kV</option>
-              <option value="500" selected>500 kV</option><option value="750">750 kV</option><option value="1000">1000 kV</option>
+        <div class="ct" data-i18n="s0_info">工程基本信息</div>
+        <div class="fg">
+          <div class="f"><label data-i18n="proj_name">项目名称</label><input id="projName" placeholder="如：老挝500kV送出线路"></div>
+          <div class="f"><label data-i18n="sec_name">牵张段（施工区段）</label><input id="sectionName" placeholder="如：N1~N14"></div>
+          <div class="f"><label data-i18n="voltage">电压等级 (kV)</label>
+            <select id="voltageLevel"><option>110</option><option>220</option><option>330</option><option selected>500</option><option>750</option><option>1000</option></select></div>
+          <div class="f"><label data-i18n="cond_type">导线型号（文本）</label><input id="conductorType" value="JL/G1A-400/35"></div>
+          <div class="f"><label data-i18n="bundle_n">分裂数（每相几根）</label>
+            <select id="bundleCount" onchange="syncBundle()"><option value="1">单导线</option><option value="2">2 分裂</option><option value="4" selected>4 分裂</option><option value="6">6 分裂</option><option value="8">8 分裂</option></select></div>
+          <div class="f"><label data-i18n="phase_n">相线数（相/极总数）</label>
+            <div style="display:flex;gap:6px">
+            <select id="phasePreset" onchange="phasePresetChange()" style="flex:1">
+              <option value="3" selected>交流单回 · 3</option><option value="6">交流双回 · 6</option>
+              <option value="2">直流双极 · 2</option><option value="1">直流单极 · 1</option><option value="">自定义</option>
             </select>
-          </div>
-          <div class="form-group"><label data-i18n="label_condType">导线型号</label><input type="text" id="conductorType" placeholder="如：LGJ-500/45" data-placeholder-en="e.g. LGJ-500/45"></div>
-          <div class="form-group">
-            <label data-i18n="label_bundle">分裂数</label>
-            <select id="bundleCount">
-              <option value="1" data-i18n="opt_single">单导线</option>
-              <option value="2" selected>2 </option>
-              <option value="4">4 </option>
-              <option value="6">6 </option>
-              <option value="8">8 </option>
-            </select>
-          </div>
-          <div class="form-group"><label data-i18n="label_gwType">地线型号</label><input type="text" id="groundWireType" placeholder="如：JLB20A-150" data-placeholder-en="e.g. JLB20A-150"></div>
+            <input id="phaseCount" type="number" min="1" max="12" step="1" value="3" style="width:64px" onchange="syncBundle()"></div>
+            <span class="hint" data-i18n="phase_hint">交流一回=3相，双回=6相；直流双极=2。子导线总数=分裂数×相线数</span></div>
+          <div class="f"><label data-i18n="gw_type">地线/光缆型号（文本）</label><input id="groundWireType" placeholder="如：JLB20A-150 / OPGW"></div>
         </div>
       </div>
+
       <div class="card">
-        <div class="card-title" data-i18n="calc_control">计算控制参数</div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label data-i18n="label_epsCond">滑车对导线磨阻系数 epsilon</label>
-            <input type="number" id="frictionCond" value="1.015" step="0.001">
-            <div class="input-hint" data-i18n="hint_eps">常规 1.015~1.020</div>
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_epsRope">滑车对牵引绳磨阻系数 epsilon</label>
-            <input type="number" id="frictionRope" value="1.015" step="0.001">
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_margin">放线裕度 (m)</label>
-            <input type="number" id="margin" value="0.5" step="0.1">
-            <div class="input-hint" data-i18n="hint_margin">常规 0.5m</div>
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_safeDist">对地安全距离要求 (m)</label>
-            <input type="number" id="safeDistance" value="8" step="0.5">
-            <div class="input-hint" data-i18n="hint_safeDist">500kV 一般大于等于8.5m</div>
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_calcMode">计算方式</label>
-            <select id="calcMode" onchange="toggleCalcMode()">
-              <option value="manual" data-i18n="opt_manual" selected>手动指定张力机出口张力（推荐）</option>
-              <option value="auto" data-i18n="opt_auto">自动选择控制档（由控制档跨越物反算张力）</option>
-            </select>
-          </div>
-          <div class="form-group" id="manualTensionBox">
-            <label data-i18n="label_manualT">张力机出口整定张力 (N)</label>
-            <input type="number" id="manualTension" value="15000" step="100">
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_reelLen">导线单盘长度 (m)</label>
-            <input type="number" id="reelLengthInput" value="2500" min="100" step="10">
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_bundleCount2">分裂数 (根)</label>
-            <input type="number" id="bundleCount2" value="2" min="1" step="1">
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_circuitCount">回路数</label>
-            <input type="number" id="circuitCount" value="1" min="1" step="1">
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_clampClearance">线夹禁区距离 (m)</label>
-            <input type="number" id="clampClearance" value="7.5" min="0" step="0.5">
-            <div class="input-hint" data-i18n="hint_clampClearance">一般7.5m或15m</div>
-          </div>
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(1)" data-i18n="btn_next_towers">下一步 - 杆塔数据</button>
+        <div class="ct" data-i18n="s0_ctrl">张力计算控制参数</div>
+        <div class="fg">
+          <div class="f"><label data-i18n="eps_c">滑车对导线磨阻系数 ε</label><input id="frictionCond" type="number" step="0.001" value="1.017"><span class="hint" data-i18n="h_eps">常规 1.015 ~ 1.020</span></div>
+          <div class="f"><label data-i18n="eps_r">滑车对牵引绳磨阻系数 ε</label><input id="frictionRope" type="number" step="0.001" value="1.015"></div>
+          <div class="f"><label data-i18n="margin">放线裕度 (m)</label><input id="margin" type="number" step="0.1" value="0.5"><span class="hint" data-i18n="h_margin">常规 0.5m</span></div>
+          <div class="f"><label data-i18n="safe_d">跨越物要求安全距离 (m)</label><input id="safeDistance" type="number" step="0.5" value="8"><span class="hint" data-i18n="h_safe">500kV 一般 ≥ 8.5m</span></div>
+          <div class="f"><label data-i18n="calc_mode">张力确定方式</label>
+            <select id="calcMode" onchange="toggleCalcMode()"><option value="manual" selected data-i18n="m_manual">手动指定张力机出口整定张力（推荐）</option><option value="auto" data-i18n="m_auto">由控制档跨越物反算出口张力</option></select></div>
+          <div class="f" id="manualTensionBox"><label data-i18n="t0">张力机出口整定张力 T0 (N/子导线)</label><input id="manualTension" type="number" step="50" value="15000"></div>
         </div>
       </div>
-    </div>
 
-    <!-- Step 2: Tower Data -->
-    <div class="step-content" id="step-1">
       <div class="card">
-        <div class="card-title" data-i18n="tower_data">杆塔数据录入</div>
-        <div class="alert alert-info" data-i18n="alert_tower">
-          提示：从<strong>张力机</strong>到<strong>牵引机</strong>依次录入各杆塔。每行杆塔的"与右档距""与右高差""跨越物数据"均属于<strong>该杆到右侧下一杆</strong>的线档参数。
+        <div class="ct"><span data-i18n="s0_wire">布线（分盘）基础参数</span><span class="tag" data-i18n="s0_wire_tag">一个牵张段统一设置一次，布线页可微调</span></div>
+        <div class="fg">
+          <div class="f"><label data-i18n="reel_l">导线单盘长度 (m)</label><input id="reelLengthInput" type="number" step="10" value="2500" onchange="syncBundle()"></div>
+          <div class="f"><label data-i18n="clamp_d">悬垂/耐张线夹口禁区距离 d (m)</label>
+            <select id="clampClearance" onchange="if(window.calcResults)planWiring()"><option value="7.5" selected>7.5 m</option><option value="15">15 m</option><option value="0">不限制</option><option value="custom">自定义</option></select></div>
+          <div class="f" id="clampCustomBox" style="display:none"><label data-i18n="clamp_c">自定义禁区距离 (m)</label><input id="clampCustom" type="number" step="0.5" value="10" onchange="if(window.calcResults)planWiring()"></div>
+          <div class="f"><label data-i18n="snap_tol">耐张塔滑车口对齐容差 (m)</label><input id="snapTol" type="number" step="10" value="150"><span class="hint" data-i18n="h_snap">自然接头距耐张塔口在此范围内自动对齐到滑车口</span></div>
+          <div class="f"><label data-i18n="min_reuse">余线回架最小长度 (m)</label><input id="minReuse" type="number" step="10" value="100"><span class="hint" data-i18n="h_reuse">短于此值的余线不再上架，留作跳线/短头</span></div>
+          <div class="f"><label data-i18n="jumper_l">单根跳线长度 (m)</label><input id="jumperLen" type="number" step="0.5" value="12"></div>
+          <div class="f"><label data-i18n="next_min">可用于下一牵张段最小长度 (m)</label><input id="nextMin" type="number" step="10" value="300"></div>
         </div>
-        <div class="btn-group">
-          <button class="btn btn-success" onclick="addTower()" data-i18n="btn_addTower">添加杆塔</button>
-          <button class="btn btn-primary" onclick="loadDemoData(1)" data-i18n="btn_demo1">载入示例（老挝13档）</button>
-          <button class="btn btn-primary" onclick="loadDemoData(2)" data-i18n="btn_demo2">载入示例（尼泊尔16档）</button>
-          <button class="btn btn-danger" onclick="clearTowers()" data-i18n="btn_clear">清空</button>
+        <div style="margin-top:13px;display:flex;gap:14px;flex-wrap:wrap">
+          <label class="row-check"><input type="checkbox" id="autoForbid" checked onchange="if(window.calcResults){planWiring();renderLenTable()}"><span data-i18n="auto_fbid">有跨越数据的档自动判为禁接档</span></label>
+          <label class="row-check"><input type="checkbox" id="snapEnable" checked onchange="if(window.calcResults)planWiring()"><span data-i18n="snap_en">允许接头对齐耐张塔滑车口（紧线时剪除挂线）</span></label>
         </div>
-        <div class="table-wrap">
-          <table id="towerTable">
-            <thead>
-              <tr>
-                <th data-i18n="th_no">序号</th>
-                <th data-i18n="th_towerName">杆塔号</th>
-                <th data-i18n="th_span">与右档距(m)</th>
-                <th data-i18n="th_height">与右高差(m)</th>
-                <th data-i18n="th_angle">转角(度)</th>
-                <th data-i18n="th_crossDist">跨越物距右杆(m)</th>
-                <th data-i18n="th_crossHeight">跨越悬垂距(m)</th>
-                <th data-i18n="th_isTension">耐张塔</th>
-                <th data-i18n="th_op">操作</th>
-              </tr>
-            </thead>
+        <div class="fg" style="margin-top:13px">
+          <div class="f" style="grid-column:1/-1"><label data-i18n="carry_in">上一牵张段带入余线盘长度清单（m，用逗号/空格/换行分隔，可为空）</label>
+            <textarea class="ta" id="carryIn" placeholder="例如：1300, 1000, 760"></textarea></div>
+        </div>
+        <div class="btns"><button class="btn btn-p" onclick="goStep(1)" data-i18n="next_tower">下一步：杆塔数据</button></div>
+      </div>
+    </section>
+
+    <!-- ============ STEP 1 杆塔数据 ============ -->
+    <section class="step" id="step-1">
+      <div class="card">
+        <div class="ct" data-i18n="s1_t">杆塔与线档数据录入</div>
+        <div class="alert alert-i" data-i18n="s1_alert">
+          从<strong>张力场（张力机侧，T0 作用于首档）</strong>向<strong>牵引场</strong>依次录入。每行的档距/高差/跨越/禁接类型均属于<strong>本杆到右侧下一杆</strong>的线档；末基杆（牵引场）档距填 0。
+          「本档禁接」用于标记铁路、高速公路、重要河流、35kV 及以上电力线、孤立档等<strong>整档不允许出现压接管</strong>的线档。
+        </div>
+        <div class="btns" style="margin-top:0">
+          <button class="btn btn-s" onclick="addTower()" data-i18n="b_add">添加杆塔</button>
+          <button class="btn btn-o" onclick="loadDemo(1)" data-i18n="b_demo1">示例：老挝 N1~N14（13档）</button>
+          <button class="btn btn-o" onclick="loadDemo(2)" data-i18n="b_demo2">示例：尼泊尔16档</button>
+          <button class="btn btn-o" onclick="togglePaste()" data-i18n="b_paste">批量粘贴</button>
+          <button class="btn btn-d" onclick="clearTowers()" data-i18n="b_clear">清空</button>
+        </div>
+        <div class="card" id="pasteBox" style="display:none;box-shadow:none;background:#f7fafb;margin-top:12px">
+          <div class="f" style="margin-bottom:8px"><label data-i18n="paste_h">每行：杆塔号, 档距m, 高差m, 转角°, 跨越点距右杆m, 跨越悬垂距m, 塔型(直线/耐张), 禁接类型(允许/铁路/高速/河流/电力线/孤立档)；逗号/Tab/空格分隔</label></div>
+          <textarea class="ta" id="pasteText" placeholder="N1, 569, 17, 66.57, 215, 45, 直线, 电力线"></textarea>
+          <div class="btns" style="margin-top:8px"><button class="btn btn-p" onclick="doPaste()" data-i18n="paste_do">解析并填入</button></div>
+        </div>
+        <div class="tw">
+          <table>
+            <thead><tr>
+              <th>#</th><th data-i18n="t_name">杆塔号</th><th data-i18n="t_span">与右档距(m)</th><th data-i18n="t_h">与右高差(m)</th>
+              <th data-i18n="t_ang">本杆转角(°)</th><th data-i18n="t_cd">跨越点距右杆(m)</th><th data-i18n="t_ch">跨越悬垂距(m)</th>
+              <th data-i18n="t_type">塔型</th><th data-i18n="t_fbid">本档禁接类型</th><th data-i18n="t_op">操作</th>
+            </tr></thead>
             <tbody id="towerBody"></tbody>
           </table>
         </div>
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(0)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(2)" data-i18n="btn_next_params">下一步 - 导线参数</button>
+        <div class="btns">
+          <button class="btn btn-o" onclick="goStep(0)" data-i18n="b_prev">上一步</button>
+          <button class="btn btn-p" onclick="goStep(2)" data-i18n="next_param">下一步：导线/绳参数</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Step 3: Conductor & Rope Params -->
-    <div class="step-content" id="step-2">
+    <!-- ============ STEP 2 导线/绳参数 ============ -->
+    <section class="step" id="step-2">
       <div class="card">
-        <div class="card-title" data-i18n="cond_rope_params">导线与牵引绳参数</div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label data-i18n="label_condModel">导线型号（选择后自动填充参数）</label>
-            <select id="conductorModel" onchange="fillConductorParams()">
-              <option value="custom">-- </option>
-              <option value="LGJ-400/50" selected>LGJ-400/50 (14.81 N/m, 123400N)</option>
-              <option value="JL/G1A-400/35">JL/G1A-400/35 (13.21 N/m, 100440N)</option>
-              <option value="LGJ-500/45">LGJ-500/45 (16.80 N/m, 155000N)</option>
-              <option value="LGJ-300/40">LGJ-300/40 (11.30 N/m, 90000N)</option>
-            </select>
-          </div>
-          <div class="form-group"><label data-i18n="label_wCond">导线单位重量 w (N/m)</label><input type="number" id="wCond" value="14.8078" step="0.0001"></div>
-          <div class="form-group"><label data-i18n="label_TpCond">导线保证计算拉断力 Tp (N)</label><input type="number" id="TpCond" value="123400" step="100"></div>
-          <div class="form-group">
-            <label data-i18n="label_ropeModel">牵引绳型号（选择后自动填充参数）</label>
-            <select id="ropeModel" onchange="fillRopeParams()">
-              <option value="custom">-- </option>
-              <option value="phi24">phi24  (22.5 N/m, 350kN)</option>
-              <option value="phi18">phi18  (11.8 N/m, 190kN)</option>
-              <option value="phi15">phi15  (8.2 N/m, 140kN)</option>
-              <option value="phi13">phi13  (6.5 N/m, 100kN)</option>
-            </select>
-          </div>
-          <div class="form-group"><label data-i18n="label_wRope">牵引绳单位重量 (N/m)</label><input type="number" id="wRope" value="22.5" step="0.1"></div>
-          <div class="form-group"><label data-i18n="label_breakRope">牵引绳综合破断力 (N)</label><input type="number" id="breakRope" value="148080" step="100"></div>
-          <div class="form-group">
-            <label data-i18n="label_kpPull">主牵引机额定牵引力系数 Kp</label>
-            <input type="number" id="kpPull" value="0.33" step="0.01">
-            <div class="input-hint" data-i18n="hint_kpPull">推荐 0.25~0.33</div>
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_kpTension">主张力机额定制动张力系数 Kp</label>
-            <input type="number" id="kpTension" value="0.2" step="0.01">
-            <div class="input-hint" data-i18n="hint_kpTension">推荐 0.17~0.20</div>
-          </div>
-          <div class="form-group"><label data-i18n="label_subSpacing">子导线间距 (mm)</label><input type="number" id="subSpacing" value="450" step="10"></div>
+        <div class="ct" data-i18n="s2_t">导线与牵引绳参数</div>
+        <div class="fg">
+          <div class="f"><label data-i18n="cond_sel">导线型号（自动填充 w / Tp）</label>
+            <select id="conductorModel" onchange="fillCond()"><option value="custom">手动输入</option>
+              <option value="JL/G1A-400/35" selected>JL/G1A-400/35（13.2126 N/m，100440 N）</option>
+              <option value="LGJ-400/50">LGJ-400/50（14.8078 N/m，123400 N）</option>
+              <option value="LGJ-500/45">LGJ-500/45（16.80 N/m，155000 N）</option>
+              <option value="LGJ-300/40">LGJ-300/40（11.30 N/m，90000 N）</option>
+            </select></div>
+          <div class="f"><label data-i18n="w_cond">导线单位重量 w (N/m·根)</label><input id="wCond" type="number" step="0.0001" value="13.2126"></div>
+          <div class="f"><label data-i18n="tp">导线计算拉断力 Tp (N/根)</label><input id="TpCond" type="number" step="100" value="100440"></div>
+          <div class="f"><label data-i18n="rope_sel">牵引绳型号（自动填充）</label>
+            <select id="ropeModel" onchange="fillRope()"><option value="custom">手动输入</option>
+              <option value="phi24" selected>φ24（22.5 N/m，350 kN）</option>
+              <option value="phi18">φ18（11.8 N/m，190 kN）</option>
+              <option value="phi15">φ15（8.2 N/m，140 kN）</option>
+              <option value="phi13">φ13（6.5 N/m，100 kN）</option></select></div>
+          <div class="f"><label data-i18n="w_rope">牵引绳单位重量 (N/m)</label><input id="wRope" type="number" step="0.1" value="22.5"></div>
+          <div class="f"><label data-i18n="q_rope">牵引绳综合破断力 (N)</label><input id="breakRope" type="number" step="1000" value="350000"></div>
+          <div class="f"><label data-i18n="kp_p">主牵引机系数 Kp1</label><input id="kpPull" type="number" step="0.01" value="0.33"><span class="hint" data-i18n="h_kp1">推荐 0.25 ~ 0.33</span></div>
+          <div class="f"><label data-i18n="kp_t">主张力机制动系数 Kp2</label><input id="kpTension" type="number" step="0.01" value="0.20"><span class="hint" data-i18n="h_kp2">推荐 0.17 ~ 0.20</span></div>
+          <div class="f"><label data-i18n="sub_sp">子导线间距 (mm)</label><input id="subSpacing" type="number" step="10" value="450"></div>
         </div>
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(1)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(3)" data-i18n="btn_next_control">下一步 - 控制档</button>
+        <div class="btns">
+          <button class="btn btn-o" onclick="goStep(1)" data-i18n="b_prev">上一步</button>
+          <button class="btn btn-p" onclick="goStep(3)" data-i18n="next_ctrl">下一步：控制档与跨越</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Step 4: Control Span -->
-    <div class="step-content" id="step-3">
+    <!-- ============ STEP 3 控制档 ============ -->
+    <section class="step" id="step-3">
       <div class="card">
-        <div class="card-title" data-i18n="control_span">控制档与跨越物</div>
-        <div class="alert alert-info" data-i18n="alert_control">
-          控制档是张力放线过程中弧垂最大的线档（通常是最大档距或跨越重要设施的档）。系统根据跨越物要求和档距自动推荐控制档，并<strong>由控制档安全距离反算出张力机出口张力</strong>。
+        <div class="ct" data-i18n="s3_t">控制档选择与跨越物</div>
+        <div class="alert alert-i" data-i18n="s3_alert">控制档为放线中弧垂控制最严的档（有重要跨越优先，否则取最大档距）。手动给定时按整定 T0 计算；自动模式由跨越物安全距离反算 T0。</div>
+        <div class="fg">
+          <div class="f"><label data-i18n="ctrl_mode">控制档选择方式</label>
+            <select id="controlMode" onchange="updateCtrlUI()"><option value="auto" selected data-i18n="ctrl_auto">自动推荐（有跨越优先，否则最大档）</option><option value="manual" data-i18n="ctrl_man">手动指定</option></select></div>
+          <div class="f" id="controlTowerBox" style="display:none"><label data-i18n="ctrl_sel">指定控制档</label><select id="controlTowerSelect"></select></div>
         </div>
-        <div class="form-grid">
-          <div class="form-group">
-            <label data-i18n="label_controlMode">控制档选择方式</label>
-            <select id="controlMode" onchange="updateControlUI()">
-              <option value="auto" data-i18n="opt_autoControl">自动推荐（有跨越优先）</option>
-              <option value="manual" data-i18n="opt_manualControl">手动指定</option>
-            </select>
-          </div>
-          <div class="form-group" id="controlTowerBox">
-            <label data-i18n="label_controlPos">控制档位置</label>
-            <select id="controlTowerSelect"></select>
-          </div>
-        </div>
-        <div class="section-divider"></div>
-        <div class="card-title" data-i18n="cross_list">跨越物清单</div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr>
-              <th data-i18n="th_crossSpan">跨越档</th>
-              <th data-i18n="th_crossObj">被跨越物</th>
-              <th data-i18n="th_crossDist">跨越点距右杆(m)</th>
-              <th data-i18n="th_crossHeight">跨越点高差(m)</th>
-              <th data-i18n="th_reqSafe">要求安全距(m)</th>
-            </tr></thead>
-            <tbody id="crossBody"></tbody>
-          </table>
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(2)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-success" onclick="calculateAll()" data-i18n="btn_calc">开始计算</button>
+        <div class="sec-t" data-i18n="cross_list">跨越物清单（取自杆塔表，悬垂距可在此修正）</div>
+        <div class="tw"><table><thead><tr>
+          <th data-i18n="cross_span">跨越档</th><th data-i18n="cross_obj">被跨越物</th><th data-i18n="t_cd">跨越点距右杆(m)</th><th data-i18n="cross_h">悬垂距（已含裕度,m）</th><th data-i18n="safe_req">要求安全距(m)</th>
+        </tr></thead><tbody id="crossBody"></tbody></table></div>
+        <div class="btns">
+          <button class="btn btn-o" onclick="goStep(2)" data-i18n="b_prev">上一步</button>
+          <button class="btn btn-s" onclick="calculateAll()" data-i18n="b_calc">开始计算</button>
         </div>
       </div>
-    </div>
-
-    <!-- Step 5: Results -->
-    <div class="step-content" id="step-4">
-      <div class="card" id="resultsCard">
-        <div class="card-title" data-i18n="result_overview">计算结果总览</div>
-        <div class="result-summary" id="resultSummary"></div>
-        <div class="tab-bar">
-          <button class="tab-btn active" onclick="showTab('tab-cond')" data-i18n="tab_cond">导线张力递推</button>
-          <button class="tab-btn" onclick="showTab('tab-rope')" data-i18n="tab_rope">牵引绳张力递推</button>
-          <button class="tab-btn" onclick="showTab('tab-sag')" data-i18n="tab_sag">弧垂与安全距</button>
-          <button class="tab-btn" onclick="showTab('tab-angle')" data-i18n="tab_angle">角度与包络角</button>
-          <button class="tab-btn" onclick="showTab('tab-chart')" data-i18n="tab_chart">曲线图</button>
-        </div>
-
-        <div class="tab-panel active" id="tab-cond">
-          <div class="table-wrap">
-            <table id="condTable">
-              <thead><tr>
-                <th data-i18n="th_no">序号</th>
-                <th data-i18n="th_spanName">档</th>
-                <th data-i18n="th_spanL">档距(m)</th>
-                <th data-i18n="th_diffH">高差(m)</th>
-                <th>cosPhi</th>
-                <th>epsilon</th>
-                <th data-i18n="th_Tin">张力机侧张力(N)</th>
-                <th data-i18n="th_Tout">牵引机侧张力(N)</th>
-                <th data-i18n="th_Taxial">轴向张力(N)</th>
-              </tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="tab-rope">
-          <div class="table-wrap">
-            <table id="ropeTable">
-              <thead><tr>
-                <th data-i18n="th_no">序号</th>
-                <th data-i18n="th_towerName">杆塔</th>
-                <th data-i18n="th_spanCount">距牵引机档数</th>
-                <th>epsilon</th>
-                <th data-i18n="th_ropeT">牵引绳张力(N)</th>
-                <th data-i18n="th_vertSpan">垂直档距(m)</th>
-                <th data-i18n="th_ropeUp">牵引绳上扬</th>
-              </tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="tab-sag">
-          <div class="table-wrap">
-            <table id="sagTable">
-              <thead><tr>
-                <th data-i18n="th_no">序号</th>
-                <th data-i18n="th_spanName">档</th>
-                <th data-i18n="th_horizT">水平张力(N)</th>
-                <th data-i18n="th_sag">平视弧垂(m)</th>
-                <th data-i18n="th_lineLen">线长(m)</th>
-                <th data-i18n="th_actualSafe">实际安全距(m)</th>
-                <th data-i18n="th_reqSafe2">要求安全距(m)</th>
-              </tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="tab-angle">
-          <div class="table-wrap">
-            <table id="angleTable">
-              <thead><tr>
-                <th data-i18n="th_no">序号</th>
-                <th data-i18n="th_towerName">杆塔</th>
-                <th data-i18n="th_thetaA">悬垂角A(度)</th>
-                <th data-i18n="th_thetaB">悬垂角B(度)</th>
-                <th data-i18n="th_turnAngle">转角(度)</th>
-                <th data-i18n="th_wrapAngle">包络角(度)</th>
-                <th data-i18n="th_doubleSheave">双滑车</th>
-              </tr></thead>
-              <tbody></tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="tab-panel" id="tab-chart">
-          <div class="chart-container"><canvas id="condChart"></canvas></div>
-          <div class="chart-container"><canvas id="ropeChart"></canvas></div>
-          <div class="chart-container"><canvas id="sagChart"></canvas></div>
-        </div>
-
-                </div>
-
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(3)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(5)" data-i18n="btn_next_wiring">下一步 - 布线分析</button>
-        </div>
-      </div>
-
-    </div>
-
-        <!-- Step 5: Wiring Analysis -->
-    <div class="step-content" id="step-5">
+    </section>
+    <!-- ============ STEP 4 张力计算结果 ============ -->
+    <section class="step" id="step-4">
       <div class="card">
-        <div class="card-title" data-i18n="nav_wiring">布线分析</div>
-        <div class="alert alert-info" data-i18n="alert_wiring">
-          输入布线参数后系统自动分配导线盘、计算接头位置，并避开跨越档和线夹禁区。耐张塔滑车口处可直接布置接头（紧线时剪断挂线）。
+        <div class="ct" data-i18n="s4_t">张力放线计算结果</div>
+        <div class="kpis" id="kpiBox"></div>
+        <div class="tabs">
+          <button class="tab active" onclick="showTab(event,'t4-cond')" data-i18n="tb_cond">导线张力递推</button>
+          <button class="tab" onclick="showTab(event,'t4-rope')" data-i18n="tb_rope">牵引绳递推/上扬</button>
+          <button class="tab" onclick="showTab(event,'t4-sag')" data-i18n="tb_sag">弧垂与安全距离</button>
+          <button class="tab" onclick="showTab(event,'t4-ang')" data-i18n="tb_ang">悬垂角/包络角/滑车受力</button>
+          <button class="tab" onclick="showTab(event,'t4-chart')" data-i18n="tb_chart">张力/弧垂曲线</button>
         </div>
-
-        <div class="form-grid" style="margin-bottom:16px;">
-          <div class="form-group">
-            <label data-i18n="label_reelLen">导线单盘长度 (m)</label>
-            <input type="number" id="reelLengthInput" value="2500" min="100" step="10" onchange="renderWiringAnalysis()">
-          </div>
-          <div class="form-group">
-            <label>${currentLang==='en'?'Carry-in reel lengths (m, comma sep.)':'带入余线长度 (m，逗号分隔)'}</label>
-            <input type="text" id="carryInInput" placeholder="2500, 1800, 1200" onchange="renderWiringAnalysis()">
-          </div>
-          <div class="form-group">
-            <label data-i18n="label_clampClearance">线夹禁区距离 (m)</label>
-            <input type="number" id="clampClearance" value="7.5" min="0" step="0.5" onchange="renderWiringAnalysis()">
-          </div>
-          <div class="form-group">
-            <label>${currentLang==='en'?'Min jumper length (m)':'跳线最小长度 (m)'}</label>
-            <input type="number" id="jumperLen" value="12" min="0" step="1" onchange="renderWiringAnalysis()">
-          </div>
-          <div class="form-group">
-            <label>${currentLang==='en'?'Min reuse length (m)':'可复用最小长度 (m)'}</label>
-            <input type="number" id="minReuse" value="100" min="0" step="10" onchange="renderWiringAnalysis()">
-          </div>
-          <div class="form-group">
-            <label>${currentLang==='en'?'Next section min (m)':'可下档利用最小长度 (m)'}</label>
-            <input type="number" id="nextMin" value="300" min="0" step="10" onchange="renderWiringAnalysis()">
-          </div>
-          <div class="form-group">
-            <label>${currentLang==='en'?'Total line length':'单相线长'}</label>
-            <div id="wiringTotalLen" style="font-size:1.2rem; font-weight:700; color:var(--primary);">0</div>
-          </div>
-        </div>
-
-        <div id="wiringAlerts"></div>
-
-        <div class="card-title" style="font-size:1rem; margin-bottom:8px; margin-top:20px;" data-i18n="wiring_title1">线长计算表</div>
-        <div class="table-wrap">
-          <table id="wiringLenTable">
-            <thead><tr>
-              <th data-i18n="th_no">序号</th>
-              <th data-i18n="th_spanName">档</th>
-              <th data-i18n="th_spanL">档距(m)</th>
-              <th data-i18n="th_diffH">高差(m)</th>
-              <th data-i18n="th_slantLen">斜距(m)</th>
-              <th data-i18n="th_lineLength">线长(m)</th>
-              <th data-i18n="th_accumDist">累加距离(m)</th>
-              <th data-i18n="th_isForbidden">禁接</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-        <div class="section-divider"></div>
-        <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title2">导线盘分配与接头位置</div>
-        <div class="table-wrap">
-          <table id="wiringReelTable">
-            <thead><tr>
-              <th data-i18n="th_reelNo">盘号</th>
-              <th data-i18n="th_reelLen">盘来源</th>
-              <th data-i18n="th_reelLen">本盘长度(m)</th>
-              <th data-i18n="th_reelCover">实放(m)</th>
-              <th data-i18n="th_reelLeft">剩余(m)</th>
-              <th data-i18n="th_jointPos">接头所在档</th>
-              <th data-i18n="th_jointToLeft">距左塔(m)</th>
-              <th data-i18n="th_jointToRight">距右塔(m)</th>
-              <th>合规</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-
-        <div class="section-divider"></div>
-        <div class="card-title" style="font-size:1rem; margin-bottom:8px;">布线条带图</div>
-        <div id="wiringDiag" style="overflow-x:auto; margin-bottom:16px; padding:8px 0;"></div>
-
-        <div class="section-divider"></div>
-        <div class="card-title" style="font-size:1rem; margin-bottom:8px;" data-i18n="wiring_title3">用量统计（一相）</div>
-        <div class="result-summary" id="wiringSummary"></div>
-
-        <div class="btn-group" style="margin-top:16px;">
-          <button class="btn btn-primary" onclick="exportWiringCSV()">${currentLang==='en'?'Export Wiring CSV':'导出布线CSV'}</button>
-        </div>
-
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(4)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(6)" data-i18n="btn_next_check">下一步 - 校验</button>
+        <div class="tpane active" id="t4-cond"><div class="tw"><table>
+          <thead><tr><th>#</th><th data-i18n="span">线档</th><th data-i18n="span_l">档距(m)</th><th data-i18n="dh">高差(m)</th><th>cosφ</th><th>ε累</th>
+          <th data-i18n="h_t">水平张力H(N)</th><th data-i18n="tax">档内轴向张力(N)</th><th data-i18n="sag">平视弧垂(m)</th><th data-i18n="ll">放线线长(m)</th></tr></thead>
+          <tbody id="condBody"></tbody></table></div></div>
+        <div class="tpane" id="t4-rope"><div class="tw"><table>
+          <thead><tr><th>#</th><th data-i18n="tower">杆塔</th><th>牵引绳轴向张力(N)</th><th>牵引绳水平张力(N)</th><th data-i18n="vspan">垂直档距(m)</th><th data-i18n="uplift">上扬判定</th></tr></thead>
+          <tbody id="ropeBody"></tbody></table></div></div>
+        <div class="tpane" id="t4-sag"><div class="tw"><table>
+          <thead><tr><th>#</th><th data-i18n="span">线档</th><th data-i18n="h_t">水平张力(N)</th><th data-i18n="sag">平视弧垂(m)</th><th data-i18n="ll">放线线长(m)</th><th data-i18n="asafe">实际安全距(m)</th><th data-i18n="rsafe">要求(m)</th></tr></thead>
+          <tbody id="sagBody"></tbody></table></div></div>
+        <div class="tpane" id="t4-ang"><div class="alert alert-i" style="margin-top:10px" data-i18n="ang_note">包络角按三维合成公式计算：ω=2arcsin√[sin²((β1+β2)/2)+cosβ1cosβ2sin²(α/2)]，含线路转角；超过阈值提示双滑车（阈值可在下方修改）。</div>
+        <div class="fg" style="max-width:520px"><div class="f"><label data-i18n="wrap_th">双滑车包络角阈值 (°)</label><input id="wrapThresh" type="number" step="1" value="60" onchange="renderResults()"></div></div>
+        <div class="tw"><table>
+          <thead><tr><th data-i18n="tower">杆塔</th><th data-i18n="b1">来线侧悬垂角β1(°)</th><th data-i18n="b2">去线侧悬垂角β2(°)</th><th data-i18n="turn">水平转角(°)</th><th>来线轴向(N)</th><th>去线轴向(N)</th><th data-i18n="wrap">包络角(°)</th><th data-i18n="pload">单根子导线滑车受力估算(N)</th><th data-i18n="double">滑车配置</th></tr></thead>
+          <tbody id="angBody"></tbody></table></div></div>
+        <div class="tpane" id="t4-chart"><div id="chartBox"></div></div>
+        <div class="btns">
+          <button class="btn btn-o" onclick="goStep(3)" data-i18n="b_prev">上一步</button>
+          <button class="btn btn-p" onclick="goStep(5)" data-i18n="next_wire">下一步：布线设计</button>
         </div>
       </div>
-    </div>
+    </section>
 
-<!-- Step 6: Check Report -->
-    <div class="step-content" id="step-6">
-      <div class="card" id="checkCard">
-        <div class="card-title" data-i18n="check_report">施工校验报告</div>
-        <div id="checkReport"></div>
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(5)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(7)" data-i18n="btn_next_equip">下一步 - 工器具</button>
+    <!-- ============ STEP 5 布线设计 ============ -->
+    <section class="step" id="step-5">
+      <div class="card">
+        <div class="ct"><span data-i18n="s5_t">布线设计：分盘 · 压接管定位 · 余线调度</span><span class="tag" id="wireTag"></span></div>
+        <div class="fg" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">
+          <div class="f"><label data-i18n="reel_l">导线单盘长度 (m)</label><input id="reelLength" type="number" step="10" value="2500" oninput="syncFromWire()"></div>
+          <div class="f"><label data-i18n="bundle_n">分裂数</label><input id="wBundle" type="number" min="1" step="1" value="4" oninput="syncFromWire()"></div>
+          <div class="f"><label data-i18n="phase_n">相线数</label><input id="wPhase" type="number" min="1" max="12" step="1" value="3" oninput="syncFromWire()"></div>
+          <div class="f"><label data-i18n="clamp_d">线夹禁区 d (m)</label><input id="wClamp" type="number" step="0.5" value="7.5" oninput="planWiring()"></div>
+          <div class="f"><label data-i18n="min_reuse">余线回架最小(m)</label><input id="wMinReuse" type="number" step="10" value="100" oninput="planWiring()"></div>
+          <div class="f"><label data-i18n="jumper_l">单根跳线长(m)</label><input id="wJumper" type="number" step="0.5" value="12" oninput="planWiring()"></div>
+          <div class="f"><label data-i18n="next_min">下档可用最小(m)</label><input id="wNextMin" type="number" step="10" value="300" oninput="planWiring()"></div>
+          <div class="f" style="justify-content:flex-end"><button class="btn btn-p" onclick="planWiring();renderWiring()" data-i18n="b_replan">重新布线</button></div>
+        </div>
+        <div id="wireAlerts"></div>
+      </div>
+
+      <div class="card">
+        <div class="sec-t" data-i18n="wire_kpi">用量与物料平衡（按整个牵张段）</div>
+        <div class="kpis" id="wireKpis"></div>
+        <div class="alert alert-i" id="balanceBox" style="margin-bottom:0"></div>
+      </div>
+
+      <div class="card">
+        <div class="sec-t" data-i18n="wire_diag">布线纵剖表（按档距分格、各相同档上下对齐；红斜纹=整档禁接，橙线/菱形=压接管，数字=距左塔/距右塔m，深蓝粗线=耐张塔分界）</div>
+        <div class="diag-scroll" id="diagBox"></div>
+      </div>
+
+      <div class="card">
+        <div class="sec-t" data-i18n="wire_len">线长计算表（含斜距、弧垂增量、累加距离、禁接标记）</div>
+        <div class="tw"><table>
+          <thead><tr><th>#</th><th data-i18n="span">线档</th><th data-i18n="span_l">档距(m)</th><th data-i18n="dh">高差(m)</th><th data-i18n="slant">斜距(m)</th><th data-i18n="sag_inc">弧垂增量(m)</th><th data-i18n="ll">放线线长(m)</th><th data-i18n="acc">累加距离(m)</th><th data-i18n="t_fbid">禁接类型</th></tr></thead>
+          <tbody id="lenBody"></tbody></table></div>
+      </div>
+
+      <div class="card">
+        <div class="sec-t" data-i18n="wire_reel">分盘与压接管位置表（接头=架线完成后压接管实际位置；距两基塔距离用于合规判定）</div>
+        <div class="tw"><table>
+          <thead><tr><th data-i18n="ph">相别</th><th data-i18n="seq">盘序</th><th data-i18n="src">盘来源</th><th data-i18n="reel_l">单盘长度(m)</th><th data-i18n="used">每根实放(m)</th><th data-i18n="left">每根剩余(m)</th><th>投入盘数</th>
+          <th data-i18n="j_span">压接管所在档</th><th data-i18n="j_l">距左塔(m)</th><th data-i18n="j_r">距右塔(m)</th><th data-i18n="j_state">状态/合规</th></tr></thead>
+          <tbody id="reelBody"></tbody></table></div>
+        <div class="btns">
+          <button class="btn btn-o" onclick="exportCSV('reel')" data-i18n="b_csv_reel">导出分盘接头表 CSV</button>
+          <button class="btn btn-o" onclick="exportCSV('len')" data-i18n="b_csv_len">导出线长表 CSV</button>
         </div>
       </div>
-    </div>
 
-    <!-- Step 7: Equipment -->
-    <div class="step-content" id="step-7">
-      <div class="card" id="equipCard">
-        <div class="card-title" data-i18n="equip_sel">工器具选型</div>
-        <div class="alert alert-info" data-i18n="alert_equip">
-          根据《架空输电线路张力架线施工工艺导则》及相关规范，按导线拉断力计算各主要工器具的选型参数。
-        </div>
-        <div class="table-wrap">
-          <table id="equipTable">
-            <thead><tr>
-              <th data-i18n="th_no">序号</th>
-              <th data-i18n="th_calcItem">计算项目</th>
-              <th data-i18n="th_formula">公式</th>
-              <th data-i18n="th_reqVal">要求值</th>
-              <th data-i18n="th_recommend">推荐规格</th>
-            </tr></thead>
-            <tbody></tbody>
-          </table>
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(6)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(9)" data-i18n="btn_next_export">下一步 - 导出</button>
+      <div class="card">
+        <div class="sec-t" data-i18n="wire_stock">余线盘台账（产生 → 去向：跨相复用 / 期末结存分类）</div>
+        <div class="tw"><table>
+          <thead><tr><th>#</th><th data-i18n="st_from">来源</th><th data-i18n="st_len">单盘长度(m)</th><th>盘数</th><th data-i18n="st_to">去向</th><th data-i18n="st_class">期末分类</th></tr></thead>
+          <tbody id="stockBody"></tbody></table></div>
+      </div>
+
+      <div class="btns">
+        <button class="btn btn-o" onclick="goStep(4)" data-i18n="b_prev">上一步</button>
+        <button class="btn btn-p" onclick="goStep(6)" data-i18n="next_check">下一步：校验报告</button>
+      </div>
+    </section>
+
+    <!-- ============ STEP 6 校验报告 ============ -->
+    <section class="step" id="step-6">
+      <div class="card">
+        <div class="ct" data-i18n="s6_t">施工校验报告</div>
+        <div id="checkBox"></div>
+        <div class="btns">
+          <button class="btn btn-o" onclick="goStep(5)" data-i18n="b_prev">上一步</button>
+          <button class="btn btn-p" onclick="goStep(7)" data-i18n="next_equip">下一步：工器具选型</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <!-- Step 8: Export -->
-    <div class="step-content" id="step-8">
-      <div class="card" id="exportCard">
-        <div class="card-title" data-i18n="export_report">导出计算书</div>
-        <div class="alert alert-info" data-i18n="alert_export">
-          生成计算书。推荐：使用"浏览器打印"（Ctrl+P）直接打印或保存为PDF，中文显示100%正常。
-        </div>
-        <div class="form-grid">
-          <div class="form-group"><label data-i18n="label_reportNo">计算书编号</label><input type="text" id="reportNo" value="JL-2024-001"></div>
-          <div class="form-group"><label data-i18n="label_author">编写人</label><input type="text" id="author" placeholder="姓名" data-placeholder-en="Name"></div>
-          <div class="form-group"><label data-i18n="label_checker">校核人</label><input type="text" id="checker" placeholder="姓名" data-placeholder-en="Name"></div>
-          <div class="form-group"><label data-i18n="label_approver">批准人</label><input type="text" id="approver" placeholder="姓名" data-placeholder-en="Name"></div>
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-success" onclick="window.print()" data-i18n="btn_print">浏览器打印 / 保存PDF</button>
-          <button class="btn btn-primary" onclick="exportPNG()" data-i18n="btn_png">导出PNG截图</button>
-          <button class="btn btn-primary" onclick="exportJSON()" data-i18n="btn_json">保存工程数据(JSON)</button>
-          <button class="btn btn-warning" onclick="importJSON()" data-i18n="btn_import">导入工程数据</button>
-          <input type="file" id="importFile" style="display:none" accept=".json" onchange="handleImport(this)">
-        </div>
-        <div class="btn-group">
-          <button class="btn btn-primary" onclick="showStep(6)" data-i18n="btn_prev">上一步</button>
-          <button class="btn btn-primary" onclick="showStep(0)" data-i18n="btn_backHome">返回首页</button>
+    <!-- ============ STEP 7 工器具 ============ -->
+    <section class="step" id="step-7">
+      <div class="card">
+        <div class="ct" data-i18n="s7_t">工器具选型计算</div>
+        <div class="alert alert-i" data-i18n="s7_alert">依据《架空输电线路张力架线施工工艺导则》，按导线计算拉断力 Tp、分裂数与系数 Kp 估算主要牵张设备与绳的破断力要求，仅作选型参考。</div>
+        <div class="tw"><table>
+          <thead><tr><th>#</th><th data-i18n="eq_item">计算项目</th><th data-i18n="eq_formula">计算式</th><th data-i18n="eq_req">要求值</th><th data-i18n="eq_rec">选型建议</th></tr></thead>
+          <tbody id="equipBody"></tbody></table></div>
+        <div class="btns">
+          <button class="btn btn-o" onclick="goStep(6)" data-i18n="b_prev">上一步</button>
+          <button class="btn btn-p" onclick="goStep(8)" data-i18n="next_export">下一步：导出存档</button>
         </div>
       </div>
-    </div>
+    </section>
 
-    <div class="page-footer">
-      <p id="footerText">Transmission Line Tension Stringing Calculator &copy; 2024 | 本地计算，数据不上传</p>
-    </div>
+    <!-- ============ STEP 8 导出 ============ -->
+    <section class="step" id="step-8">
+      <div class="card">
+        <div class="ct" data-i18n="s8_t">计算书与工程存档</div>
+        <div class="fg">
+          <div class="f"><label data-i18n="r_no">计算书编号</label><input id="reportNo" value="JL-001"></div>
+          <div class="f"><label data-i18n="r_by">编写</label><input id="author"></div>
+          <div class="f"><label data-i18n="r_chk">校核</label><input id="checker"></div>
+          <div class="f"><label data-i18n="r_app">批准</label><input id="approver"></div>
+        </div>
+        <div class="btns">
+          <button class="btn btn-s" onclick="window.print()" data-i18n="b_print">浏览器打印 / 另存 PDF</button>
+          <button class="btn btn-p" onclick="exportJSON()" data-i18n="b_save">保存工程数据 (JSON)</button>
+          <button class="btn btn-w" onclick="document.getElementById('importFile').click()" data-i18n="b_load">导入工程数据</button>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(this)">
+        </div>
+        <div class="alert alert-i" style="margin-top:14px" data-i18n="s8_note">所有计算均在本机浏览器完成，不上传任何数据；JSON 文件可完整恢复输入参数、杆塔表与计算结果，便于现场换设备继续工作。</div>
+        <div class="btns"><button class="btn btn-o" onclick="goStep(0)" data-i18n="b_home">返回第一步</button></div>
+      </div>
+    </section>
+
+    <div class="foot" data-i18n="foot">张力放线与布线一体化计算工具 · 本地计算，数据不上传</div>
   </main>
 </div>
 
 <script>
+"use strict";
+/* =================== i18n =================== */
+const I18N={zh:{
+ s0_info:"工程基本信息",proj_name:"项目名称",sec_name:"牵张段（施工区段）",voltage:"电压等级 (kV)",cond_type:"导线型号（文本）",bundle_n:"分裂数（每相几根）",circuit_n:"回路数（同段同时展放）",phase_n:"相线数（相/极总数）",phase_hint:"交流一回=3相，双回=6相；直流双极=2。子导线总数=分裂数×相线数",sub_total:"子导线总数",gw_type:"地线/光缆型号（文本）",
+ s0_ctrl:"张力计算控制参数",eps_c:"滑车对导线磨阻系数 ε",eps_r:"滑车对牵引绳磨阻系数 ε",margin:"放线裕度 (m)",safe_d:"跨越物要求安全距离 (m)",calc_mode:"张力确定方式",
+ m_manual:"手动指定张力机出口整定张力（推荐）",m_auto:"由控制档跨越物反算出口张力",t0:"张力机出口整定张力 T0 (N/子导线)",h_eps:"常规 1.015~1.020",h_margin:"常规 0.5m",h_safe:"500kV 一般 ≥ 8.5m",
+ s0_wire:"布线（分盘）基础参数",s0_wire_tag:"一个牵张段统一设置一次，布线页可微调",reel_l:"导线单盘长度 (m)",clamp_d:"悬垂/耐张线夹口禁区距离 d (m)",clamp_c:"自定义禁区距离 (m)",
+ snap_tol:"耐张塔滑车口对齐容差 (m)",h_snap:"自然接头距耐张塔口在此范围内自动对齐到滑车口",min_reuse:"余线回架最小长度 (m)",h_reuse:"短于此值的余线不再上架，留作跳线/短头",
+ jumper_l:"单根跳线长度 (m)",next_min:"可用于下一牵张段最小长度 (m)",auto_fbid:"有跨越数据的档自动判为禁接档",snap_en:"允许接头对齐耐张塔滑车口（紧线时剪除挂线）",carry_in:"上一牵张段带入余线盘长度清单（m，用逗号/空格/换行分隔，可为空）",
+ next_tower:"下一步：杆塔数据",
+ s1_t:"杆塔与线档数据录入",s1_alert:"从张力场（张力机侧，T0 作用于首档）向牵引场依次录入。每行的档距/高差/跨越/禁接类型均属于本杆到右侧下一杆的线档；末基杆（牵引场）档距填 0。「本档禁接」用于标记铁路、高速公路、重要河流、35kV 及以上电力线、孤立档等整档不允许出现压接管的线档。",
+ b_add:"添加杆塔",b_demo1:"示例：老挝 N1~N14（13档）",b_demo2:"示例：尼泊尔16档",b_paste:"批量粘贴",b_clear:"清空",
+ paste_h:"每行：杆塔号, 档距m, 高差m, 转角°, 跨越点距右杆m, 跨越悬垂距m, 塔型(直线/耐张), 禁接类型(允许/铁路/高速/河流/电力线/孤立档)；逗号/Tab/空格分隔",paste_do:"解析并填入",
+ t_name:"杆塔号",t_span:"与右档距(m)",t_h:"与右高差(m)",t_ang:"本杆转角(°)",t_cd:"跨越点距右杆(m)",t_ch:"跨越悬垂距(m)",t_type:"塔型",t_fbid:"本档禁接类型",t_op:"操作",
+ b_prev:"上一步",next_param:"下一步：导线/绳参数",
+ s2_t:"导线与牵引绳参数",cond_sel:"导线型号（自动填充 w / Tp）",w_cond:"导线单位重量 w (N/m·根)",tp:"导线计算拉断力 Tp (N/根)",rope_sel:"牵引绳型号（自动填充）",w_rope:"牵引绳单位重量 (N/m)",q_rope:"牵引绳综合破断力 (N)",
+ kp_p:"主牵引机系数 Kp1",h_kp1:"推荐 0.25~0.33",kp_t:"主张力机制动系数 Kp2",h_kp2:"推荐 0.17~0.20",sub_sp:"子导线间距 (mm)",next_ctrl:"下一步：控制档与跨越",
+ s3_t:"控制档选择与跨越物",s3_alert:"控制档为放线中弧垂控制最严的档（有重要跨越优先，否则取最大档距）。手动给定时按整定 T0 计算；自动模式由跨越物安全距离反算 T0。",
+ ctrl_mode:"控制档选择方式",ctrl_auto:"自动推荐（有跨越优先，否则最大档）",ctrl_man:"手动指定",ctrl_sel:"指定控制档",cross_list:"跨越物清单（取自杆塔表，悬垂距可在此修正）",
+ cross_span:"跨越档",cross_obj:"被跨越物",cross_h:"悬垂距（已含裕度,m）",safe_req:"要求安全距(m)",b_calc:"开始计算",
+ s4_t:"张力放线计算结果",tb_cond:"导线张力递推",tb_rope:"牵引绳递推/上扬",tb_sag:"弧垂与安全距离",tb_ang:"悬垂角/包络角/滑车受力",tb_chart:"张力/弧垂曲线",
+ span:"线档",span_l:"档距(m)",dh:"高差(m)",tin:"档左端张力(N)",tout:"档右端张力(N)",tax:"轴向张力(N)",h_t:"水平张力H(N)",tower:"杆塔",n_from:"距牵引机档数",r_t:"牵引绳张力(N)",vspan:"垂直档距(m)",uplift:"上扬判定",
+ sag:"平视弧垂(m)",ll:"放线线长(m)",asafe:"实际安全距(m)",rsafe:"要求(m)",ang_note:"包络角按三维合成公式计算：ω=2arcsin√[sin²((β1+β2)/2)+cosβ1cosβ2sin²(α/2)]，含线路转角；超过阈值提示双滑车。",
+ wrap_th:"双滑车包络角阈值 (°)",b1:"来线侧悬垂角β1(°)",b2:"去线侧悬垂角β2(°)",turn:"水平转角(°)",wrap:"包络角(°)",pload:"单根子导线滑车受力估算(N)",double:"滑车配置",next_wire:"下一步：布线设计",
+ s5_t:"布线设计：分盘 · 压接管定位 · 余线调度",wire_kpi:"用量与物料平衡（按整个牵张段）",wire_diag:"布线纵剖表（按档距分格、各相同档上下对齐；红斜纹=整档禁接，橙线/菱形=压接管，数字=距左塔/距右塔m）",
+ lg_fb:"禁接档",lg_joint:"压接管接头",lg_snap:"耐张塔口接头",lg_reel:"每盘实放区间",wire_len:"线长计算表（含斜距、弧垂增量、累加距离、禁接标记）",slant:"斜距(m)",sag_inc:"弧垂增量(m)",acc:"累加距离(m)",
+ wire_reel:"分盘与压接管位置表（接头=架线完成后压接管实际位置；距两基塔距离用于合规判定）",ph:"子导线",seq:"盘序",src:"盘来源",used:"实放(m)",left:"剩余(m)",j_span:"压接管所在档",j_l:"距左塔(m)",j_r:"距右塔(m)",j_state:"状态/合规",
+ b_csv_reel:"导出分盘接头表 CSV",b_csv_len:"导出线长表 CSV",wire_stock:"余线盘台账（产生 → 去向：跨相复用 / 期末结存分类）",st_from:"来源",st_len:"长度(m)",st_to:"去向",st_class:"期末分类",next_check:"下一步：校验报告",
+ s6_t:"施工校验报告",next_equip:"下一步：工器具选型",
+ s7_t:"工器具选型计算",s7_alert:"依据《架空输电线路张力架线施工工艺导则》，按导线计算拉断力 Tp、分裂数与系数 Kp 估算主要牵张设备与绳的破断力要求，仅作选型参考。",
+ eq_item:"计算项目",eq_formula:"计算式",eq_req:"要求值",eq_rec:"选型建议",next_export:"下一步：导出存档",
+ s8_t:"计算书与工程存档",r_no:"计算书编号",r_by:"编写",r_chk:"校核",r_app:"批准",b_print:"浏览器打印 / 另存 PDF",b_save:"保存工程数据 (JSON)",b_load:"导入工程数据",
+ s8_note:"所有计算均在本机浏览器完成，不上传任何数据；JSON 文件可完整恢复输入参数、杆塔表与计算结果，便于现场换设备继续工作。",b_home:"返回第一步",
+ foot:"张力放线与布线一体化计算工具 · 本地计算，数据不上传",b_replan:"重新布线",
+ ok:"合格",bad:"不合格",info:"提示",normal:"正常",up:"上扬",need_double:"需双滑车",single_ok:"单滑车可行",ctrl:"控制档",final:"段尾（无接头）",full:"满盘放完",cut:"提前换盘",snap_pt:"耐张塔口（紧线剪除）",viol:"违规：落入禁接区",
+ st_next:"可用于下一牵张段",st_jump:"可做跳线/构架",st_waste:"损耗短头",st_reused:"已跨相复用",st_carry:"上档带入",reused_full:"余线放完",
+},en:{
+ s0_info:"Project Information",proj_name:"Project Name",sec_name:"Tension Section",voltage:"Voltage (kV)",cond_type:"Conductor Type",bundle_n:"Bundles per Phase",circuit_n:"Circuits",phase_n:"Phase/Pole count",phase_hint:"AC single=3, double=6; DC bipolar=2. Sub-conductors = bundle x phases",sub_total:"Sub-conductors",gw_type:"Ground Wire / OPGW",
+ s0_ctrl:"Tension Control Parameters",eps_c:"Sheave friction ε (conductor)",eps_r:"Sheave friction ε (rope)",margin:"Stringing Margin (m)",safe_d:"Required Clearance (m)",calc_mode:"Tension Mode",
+ m_manual:"Manual Tensioner Outlet T0 (Recommended)",m_auto:"Reverse T0 from Control Span",t0:"Tensioner Outlet T0 (N/sub)",h_eps:"Typical 1.015-1.020",h_margin:"Typical 0.5m",h_safe:"500kV typically ≥8.5m",
+ s0_wire:"Reel Planning Parameters",s0_wire_tag:"Set once per tension section",reel_l:"Reel Length (m)",clamp_d:"Clamp Exclusion Distance d (m)",clamp_c:"Custom Exclusion (m)",
+ snap_tol:"Strain Tower Snap Tolerance (m)",h_snap:"Snap joint to strain tower mouth within this distance",min_reuse:"Min. Leftover to Re-string (m)",h_reuse:"Shorter leftovers kept for jumpers",
+ jumper_l:"Jumper Length per Set (m)",next_min:"Min. Length for Next Section (m)",auto_fbid:"Spans with crossings are no-joint spans",snap_en:"Snap joints to strain tower mouths",carry_in:"Leftover reels carried from previous section (m, comma/space separated)",
+ next_tower:"Next: Towers",
+ s1_t:"Tower & Span Data",s1_alert:"Enter from tensioner side (T0 applies to first span) to puller. Each row describes the span to its RIGHT; last tower (puller) has span 0. Mark whole no-joint spans: railway, highway, major river, ≥35kV line, isolated span.",
+ b_add:"Add Tower",b_demo1:"Demo: Laos N1-N14 (13 spans)",b_demo2:"Demo: Nepal 16 spans",b_paste:"Bulk Paste",b_clear:"Clear",
+ paste_h:"Each row: name, span, height diff, angle, crossing dist, crossing height, type(susp/strain), no-joint(allow/rail/highway/river/powerline/isolated)",paste_do:"Parse & Fill",
+ t_name:"Tower",t_span:"Span Right (m)",t_h:"Height Diff (m)",t_ang:"Turn Angle (°)",t_cd:"Cross Dist (m)",t_ch:"Cross Height (m)",t_type:"Tower Type",t_fbid:"No-Joint Type",t_op:"Action",
+ b_prev:"Previous",next_param:"Next: Conductor/Rope",
+ s2_t:"Conductor & Pulling Rope",cond_sel:"Conductor (auto-fill)",w_cond:"Conductor Weight w (N/m)",tp:"Conductor Breaking Load Tp (N)",rope_sel:"Pulling Rope (auto-fill)",w_rope:"Rope Weight (N/m)",q_rope:"Rope Breaking Load (N)",
+ kp_p:"Puller Coeff. Kp1",h_kp1:"0.25-0.33",kp_t:"Tensioner Coeff. Kp2",h_kp2:"0.17-0.20",sub_sp:"Sub-spacing (mm)",next_ctrl:"Next: Control Span",
+ s3_t:"Control Span & Crossings",s3_alert:"Control span = tightest sag constraint (crossing first, else longest span). Manual mode uses T0; auto mode reverse-calculates T0.",
+ ctrl_mode:"Control Span Mode",ctrl_auto:"Auto (crossing first)",ctrl_man:"Manual",ctrl_sel:"Select Control Span",cross_list:"Crossing List",
+ cross_span:"Span",cross_obj:"Crossed Object",cross_h:"Cross Height (m)",safe_req:"Req. (m)",b_calc:"Calculate",
+ s4_t:"Tension Results",tb_cond:"Conductor Recursion",tb_rope:"Rope / Uplift",tb_sag:"Sag & Clearance",tb_ang:"Angles / Wrap / Load",tb_chart:"Charts",
+ span:"Span",span_l:"Span (m)",dh:"h Diff (m)",tin:"Left T (N)",tout:"Right T (N)",tax:"Axial T (N)",h_t:"Horizontal H (N)",tower:"Tower",n_from:"Spans from Puller",r_t:"Rope T (N)",vspan:"Vertical Span (m)",uplift:"Uplift",
+ sag:"Sag (m)",ll:"Line Length (m)",asafe:"Actual (m)",rsafe:"Req. (m)",ang_note:"Wrap angle uses 3D formula ω=2arcsin√[sin²((β1+β2)/2)+cosβ1cosβ2sin²(α/2)].",
+ wrap_th:"Double-sheave Threshold (°)",b1:"β1 Incoming (°)",b2:"β2 Outgoing (°)",turn:"Turn (°)",wrap:"Wrap (°)",pload:"Per-sub Sheave Load Est.(N)",double:"Sheaves",next_wire:"Next: Reel Planning",
+ s5_t:"Reel Planning: Distribution · Sleeve Positions · Leftovers",wire_kpi:"Quantity & Material Balance",wire_diag:"Stringing plan diagram (red hatch = no-joint span, copper diamond = final sleeve, blue = snapped to strain tower)",
+ lg_fb:"No-joint span",lg_joint:"Compression sleeve",lg_snap:"Strain mouth",lg_reel:"Reel segment",wire_len:"Line Length Table",slant:"Slant (m)",sag_inc:"Sag Incr. (m)",acc:"Cumulative (m)",
+ wire_reel:"Reel & Final Sleeve Positions",ph:"Sub-cond.",seq:"No.",src:"Source",used:"Used (m)",left:"Leftover (m)",j_span:"Sleeve Span",j_l:"To Left (m)",j_r:"To Right (m)",j_state:"Status",
+ b_csv_reel:"Export Reel/Sleeve CSV",b_csv_len:"Export Length CSV",wire_stock:"Leftover Reel Ledger",st_from:"From",st_len:"Length (m)",st_to:"Destination",st_class:"Final Class",next_check:"Next: Checks",
+ s6_t:"Construction Check Report",next_equip:"Next: Equipment",
+ s7_t:"Equipment Selection",s7_alert:"Per stringing guidelines, from Tp, bundle count and Kp coefficients. For reference only.",
+ eq_item:"Item",eq_formula:"Formula",eq_req:"Required",eq_rec:"Recommendation",next_export:"Next: Export",
+ s8_t:"Report & Archive",r_no:"Report No.",r_by:"By",r_chk:"Check",r_app:"Approval",b_print:"Print / Save PDF",b_save:"Save Project (JSON)",b_load:"Load Project",
+ s8_note:"All calculation runs locally in your browser; no data is uploaded.",b_home:"Back to Start",foot:"TL Tension & Reel Planning · Local only",b_replan:"Re-plan",
+ ok:"PASS",bad:"FAIL",info:"INFO",normal:"Normal",up:"Uplift",need_double:"Double",single_ok:"Single OK",ctrl:"Control",final:"Section end",full:"Full reel",cut:"Cut early",snap_pt:"Strain mouth (cut)",viol:"VIOLATION",
+ st_next:"Reusable next section",st_jump:"For jumpers",st_waste:"Scrap ends",st_reused:"Reused across phases",st_carry:"Carried in",reused_full:"Leftover used up",
+}};
+let lang="zh";
+function L(k){return (I18N[lang]&&I18N[lang][k])||I18N.zh[k]||k}
+function setLang(l){lang=l;localStorage.setItem("tl_lang",l);document.documentElement.lang=l==="zh"?"zh-CN":"en";
+ document.querySelectorAll(".lang-btn").forEach(b=>b.classList.toggle("active",b.dataset.lang===l));const _tw=(document.getElementById('towerBody')&&document.getElementById('towerBody').children.length)?getTowers():null;applyI18n();if(_tw)setTowers(_tw);if(window.calcResults){renderResults();if(window.wiring)renderWiring();renderLenTable();renderChecks();renderEquip();}}
+function applyI18n(){document.querySelectorAll("[data-i18n]").forEach(e=>e.textContent=L(e.dataset.i18n));document.title=lang==="zh"?"输电线路张力放线 · 布线一体化计算系统":"TL Tension Stringing & Reel Planning";
+ document.getElementById("hdrTitle").textContent=lang==="zh"?"输电线路张力放线 · 布线一体化计算系统":"Transmission Line Tension & Reel Planning";
+ document.getElementById("hdrSub").textContent=lang==="zh"?"滑车磨阻递推 / 控制档反算 / 禁接区自动避让布线 / 余线跨相复用 / 压接管定位":"Friction recursion / Control-span reverse calc / No-joint-zone avoidance / Leftover reuse / Sleeve positioning";
+ buildNav();}
 
-// ==================== I18N System ====================
-const I18N = {
-  zh: {
-    title: '输电线路张力放线计算系统',
-    subtitle: '基于滑车磨阻递推法 / 支持控制档反算 / 牵引绳上扬检查 / 一键导出',
-    nav_project: '工程参数',
-    nav_towers: '杆塔数据',
-    nav_params: '导线/绳参数',
-    nav_control: '控制档与跨越',
-    nav_results: '计算结果',
-    nav_wiring: '布线分析',
-    alert_wiring: '输入布线参数后系统自动分配导线盘、计算接头位置，并避开跨越档和线夹禁区。耐张塔滑车口处可直接布置接头（紧线时剪断挂线）。',
-    btn_next_wiring: '下一步 - 布线分析',
-    nav_wiring: 'Wiring',
-    alert_wiring: 'Enter wiring parameters to auto-assign reels, compute joint positions, avoiding crossing spans and clamp clearances. Joints allowed at tension towers.',
-    btn_next_wiring: 'Next - Wiring',
-    nav_check: '校验报告',
-    nav_equip: '工器具选型',
-    nav_export: '导出',
-    project_info: '工程基本信息',
-    calc_control: '计算控制参数',
-    tower_data: '杆塔数据录入',
-    cond_rope_params: '导线与牵引绳参数',
-    control_span: '控制档与跨越物',
-    result_overview: '计算结果总览',
-    check_report: '施工校验报告',
-    equip_sel: '工器具选型',
-    export_report: '导出计算书',
-    label_projName: '项目名称',
-    label_section: '施工区段',
-    label_voltage: '电压等级 (kV)',
-    label_condType: '导线型号',
-    label_bundle: '分裂数',
-    label_gwType: '地线型号',
-    label_epsCond: '滑车对导线磨阻系数 epsilon',
-    label_epsRope: '滑车对牵引绳磨阻系数 epsilon',
-    label_margin: '放线裕度 (m)',
-    label_safeDist: '对地安全距离要求 (m)',
-    label_calcMode: '计算方式',
-    label_manualT: '张力机出口整定张力 (N)',
-    label_condModel: '导线型号（选择后自动填充参数）',
-    label_wCond: '导线单位重量 w (N/m)',
-    label_TpCond: '导线保证计算拉断力 Tp (N)',
-    label_ropeModel: '牵引绳型号（选择后自动填充参数）',
-    label_wRope: '牵引绳单位重量 (N/m)',
-    label_breakRope: '牵引绳综合破断力 (N)',
-    label_kpPull: '主牵引机额定牵引力系数 Kp',
-    label_kpTension: '主张力机额定制动张力系数 Kp',
-    label_subSpacing: '子导线间距 (mm)',
-    label_controlMode: '控制档选择方式',
-    label_controlPos: '控制档位置',
-    label_reportNo: '计算书编号',
-    label_author: '编写人',
-    label_checker: '校核人',
-    label_approver: '批准人',
-    opt_single: '单导线',
-    opt_manual: '手动指定张力机出口张力（推荐）',
-    opt_auto: '自动选择控制档（由控制档跨越物反算张力）',
-    opt_autoControl: '自动推荐（有跨越优先）',
-    opt_manualControl: '手动指定',
-    btn_next_towers: '下一步 - 杆塔数据',
-    btn_next_params: '下一步 - 导线参数',
-    btn_next_control: '下一步 - 控制档',
-    btn_next_check: '下一步 - 校验',
-    btn_next_equip: '下一步 - 工器具',
-    btn_next_export: '下一步 - 导出',
-    btn_prev: '上一步',
-    btn_backHome: '返回首页',
-    btn_addTower: '添加杆塔',
-    btn_demo1: '载入示例（老挝13档）',
-    btn_demo2: '载入示例（尼泊尔16档）',
-    btn_clear: '清空',
-    btn_calc: '开始计算',
-    btn_print: '浏览器打印 / 保存PDF',
-    btn_png: '导出PNG截图',
-    btn_json: '保存工程数据(JSON)',
-    btn_import: '导入工程数据',
-    hint_eps: '常规 1.015~1.020',
-    hint_margin: '常规 0.5m',
-    hint_safeDist: '500kV 一般大于等于8.5m',
-    hint_kpPull: '推荐 0.25~0.33',
-    hint_kpTension: '推荐 0.17~0.20',
-    alert_tower: '提示：从张力机到牵引机依次录入各杆塔。每行杆塔的"与右档距""与右高差""跨越物数据"均属于该杆到右侧下一杆的线档参数。',
-    alert_control: '控制档是张力放线过程中弧垂最大的线档（通常是最大档距或跨越重要设施的档）。系统根据跨越物要求和档距自动推荐控制档，并由控制档安全距离反算出张力机出口张力。',
-    alert_equip: '根据《架空输电线路张力架线施工工艺导则》及相关规范，按导线拉断力计算各主要工器具的选型参数。',
-    alert_export: '生成计算书。推荐：使用"浏览器打印"（Ctrl+P）直接打印或保存为PDF，中文显示100%正常。',
-    th_no: '序号',
-    th_towerName: '杆塔号',
-    th_span: '与右档距(m)',
-    th_height: '与右高差(m)',
-    th_angle: '转角(度)',
-    th_crossDist: '跨越物距右杆(m)',
-    th_crossHeight: '跨越悬垂距(m)',
-    th_op: '操作',
-    th_spanName: '档',
-    th_spanL: '档距(m)',
-    th_diffH: '高差(m)',
-    th_Tin: '张力机侧张力(N)',
-    th_Tout: '牵引机侧张力(N)',
-    th_Taxial: '轴向张力(N)',
-    th_spanCount: '距牵引机档数',
-    th_ropeT: '牵引绳张力(N)',
-    th_vertSpan: '垂直档距(m)',
-    th_ropeUp: '牵引绳上扬',
-    th_horizT: '水平张力(N)',
-    th_sag: '平视弧垂(m)',
-    th_lineLen: '线长(m)',
-    th_actualSafe: '实际安全距(m)',
-    th_reqSafe: '要求安全距(m)',
-    th_reqSafe2: '要求安全距(m)',
-    th_thetaA: '悬垂角A(度)',
-    th_thetaB: '悬垂角B(度)',
-    th_turnAngle: '转角(度)',
-    th_wrapAngle: '包络角(度)',
-    th_doubleSheave: '双滑车',
-    th_calcItem: '计算项目',
-    th_formula: '公式',
-    th_reqVal: '要求值',
-    th_recommend: '推荐规格',
-    th_crossSpan: '跨越档',
-    th_crossObj: '被跨越物',
-    tab_cond: '导线张力递推',
-    tab_rope: '牵引绳张力递推',
-    tab_sag: '弧垂与安全距',
-    tab_angle: '角度与包络角',
-    tab_chart: '曲线图',
-    tab_wiring: '布线分析',
-    th_slantLen: '斜距(m)',
-    th_lineLength: '线长(m)',
-    th_accumDist: '累加距离(m)',
-    th_reelNo: '盘号',
-    th_reelLen: '单盘长度(m)',
-    th_jointPos: '接头位置',
-    th_reelCover: '覆盖档',
-    th_reelLeft: '剩余(m)',
-    th_totalReels: '总盘数',
-    th_totalLen: '总长度(m)',
-    label_reelLen: '导线单盘长度 (m)',
-    wiring_title1: '线长计算表',
-    wiring_title2: '导线盘分配与接头位置',
-    wiring_title3: '用量统计',
-    msg_minTowers: '请至少录入2个杆塔',
-    msg_minTowers: '请至少录入2个杆塔',
-    msg_keepOne: '至少保留一个杆塔',
-    msg_warnSag: '警告：控制档最大允许弧垂 {fmax} m 超过档距的一半（{half} m），抛物线公式可能失效。请增大安全距离要求或检查跨越物参数。',
-    msg_warnCross: '警告：控制档跨越物悬垂距不足以满足安全距离要求！',
-    msg_manualMode: '提示：控制档 {span} 无跨越物数据，无法由安全距离反算张力机出口张力。系统将使用手动设定的张力机出口张力 {t0} N 进行计算。如需调整张力，请修改工程参数中的"张力机出口整定张力"。',
-    msg_calcError: '计算过程中发生错误',
-    msg_needCalc: '请先进行计算',
-    msg_exporting: '正在生成截图，请稍候...',
-    msg_exportFail: '导出失败',
-    msg_importOK: '导入成功',
-    msg_importFail: '导入失败',
-    cross_none: '暂无跨越物数据，请在杆塔数据页录入"跨越物距离"和"悬垂距"',
-    badge_control: '控制档',
-    badge_up: '上扬',
-    badge_normal: '正常',
-    badge_double: '需双滑车',
-    badge_single: '单滑车',
-    check_pass: 'OK',
-    check_fail: 'FAIL',
-    check_info: 'ℹ',
-    conclusion_normal: '正常',
-    mode_auto: '自动模式',
-    mode_manual: '手动模式',
-    label_reelLen: '导线单盘长度 (m)',
-    label_bundleCount2: '分裂数 (根)',
-    label_circuitCount: '回路数',
-    label_clampClearance: '线夹禁区距离 (m)',
-    hint_clampClearance: '一般7.5m或15m',
-    th_isTension: '耐张塔',
-    th_isCrossSpan: '跨越档',
-    th_jointToLeft: '距左塔(m)',
-    th_jointToRight: '距右塔(m)',
-    th_isForbidden: '禁区档',
-    wiring_tip_forbidden: '禁区档（跨越/孤立档）内不能布置接头',
-    wiring_tip_tension: '耐张塔处可直接布置接头（紧线时剪掉挂线）',
-    wiring_surplus: '余量',
-    footer: 'Transmission Line Tension Stringing Calculator \u00a9 2024 | 本地计算，数据不上传'
-  },
-  en: {
-    title: 'Transmission Line Tension Stringing Calculator',
-    subtitle: 'Sheave Friction Recursive Method / Control Span Reverse Calculation / Rope Uplift Check / One-click Export',
-    nav_project: 'Project Params',
-    nav_towers: 'Tower Data',
-    nav_params: 'Conductor/Rope',
-    nav_control: 'Control Span',
-    nav_results: 'Results',
-    nav_wiring: '布线分析',
-    alert_wiring: '输入布线参数后系统自动分配导线盘、计算接头位置，并避开跨越档和线夹禁区。耐张塔滑车口处可直接布置接头（紧线时剪断挂线）。',
-    btn_next_wiring: '下一步 - 布线分析',
-    nav_wiring: 'Wiring',
-    alert_wiring: 'Enter wiring parameters to auto-assign reels, compute joint positions, avoiding crossing spans and clamp clearances. Joints allowed at tension towers.',
-    btn_next_wiring: 'Next - Wiring',
-    nav_check: 'Check Report',
-    nav_equip: 'Equipment',
-    nav_export: 'Export',
-    project_info: 'Project Information',
-    calc_control: 'Calculation Control Parameters',
-    tower_data: 'Tower Data Entry',
-    cond_rope_params: 'Conductor & Pulling Rope Parameters',
-    control_span: 'Control Span & Crossings',
-    result_overview: 'Calculation Results Overview',
-    check_report: 'Construction Check Report',
-    equip_sel: 'Equipment Selection',
-    export_report: 'Export Report',
-    label_projName: 'Project Name',
-    label_section: 'Section',
-    label_voltage: 'Voltage Level (kV)',
-    label_condType: 'Conductor Type',
-    label_bundle: 'Bundle Count',
-    label_gwType: 'Ground Wire Type',
-    label_epsCond: 'Sheave friction coeff. epsilon (conductor)',
-    label_epsRope: 'Sheave friction coeff. epsilon (rope)',
-    label_margin: 'Stringing Margin (m)',
-    label_safeDist: 'Ground Clearance Required (m)',
-    label_calcMode: 'Calculation Mode',
-    label_manualT: 'Tensioner Outlet Tension (N)',
-    label_condModel: 'Conductor Model (auto-fill)',
-    label_wCond: 'Conductor Unit Weight w (N/m)',
-    label_TpCond: 'Conductor Rated Breaking Load Tp (N)',
-    label_ropeModel: 'Pulling Rope Model (auto-fill)',
-    label_wRope: 'Rope Unit Weight (N/m)',
-    label_breakRope: 'Rope Breaking Load (N)',
-    label_kpPull: 'Puller Rated Tension Coeff. Kp',
-    label_kpTension: 'Tensioner Brake Tension Coeff. Kp',
-    label_subSpacing: 'Sub-conductor Spacing (mm)',
-    label_controlMode: 'Control Span Selection',
-    label_controlPos: 'Control Span Position',
-    label_reportNo: 'Report No.',
-    label_author: 'Author',
-    label_checker: 'Checker',
-    label_approver: 'Approver',
-    opt_single: 'Single',
-    opt_manual: 'Manual Tensioner Outlet Tension (Recommended)',
-    opt_auto: 'Auto Select Control Span (Reverse from crossing)',
-    opt_autoControl: 'Auto Recommend (Crossing Priority)',
-    opt_manualControl: 'Manual Specify',
-    btn_next_towers: 'Next - Tower Data',
-    btn_next_params: 'Next - Conductor Params',
-    btn_next_control: 'Next - Control Span',
-    btn_next_check: 'Next - Check Report',
-    btn_next_equip: 'Next - Equipment',
-    btn_next_export: 'Next - Export',
-    btn_prev: 'Previous',
-    btn_backHome: 'Back to Home',
-    btn_addTower: 'Add Tower',
-    btn_demo1: 'Load Demo (Laos 13 spans)',
-    btn_demo2: 'Load Demo (Nepal 16 spans)',
-    btn_clear: 'Clear',
-    btn_calc: 'Calculate',
-    btn_print: 'Browser Print / Save PDF',
-    btn_png: 'Export PNG',
-    btn_json: 'Save Project (JSON)',
-    btn_import: 'Import Project',
-    hint_eps: 'Typical 1.015~1.020',
-    hint_margin: 'Typical 0.5m',
-    hint_safeDist: '500kV typically >= 8.5m',
-    hint_kpPull: 'Recommended 0.25~0.33',
-    hint_kpTension: 'Recommended 0.17~0.20',
-    alert_tower: 'Tip: Enter towers from Tensioner to Puller. Each row\'s "Span", "Height Diff", and "Crossing" belong to the span to the RIGHT of this tower.',
-    alert_control: 'Control span is the span with maximum sag during tension stringing. The system auto-recommends based on crossings and span length, and reverse-calculates tensioner outlet tension from clearance requirements.',
-    alert_equip: 'Equipment selection parameters calculated per conductor breaking load, based on tension stringing construction guidelines.',
-    alert_export: 'Generate report. Recommended: Use Browser Print (Ctrl+P) to print or save as PDF.',
-    th_no: 'No.',
-    th_towerName: 'Tower',
-    th_span: 'Span to Right (m)',
-    th_height: 'Height Diff to Right (m)',
-    th_angle: 'Deflection Angle (deg)',
-    th_crossDist: 'Crossing Dist to Right Tower (m)',
-    th_crossHeight: 'Crossing Height (m)',
-    th_op: 'Action',
-    th_spanName: 'Span',
-    th_spanL: 'Span (m)',
-    th_diffH: 'Height Diff (m)',
-    th_Tin: 'Tensioner Side Tension (N)',
-    th_Tout: 'Puller Side Tension (N)',
-    th_Taxial: 'Axial Tension (N)',
-    th_spanCount: 'Spans from Puller',
-    th_ropeT: 'Rope Tension (N)',
-    th_vertSpan: 'Vertical Span (m)',
-    th_ropeUp: 'Rope Uplift',
-    th_horizT: 'Horizontal Tension (N)',
-    th_sag: 'Sag (m)',
-    th_lineLen: 'Line Length (m)',
-    th_actualSafe: 'Actual Clearance (m)',
-    th_reqSafe: 'Req. Clearance (m)',
-    th_reqSafe2: 'Req. Clearance (m)',
-    th_thetaA: 'Suspension A (deg)',
-    th_thetaB: 'Suspension B (deg)',
-    th_turnAngle: 'Deflection (deg)',
-    th_wrapAngle: 'Wrap Angle (deg)',
-    th_doubleSheave: 'Double Sheave',
-    th_calcItem: 'Item',
-    th_formula: 'Formula',
-    th_reqVal: 'Required',
-    th_recommend: 'Recommendation',
-    th_crossSpan: 'Crossing Span',
-    th_crossObj: 'Crossed Object',
-    tab_cond: 'Conductor Tension',
-    tab_rope: 'Rope Tension',
-    tab_sag: 'Sag & Clearance',
-    tab_angle: 'Angles',
-    tab_chart: 'Charts',
-    tab_wiring: 'Wiring',
-    th_slantLen: 'Slant Length (m)',
-    th_lineLength: 'Line Length (m)',
-    th_accumDist: 'Accum. Distance (m)',
-    th_reelNo: 'Reel No.',
-    th_reelLen: 'Reel Length (m)',
-    th_jointPos: 'Joint Position',
-    th_reelCover: 'Cover Spans',
-    th_reelLeft: 'Leftover (m)',
-    th_totalReels: 'Total Reels',
-    th_totalLen: 'Total Length (m)',
-    label_reelLen: 'Reel Length (m)',
-    wiring_title1: 'Line Length Calculation',
-    wiring_title2: 'Conductor Reel Assignment & Joint Positions',
-    wiring_title3: 'Quantity Summary',
-    msg_minTowers: 'Please enter at least 2 towers',
-    msg_minTowers: 'Please enter at least 2 towers',
-    msg_keepOne: 'Keep at least one tower',
-    msg_warnSag: 'Warning: Control span max allowed sag {fmax} m exceeds half span ({half} m). Parabola formula may fail. Increase clearance requirement or check crossing data.',
-    msg_warnCross: 'Warning: Control span crossing height insufficient for required clearance!',
-    msg_manualMode: 'Note: Control span {span} has no crossing data. Cannot reverse-calculate tensioner outlet tension from clearance. System will use manual tension {t0} N. Adjust in Project Params if needed.',
-    msg_calcError: 'Calculation error',
-    msg_needCalc: 'Please calculate first',
-    msg_exporting: 'Generating screenshot, please wait...',
-    msg_exportFail: 'Export failed',
-    msg_importOK: 'Import successful',
-    msg_importFail: 'Import failed',
-    cross_none: 'No crossing data. Enter "Crossing Distance" and "Crossing Height" in Tower Data page.',
-    badge_control: 'Control',
-    badge_up: 'Uplift',
-    badge_normal: 'Normal',
-    badge_double: 'Double Sheave',
-    badge_single: 'Single Sheave',
-    check_pass: 'OK',
-    check_fail: 'FAIL',
-    check_info: 'ℹ',
-    conclusion_normal: 'Normal',
-    mode_auto: 'Auto Mode',
-    mode_manual: 'Manual Mode',
-    label_reelLen: 'Reel Length (m)',
-    label_bundleCount2: 'Bundle Count',
-    label_circuitCount: 'Circuit Count',
-    label_clampClearance: 'Clamp Clearance (m)',
-    hint_clampClearance: 'Typically 7.5m or 15m',
-    th_isTension: 'Tension Tower',
-    th_isCrossSpan: 'Crossing Span',
-    th_jointToLeft: 'To Left Tower (m)',
-    th_jointToRight: 'To Right Tower (m)',
-    th_isForbidden: 'Forbidden Span',
-    wiring_tip_forbidden: 'No joints allowed in crossing/isolated spans',
-    wiring_tip_tension: 'Joints allowed at tension tower (cut during stringing)',
-    wiring_surplus: 'Surplus',
-    footer: 'TL Tension Calc \u00a9 2024 | Local calculation, no data upload'
+/* =================== state & navigation =================== */
+const STEPS=[["s0_info","工程参数","Project"],["s1_t","杆塔数据","Towers"],["s2_t","导线/绳","Conductor"],["s3_t","控制档","Control"],["s4_t","张力结果","Tension"],["s5_t","布线设计","Reel Plan"],["s6_t","校验报告","Checks"],["s7_t","工器具","Equipment"],["s8_t","导出","Export"]];
+function buildNav(){document.getElementById("navBox").innerHTML=STEPS.map((s,i)=>`<div class="nav-item" id="nav-${i}" onclick="goStep(${i})"><span class="n">${i+1}</span><span>${L(s[0])}</span></div>`).join("");markNav(curStep)}
+let curStep=0;
+function goStep(i){curStep=i;document.querySelectorAll(".step").forEach((s,j)=>s.style.display=j===i?"block":"none");markNav(i);window.scrollTo({top:0,behavior:"smooth"});if(i===1)refreshCtrlSelect();if(i===3)refreshCrossTable();if(i===5&&window.calcResults&&!window.wiring)planWiring();if(i===5&&window.wiring)renderWiring();if(i===6&&window.calcResults)renderChecks();if(i===7&&window.calcResults)renderEquip();}
+function markNav(i){document.querySelectorAll(".nav-item").forEach((e,j)=>e.classList.toggle("active",j===i));}
+function showTab(ev,id){const c=ev.currentTarget.parentElement;c.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));ev.currentTarget.classList.add("active");const box=c.parentElement;box.querySelectorAll(".tpane").forEach(p=>p.classList.remove("active"));document.getElementById(id).classList.add("active");}
+function $id(id){return document.getElementById(id)}
+function num(id,d){const v=parseFloat($id(id).value);return isFinite(v)?v:d}
+function val(id){return $id(id).value}
+function fmt(x,n){return (x===null||x===undefined||isNaN(x))?"--":Number(x).toFixed(n===undefined?1:n)}
+
+/* =================== tower table =================== */
+const FBID_OPTS=[["allow","允许接头"],["rail","禁接·铁路"],["highway","禁接·高速公路"],["river","禁接·重要河流"],["power","禁接·35kV+电力线"],["isolated","禁接·孤立档"],["custom","禁接·自定义"]];
+const FBID_EN={allow:"Allow joint",rail:"No-joint: Railway",highway:"No-joint: Highway",river:"No-joint: Major river",power:"No-joint: ≥35kV line",isolated:"No-joint: Isolated",custom:"No-joint: Custom"};
+function fbidOpt(k){return lang==="en"?FBID_EN[k]:FBID_OPTS.find(o=>o[0]===k)[1];}
+const FBID_LABEL={allow:()=>lang==="zh"?"允许":"Allow",rail:()=>lang==="zh"?"铁路":"Railway",highway:()=>lang==="zh"?"高速公路":"Highway",river:()=>lang==="zh"?"重要河流":"Major river",power:()=>lang==="zh"?"≥35kV电力线":"≥35kV line",isolated:()=>lang==="zh"?"孤立档":"Isolated",custom:()=>lang==="zh"?"自定义禁接":"Custom"};
+function fbidLabel(k){return (FBID_LABEL[k]||FBID_LABEL.allow)()}
+function towerRow(d){
+ d=d||{};const tr=document.createElement("tr");
+ const fbid=d.fbid||"allow";const isT=d.isTension? "strain":"susp";
+ tr.innerHTML=`<td class="num idx"></td>
+ <td><input class="ti" data-k="name" value="${d.name||""}"></td>
+ <td><input class="ti num" data-k="span" type="number" step="0.1" value="${d.span??""}"></td>
+ <td><input class="ti num" data-k="height" type="number" step="0.01" value="${d.height??""}"></td>
+ <td><input class="ti num" data-k="angle" type="number" step="0.01" value="${d.angle??0}"></td>
+ <td><input class="ti num" data-k="crossDist" type="number" step="0.1" value="${d.crossDist??""}"></td>
+ <td><input class="ti num" data-k="crossHeight" type="number" step="0.1" value="${d.crossHeight??""}"></td>
+ <td><select class="ti" data-k="isTension"><option value="susp">${lang==="zh"?"直线/悬垂":"Susp."}</option><option value="strain"${isT==="strain"?" selected":""}>${lang==="zh"?"耐张":"Strain"}</option></select></td>
+ <td><select class="ti" data-k="fbid">${FBID_OPTS.map(o=>`<option value="${o[0]}"${o[0]===fbid?" selected":""}>${fbidOpt(o[0])}</option>`).join("")}</select></td>
+ <td class="r-act"><button class="r-ins" onclick="insertRow(this)">${lang==="zh"?"插入":"Ins"}</button><button class="r-del" onclick="delRow(this)">${lang==="zh"?"删除":"Del"}</button></td>`;
+ tr.querySelector("[data-k=fbid]").addEventListener("change",e=>{tr.classList.toggle("fbid-row",e.target.value!=="allow")});
+ if(fbid!=="allow")tr.classList.add("fbid-row");
+ return tr;
+}
+function addTower(d){$id("towerBody").appendChild(towerRow(d));reindex();}
+function insertRow(btn){const tr=btn.closest("tr");tr.after(towerRow());reindex();}
+function delRow(btn){const body=$id("towerBody");if(body.children.length<=1){alert(lang==="zh"?"至少保留一行":"Keep at least one row");return}btn.closest("tr").remove();reindex();}
+function reindex(){Array.from($id("towerBody").children).forEach((tr,i)=>tr.querySelector(".idx").textContent=i);refreshCtrlSelect();}
+function clearTowers(){$id("towerBody").innerHTML="";addTower();addTower();}
+function getTowers(){return Array.from($id("towerBody").children).map(tr=>{const g=k=>tr.querySelector(`[data-k=${k}]`);return{
+ name:g("name").value.trim(),span:parseFloat(g("span").value)||0,height:parseFloat(g("height").value)||0,angle:parseFloat(g("angle").value)||0,
+ crossDist:parseFloat(g("crossDist").value)||0,crossHeight:parseFloat(g("crossHeight").value)||0,
+ isTension:g("isTension").value==="strain",fbid:g("fbid").value}});}
+function setTowers(arr){$id("towerBody").innerHTML="";arr.forEach(t=>addTower(t));reindex();}
+function togglePaste(){$id("pasteBox").style.display=$id("pasteBox").style.display==="none"?"block":"none";}
+function doPaste(){
+ const txt=$id("pasteText").value.trim();if(!txt)return;
+ const mapFB=s=>({"铁路":"rail","高速":"highway","公路":"highway","河流":"river","河":"river","电力线":"power","电力":"power","孤立档":"isolated","孤立":"isolated"}[s]||"allow");
+ const rows=txt.split(/\n+/).map(line=>line.split(/[\t,，;；\s]+/).filter(Boolean)).filter(a=>a.length>=2);
+ const arr=rows.map(a=>({name:a[0],span:+a[1]||0,height:+(a[2]||0)||0,angle:+(a[3]||0)||0,crossDist:+(a[4]||0)||0,crossHeight:+(a[5]||0)||0,isTension:(a[6]||"").includes("耐张")||/strain/i.test(a[6]||""),fbid:a[7]?mapFB(a[7]):"allow"}));
+ setTowers(arr);alert((lang==="zh"?"已填入 ":"Parsed ")+arr.length+(lang==="zh"?" 基杆塔":" towers"));
+}
+function toggleCalcMode(){$id("manualTensionBox").style.display=val("calcMode")==="manual"?"flex":"none";}
+function syncBundle(){ // step0 -> wire page
+ $id("reelLength").value=$id("reelLengthInput").value;
+ $id("wBundle").value=$id("bundleCount").value;
+ $id("wPhase").value=$id("phaseCount").value;
+ const c=val("clampClearance");$id("clampCustomBox").style.display=c==="custom"?"flex":"none";
+ $id("wClamp").value=c==="custom"?$id("clampCustom").value:c;
+ $id("wMinReuse").value=$id("minReuse").value;$id("wJumper").value=$id("jumperLen").value;$id("wNextMin").value=$id("nextMin").value;
+}
+function syncFromWire(){ // wire page -> step0
+ $id("reelLengthInput").value=$id("reelLength").value;$id("bundleCount").value=$id("wBundle").value;$id("phaseCount").value=$id("wPhase").value;const pp=$id("phasePreset");if(pp)pp.value=$id("phaseCount").value;
+ $id("minReuse").value=$id("wMinReuse").value;$id("jumperLen").value=$id("wJumper").value;$id("nextMin").value=$id("wNextMin").value;
+ if(window.wiring)planWiring();
+}
+function parseCarryIn(){return ($id("carryIn").value.match(/\d+(\.\d+)?/g)||[]).map(Number).filter(x=>x>0);}
+function phasePresetChange(){const v=$id("phasePreset").value;if(v){$id("phaseCount").value=v;syncBundle();}}
+function phaseLabel(k,phaseCount,bundle){return "ABCDEFGHIJKL"[k%(phaseCount||1)]||(k+1);}
+
+/* =================== demo data =================== */
+const CONDUCTOR_DB={"JL/G1A-400/35":{w:13.2126,Tp:100440},"LGJ-400/50":{w:14.8078,Tp:123400},"LGJ-500/45":{w:16.8,Tp:155000},"LGJ-300/40":{w:11.3,Tp:90000}};
+const ROPE_DB={"phi24":{w:22.5,br:350000},"phi18":{w:11.8,br:190000},"phi15":{w:8.2,br:140000},"phi13":{w:6.5,br:100000}};
+function fillCond(){const d=CONDUCTOR_DB[val("conductorModel")];if(d){$id("wCond").value=d.w;$id("TpCond").value=d.Tp;}}
+function fillRope(){const d=ROPE_DB[val("ropeModel")];if(d){$id("wRope").value=d.w;$id("breakRope").value=d.br;}}
+function loadDemo(id){
+ let arr,proj;
+ if(id===1){
+  arr=[{name:"张力场",span:115,height:6.27,angle:0,crossDist:0,crossHeight:0,isTension:true,fbid:"allow"},
+   {name:"N1",span:569,height:17,angle:66.57,crossDist:215,crossHeight:45,isTension:false,fbid:"power"},
+   {name:"N2",span:365,height:14,angle:0},{name:"N3",span:321,height:7.76,angle:0},{name:"N4",span:525,height:54.36,angle:0},
+   {name:"N5",span:738,height:-31.89,angle:0},{name:"N6",span:176,height:2.75,angle:0},{name:"N7",span:479,height:-37.47,angle:0},
+   {name:"N8",span:481,height:0.67,angle:9.2,isTension:true},{name:"N9",span:452,height:111.1,angle:0},{name:"N10",span:304,height:-30.1,angle:0},
+   {name:"N11",span:622,height:-89.96,angle:0},{name:"N12",span:172,height:-54.82,angle:0},{name:"N13",span:821,height:-71.19,angle:9.48,isTension:true},
+   {name:"牵引场",span:0,height:0,angle:0,isTension:true}];
+  proj={proj:"老挝500kV送出线路",sec:"N1~N14",v:"500",bundle:"4",phase:"3",cond:"JL/G1A-400/35",w:13.475,Tp:100440,rope:"phi24",wr:22.5,ec:1.017,er:1.015,T0:15000};
+ }else{
+  arr=[{name:"张力场",span:285,height:-9,angle:0},{name:"SP29-3",span:434,height:-61.9,angle:0},{name:"SP29-2",span:253,height:-28.3,angle:0},
+   {name:"SP29-1",span:344,height:-65.5,angle:10.36,crossDist:120,crossHeight:37,fbid:"power"},{name:"AP29",span:294,height:-89,angle:0},
+   {name:"SP28-1",span:379,height:-99.3,angle:24.18,crossDist:35,crossHeight:12,fbid:"power"},{name:"SP27-1",span:168,height:-29.7,angle:0},
+   {name:"AP27",span:313,height:-71.2,angle:13.02,crossDist:90,crossHeight:40,fbid:"power"},{name:"SP26-1",span:166,height:-27.6,angle:0},
+   {name:"AP26",span:399,height:-152.7,angle:9.15},{name:"AP25",span:82,height:-8.7,angle:0},{name:"SP24-5",span:149,height:-74.9,angle:0},
+   {name:"SP24-4",span:245,height:-127.2,angle:0},{name:"SP24-3",span:397,height:-152.7,angle:0},{name:"SP24-2",span:304,height:-42.5,angle:0},
+   {name:"牵引场",span:0,height:0,angle:0,isTension:true}];
+  proj={proj:"尼泊尔输变电项目",sec:"SP24~AP29",v:"220",bundle:"2",phase:"3",cond:"LGJ-400/50",w:14.8078,Tp:123400,rope:"phi24",wr:22.5,ec:1.015,er:1.015,T0:18000};
+ }
+ setTowers(arr);
+ $id("projName").value=proj.proj;$id("sectionName").value=proj.sec;$id("voltageLevel").value=proj.v;
+ $id("bundleCount").value=proj.bundle;$id("phaseCount").value=proj.phase;$id("phasePreset").value=proj.phase;$id("conductorType").value=proj.cond;
+ $id("wCond").value=proj.w;$id("TpCond").value=proj.Tp;$id("ropeModel").value=proj.rope;fillRope();
+ $id("frictionCond").value=proj.ec;$id("frictionRope").value=proj.er;
+ $id("calcMode").value="manual";$id("manualTension").value=proj.T0;toggleCalcMode();syncBundle();
+ goStep(1);
+}
+/* =================== tension calculation engine =================== */
+function refreshCtrlSelect(){
+ const sel=$id("controlTowerSelect");if(!sel)return;const tw=getTowers();
+ sel.innerHTML="";for(let i=0;i<tw.length-1;i++){if(!(tw[i].span>0))continue;
+  const o=document.createElement("option");o.value=i;o.textContent=`${tw[i].name||i} ~ ${tw[i+1].name||i+1}（${i+1}）`;sel.appendChild(o);}
+}
+function updateCtrlUI(){$id("controlTowerBox").style.display=val("controlMode")==="manual"?"flex":"none";}
+function refreshCrossTable(){
+ const tw=getTowers();const body=$id("crossBody");body.innerHTML="";let n=0;
+ for(let i=0;i<tw.length-1;i++){if(tw[i].crossDist>0&&tw[i].crossHeight>0){n++;
+  const safe=$id("safeDistance").value;
+  const tr=document.createElement("tr");
+  tr.innerHTML=`<td class="num">${tw[i].name||i}~${tw[i+1].name||i+1}</td>
+   <td><input class="ti" value="${fbidLabel(tw[i].fbid)==="允许"?"电力线/道路":fbidLabel(tw[i].fbid)}" style="min-width:110px"></td>
+   <td class="num">${tw[i].crossDist}</td><td class="num">${tw[i].crossHeight}</td>
+   <td><input class="ti num" type="number" step="0.5" value="${safe}" style="width:70px" onchange="$id('safeDistance').value=this.value"></td>`;
+  body.appendChild(tr);}}
+ if(!n)body.innerHTML=`<tr><td colspan="5" style="color:#8a98a5">${lang==="zh"?"暂无跨越数据":"No crossing data"}</td></tr>`;
+}
+function calculateAll(){
+ try{
+  const towers=getTowers();
+  if(towers.length<2){alert(lang==="zh"?"至少需要2基杆塔":"Need ≥2 towers");return;}
+  const P={w:num("wCond",13.2126),wr:num("wRope",22.5),ec:num("frictionCond",1.015),er:num("frictionRope",1.015),
+   bundle:parseInt(val("bundleCount"))||1,phaseCount:parseInt(val("phaseCount"))||3,Tp:num("TpCond",100440),
+   safe:num("safeDistance",8),margin:num("margin",0.5),mode:val("calcMode"),T0set:num("manualTension",15000),
+   kp1:num("kpPull",0.33),kp2:num("kpTension",0.2)};
+  const spans=[];
+  for(let i=0;i<towers.length-1;i++){
+   const L=towers[i].span;if(!(L>0))continue;
+   const h=towers[i].height||0,phi=Math.atan(h/L);
+   spans.push({i,L,h,phi,cosPhi:Math.cos(phi),sinPhi:Math.sin(phi),
+    lt:towers[i].name,rt:towers[i+1].name,turn:towers[i+1].angle||0,
+    crossDist:towers[i].crossDist||0,crossHeight:towers[i].crossHeight||0,
+    fbid:towers[i].fbid||"allow",leftT:!!towers[i].isTension,rightT:!!towers[i+1].isTension});
   }
-};
-
-let currentLang = 'zh';
-
-function t(key) {
-  const str = I18N[currentLang]?.[key] || I18N['zh']?.[key] || key;
-  return str;
-}
-
-function setLang(lang) {
-  currentLang = lang;
-  localStorage.setItem('tl_lang', lang);
-  document.querySelectorAll('.lang-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.lang === lang);
-  });
-  document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
-  applyI18N();
-}
-
-function applyI18N() {
-  document.getElementById('pageTitle').textContent = t('title');
-  document.getElementById('headerTitle').textContent = t('title');
-  document.getElementById('headerSubtitle').textContent = t('subtitle');
-  document.getElementById('footerText').textContent = t('footer');
-
-  document.querySelectorAll('[data-i18n]').forEach(el => {
-    const key = el.dataset.i18n;
-    const text = t(key);
-    if (el.tagName === 'INPUT' && el.hasAttribute('placeholder')) {
-      const enPh = el.dataset.placeholderEn;
-      el.placeholder = currentLang === 'en' && enPh ? enPh : text;
-    } else {
-      el.textContent = text;
-    }
-  });
-
-
-
-}
-// ==================== Core Logic ====================
-let towers = [];
-let calcResults = null;
-let condChart = null, ropeChart = null, sagChart = null;
-
-function showStep(idx) {
-  document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
-  document.getElementById('step-'+idx).classList.add('active');
-  document.querySelectorAll('.step-item').forEach((el, i) => {
-    el.classList.remove('active');
-    if (i === idx) el.classList.add('active');
-  });
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (idx === 1) updateTowerSelect();
-  if (idx === 3) refreshCrossTable();
-}
-
-function showTab(id) {
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  event.target.classList.add('active');
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-}
-
-function toggleCalcMode() {
-  const mode = document.getElementById('calcMode').value;
-  document.getElementById('manualTensionBox').classList.toggle('hidden', mode !== 'manual');
-}
-
-function addTower(data) {
-  const tbody = document.getElementById('towerBody');
-  const idx = tbody.children.length;
-  const row = document.createElement('tr');
-  row.dataset.idx = idx;
-  const d = data || {};
-  row.innerHTML = `
-    <td>${idx}</td>
-    <td><input class="table-input" value="${d.name || ''}" placeholder="${currentLang==='en'?'Tower':'杆塔号'}"></td>
-    <td><input class="table-input" type="number" value="${d.span !== undefined ? d.span : ''}" placeholder="${currentLang==='en'?'Span':'档距'}"></td>
-    <td><input class="table-input" type="number" value="${d.height !== undefined ? d.height : ''}" placeholder="${currentLang==='en'?'Height':'高差'}"></td>
-    <td><input class="table-input" type="number" value="${d.angle !== undefined ? d.angle : 0}" step="0.01"></td>
-    <td><input class="table-input" type="number" value="${d.crossDist !== undefined ? d.crossDist : ''}" placeholder="${currentLang==='en'?'None':'无'}"></td>
-    <td><input class="table-input" type="number" value="${d.crossHeight !== undefined ? d.crossHeight : ''}" placeholder="${currentLang==='en'?'None':'无'}"></td>
-    <td class="row-action">
-      <button class="add-row" onclick="insertTower(${idx})">${currentLang==='en'?'Insert':'插入'}</button>
-      <button class="del-row" onclick="deleteTower(${idx})">${currentLang==='en'?'Del':'删除'}</button>
-    </td>`;
-  tbody.appendChild(row);
-  towers.push({});
-  reindexTowers();
-}
-
-function insertTower(afterIdx) {
-  const tbody = document.getElementById('towerBody');
-  const newRow = document.createElement('tr');
-  newRow.innerHTML = `
-    <td>--</td>
-    <td><input class="table-input" placeholder="${currentLang==='en'?'Tower':'杆塔号'}"></td>
-    <td><input class="table-input" type="number" placeholder="${currentLang==='en'?'Span':'档距'}"></td>
-    <td><input class="table-input" type="number" placeholder="${currentLang==='en'?'Height':'高差'}"></td>
-    <td><input class="table-input" type="number" value="0" step="0.01"></td>
-    <td><input class="table-input" type="number" placeholder="${currentLang==='en'?'None':'无'}"></td>
-    <td><input class="table-input" type="number" placeholder="${currentLang==='en'?'None':'无'}"></td>
-    <td style="text-align:center"><input type="checkbox" title="${currentLang==='en'?'Tension Tower':'耐张塔'}"></td>
-    <td class="row-action">
-      <button class="add-row" onclick="insertTowerByElement(this)">${currentLang==='en'?'Insert':'插入'}</button>
-      <button class="del-row" onclick="deleteRow(this)">${currentLang==='en'?'Del':'删除'}</button>
-    </td>`;
-  const refRow = tbody.children[afterIdx];
-  if (refRow && refRow.nextSibling) tbody.insertBefore(newRow, refRow.nextSibling);
-  else tbody.appendChild(newRow);
-  reindexTowers();
-}
-
-function insertTowerByElement(btn) {
-  const row = btn.closest('tr');
-  const tbody = document.getElementById('towerBody');
-  const allRows = Array.from(tbody.children);
-  const idx = allRows.indexOf(row);
-  insertTower(idx);
-}
-
-function deleteTower(idx) {
-  const tbody = document.getElementById('towerBody');
-  if (tbody.children.length <= 1) { alert(t('msg_keepOne')); return; }
-  tbody.removeChild(tbody.children[idx]);
-  reindexTowers();
-}
-
-function deleteRow(btn) {
-  const row = btn.closest('tr');
-  const tbody = document.getElementById('towerBody');
-  if (tbody.children.length <= 1) { alert(t('msg_keepOne')); return; }
-  row.remove();
-  reindexTowers();
-}
-
-function reindexTowers() {
-  const tbody = document.getElementById('towerBody');
-  Array.from(tbody.children).forEach((tr, i) => {
-    tr.dataset.idx = i;
-    tr.cells[0].textContent = i;
-    const btns = tr.querySelectorAll('.row-action button');
-    if (btns.length >= 2) {
-      btns[0].setAttribute('onclick', `insertTower(${i})`);
-      btns[1].setAttribute('onclick', `deleteTower(${i})`);
-    }
-  });
-  towers = new Array(tbody.children.length).fill({});
-  updateTowerSelect();
-}
-
-function clearTowers() {
-  document.getElementById('towerBody').innerHTML = '';
-  towers = [];
-}
-
-function updateTowerSelect() {
-  const sel = document.getElementById('controlTowerSelect');
-  if (!sel) return;
-  const data = getTowerData();
-  sel.innerHTML = '';
-  for (let i = 0; i < data.length - 1; i++) {
-    const left = data[i].name || (currentLang==='en'?'Tower':'杆塔')+i;
-    const right = data[i+1].name || (currentLang==='en'?'Tower':'杆塔')+(i+1);
-    const opt = document.createElement('option');
-    opt.value = i;
-    opt.textContent = `${left} ~ ${right} (${currentLang==='en'?'Span':'第'}${i+1}${currentLang==='en'?'':'档'})`;
-    sel.appendChild(opt);
+  if(!spans.length){alert(lang==="zh"?"没有有效线档（档距>0）":"No valid spans");return;}
+  // control span
+  let ci;
+  if(val("controlMode")==="manual"){ci=Math.min(parseInt($id("controlTowerSelect").value)||0,spans.length-1);
+   // map original tower index to span index
+   const orig=parseInt($id("controlTowerSelect").value)||0;ci=spans.findIndex(s=>s.i===orig);if(ci<0)ci=0;
+  }else{
+   const cr=spans.filter(s=>s.crossDist>0&&s.crossHeight>0).sort((a,b)=>b.L-a.L);
+   if(cr.length)ci=spans.indexOf(cr[0]);else{ci=0;spans.forEach((s,k)=>{if(s.L>spans[ci].L)ci=k});}
   }
-}
-
-function getTowerData() {
-  const tbody = document.getElementById('towerBody');
-  return Array.from(tbody.children).map(tr => {
-    const inputs = tr.querySelectorAll('input');
-    return {
-      name: inputs[0]?.value || '',
-      span: parseFloat(inputs[1]?.value) || 0,
-      height: parseFloat(inputs[2]?.value) || 0,
-      angle: parseFloat(inputs[3]?.value) || 0,
-      crossDist: parseFloat(inputs[4]?.value) || 0,
-      crossHeight: parseFloat(inputs[5]?.value) || 0,
-      isTension: inputs[6]?.checked || false
-    };
-  });
-}
-
-function updateControlUI() {
-  const mode = document.getElementById('controlMode').value;
-  document.getElementById('controlTowerBox').classList.toggle('hidden', mode !== 'manual');
-}
-
-function refreshCrossTable() {
-  const data = getTowerData();
-  const tbody = document.getElementById('crossBody');
-  tbody.innerHTML = '';
-  for (let i = 0; i < data.length - 1; i++) {
-    const t = data[i];
-    if (t.crossDist || t.crossHeight) {
-      const tr = document.createElement('tr');
-      const tdName = document.createElement('td');
-      tdName.textContent = `${t.name || (currentLang==='en'?'Tower':'杆塔')+i} ~ ${data[i+1].name || (currentLang==='en'?'Tower':'杆塔')+(i+1)}`;
-      tr.appendChild(tdName);
-
-      const tdObj = document.createElement('td');
-      const objInput = document.createElement('input');
-      objInput.className = 'table-input';
-      objInput.value = currentLang==='en'?'Power line/road':'电力线/道路等';
-      objInput.style.width = '120px';
-      tdObj.appendChild(objInput);
-      tr.appendChild(tdObj);
-
-      const tdDist = document.createElement('td');
-      tdDist.textContent = t.crossDist || '--';
-      tr.appendChild(tdDist);
-
-      const tdHeight = document.createElement('td');
-      const heightInput = document.createElement('input');
-      heightInput.className = 'table-input';
-      heightInput.type = 'number';
-      heightInput.value = t.crossHeight || '';
-      heightInput.style.width = '80px';
-      heightInput.onchange = function() {
-        const towerRows = document.querySelectorAll('#towerBody tr');
-        if (towerRows[i]) {
-          const inputs = towerRows[i].querySelectorAll('input');
-          if (inputs[5]) inputs[5].value = this.value;
-        }
-      };
-      tdHeight.appendChild(heightInput);
-      tr.appendChild(tdHeight);
-
-      const tdSafe = document.createElement('td');
-      const safeInput = document.createElement('input');
-      safeInput.className = 'table-input';
-      safeInput.type = 'number';
-      safeInput.value = document.getElementById('safeDistance').value || '8';
-      safeInput.style.width = '80px';
-      safeInput.onchange = function() {
-        document.getElementById('safeDistance').value = this.value;
-      };
-      tdSafe.appendChild(safeInput);
-      tr.appendChild(tdSafe);
-
-      tbody.appendChild(tr);
-    }
+  const cs=spans[ci];let fmax=null,Hctrl=null;
+  if(cs.crossDist>0&&cs.crossHeight>0&&cs.crossDist<cs.L){
+   const fx=cs.crossHeight-P.safe;
+   if(fx>0)fmax=fx*cs.L*cs.L/(4*cs.crossDist*(cs.L-cs.crossDist));
   }
-  if (tbody.children.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5">${t('cross_none')}</td></tr>`;
-  }
-}
-
-
-function loadDemoData(id) {
-  clearTowers();
-  if (id === 1) {
-    const data = [
-      {name:'牵引机', span:115, height:6.27, angle:0, crossDist:0, crossHeight:0},
-      {name:'N1', span:569, height:17, angle:66.57, crossDist:215, crossHeight:45},
-      {name:'N2', span:365, height:14, angle:0, crossDist:0, crossHeight:0},
-      {name:'N3', span:321, height:7.76, angle:0, crossDist:0, crossHeight:0},
-      {name:'N4', span:525, height:54.36, angle:0, crossDist:0, crossHeight:0},
-      {name:'N5', span:738, height:-31.89, angle:0, crossDist:0, crossHeight:0},
-      {name:'N6', span:176, height:2.75, angle:0, crossDist:0, crossHeight:0},
-      {name:'N7', span:479, height:-37.47, angle:0, crossDist:0, crossHeight:0},
-      {name:'N8', span:481, height:0.67, angle:0, crossDist:0, crossHeight:0},
-      {name:'N9', span:452, height:111.1, angle:9.2, crossDist:0, crossHeight:0},
-      {name:'N10', span:304, height:-30.1, angle:0, crossDist:0, crossHeight:0},
-      {name:'N11', span:622, height:-89.96, angle:0, crossDist:0, crossHeight:0},
-      {name:'N12', span:172, height:-54.82, angle:0, crossDist:0, crossHeight:0},
-      {name:'N13', span:821, height:-71.19, angle:9.48, crossDist:0, crossHeight:0},
-      {name:'张力机', span:0, height:0, angle:0, crossDist:0, crossHeight:0}
-    ];
-    data.forEach(t => addTower(t));
-    document.getElementById('projName').value = currentLang==='en'?'Laos 500kV Transmission Line':'老挝500kV送出线路';
-    document.getElementById('sectionName').value = 'N1~N14';
-    document.getElementById('voltageLevel').value = '500';
-    document.getElementById('bundleCount').value = '4';
-    document.getElementById('conductorModel').value = 'JL/G1A-400/35';
-    document.getElementById('wCond').value = '13.475';
-    document.getElementById('TpCond').value = '123400';
-    document.getElementById('ropeModel').value = 'phi24';
-    document.getElementById('wRope').value = '22.5';
-    document.getElementById('frictionCond').value = '1.017';
-    document.getElementById('frictionRope').value = '1.015';
-    document.getElementById('calcMode').value = 'manual';
-    document.getElementById('manualTension').value = '15000';
-    toggleCalcMode();
-  } else {
-    const data = [
-      {name:'张力机', span:285, height:-9, angle:0, crossDist:0, crossHeight:0},
-      {name:'SP29-3', span:434, height:-61.9, angle:0, crossDist:0, crossHeight:0},
-      {name:'SP29-2', span:253, height:-28.3, angle:0, crossDist:0, crossHeight:0},
-      {name:'SP29-1', span:344, height:-65.5, angle:10.36, crossDist:120, crossHeight:37},
-      {name:'AP29', span:294, height:-89, angle:0, crossDist:0, crossHeight:0},
-      {name:'SP28-1', span:379, height:-99.3, angle:24.18, crossDist:35, crossHeight:12},
-      {name:'SP27-1', span:168, height:-29.7, angle:0, crossDist:0, crossHeight:0},
-      {name:'AP27', span:313, height:-71.2, angle:13.02, crossDist:90, crossHeight:40},
-      {name:'SP26-1', span:166, height:-27.6, angle:0, crossDist:0, crossHeight:0},
-      {name:'AP26', span:399, height:-152.7, angle:9.15, crossDist:0, crossHeight:0},
-      {name:'AP25', span:82, height:-8.7, angle:0, crossDist:0, crossHeight:0},
-      {name:'SP24-5', span:149, height:-74.9, angle:0, crossDist:0, crossHeight:0},
-      {name:'SP24-4', span:245, height:-127.2, angle:0, crossDist:0, crossHeight:0},
-      {name:'SP24-3', span:397, height:-152.7, angle:0, crossDist:0, crossHeight:0},
-      {name:'SP24-2', span:304, height:-42.5, angle:0, crossDist:0, crossHeight:0},
-      {name:'牵引机', span:0, height:0, angle:0, crossDist:0, crossHeight:0}
-    ];
-    data.forEach(t => addTower(t));
-    document.getElementById('projName').value = currentLang==='en'?'Nepal Upper Marsyangdi Transmission':'尼泊尔上垂树里输变电项目';
-    document.getElementById('sectionName').value = 'SP24-1~AP30';
-    document.getElementById('voltageLevel').value = '220';
-    document.getElementById('bundleCount').value = '2';
-    document.getElementById('conductorModel').value = 'LGJ-400/50';
-    document.getElementById('wCond').value = '14.8078';
-    document.getElementById('TpCond').value = '123400';
-    document.getElementById('ropeModel').value = 'phi24';
-    document.getElementById('wRope').value = '22.5';
-    document.getElementById('frictionCond').value = '1.015';
-    document.getElementById('frictionRope').value = '1.015';
-    document.getElementById('calcMode').value = 'manual';
-    document.getElementById('manualTension').value = '18003.6';
-    toggleCalcMode();
-  }
-}
-
-// ==================== Core Calculation Engine ====================
-function calculateAll() {
-  
-  try {
-    const towerData = getTowerData();
-    if (towerData.length < 2) { alert(t('msg_minTowers')); return; }
-
-    const params = {
-      wCond: parseFloat(document.getElementById('wCond').value) || 14.8,
-      wRope: parseFloat(document.getElementById('wRope').value) || 22.5,
-      frictionCond: parseFloat(document.getElementById('frictionCond').value) || 1.015,
-      frictionRope: parseFloat(document.getElementById('frictionRope').value) || 1.015,
-      bundle: parseInt(document.getElementById('bundleCount').value) || 2,
-      Tp: parseFloat(document.getElementById('TpCond').value) || 123400,
-      safeDist: parseFloat(document.getElementById('safeDistance').value) || 8,
-      margin: parseFloat(document.getElementById('margin').value) || 0.5,
-      calcMode: document.getElementById('calcMode').value,
-      manualTension: parseFloat(document.getElementById('manualTension').value) || 15000,
-      kpPull: parseFloat(document.getElementById('kpPull').value) || 0.33,
-      kpTension: parseFloat(document.getElementById('kpTension').value) || 0.2
-    };
-
-    const spans = [];
-    for (let i = 0; i < towerData.length - 1; i++) {
-      const L = towerData[i].span || 0;
-      const h = towerData[i].height || 0;
-      const phi = L > 0 ? Math.atan(h / L) : 0;
-      spans.push({
-        idx: i,
-        leftTower: towerData[i].name,
-        rightTower: towerData[i+1].name,
-        L: L,
-        h: h,
-        phi: phi,
-        cosPhi: Math.cos(phi),
-        sinPhi: Math.sin(phi),
-        angle: towerData[i+1].angle || 0,
-        crossDist: towerData[i].crossDist || 0,
-        crossHeight: towerData[i].crossHeight || 0
-      });
-    }
-
-    const controlMode = document.getElementById('controlMode').value;
-    let controlIdx;
-    if (controlMode === 'manual') {
-      controlIdx = parseInt(document.getElementById('controlTowerSelect').value) || 0;
-    } else {
-      let crossSpans = [];
-      for (let i = 0; i < spans.length; i++) {
-        if (spans[i].crossDist > 0 && spans[i].crossHeight > 0) crossSpans.push({ idx: i, L: spans[i].L });
-      }
-      if (crossSpans.length > 0) {
-        crossSpans.sort((a, b) => b.L - a.L);
-        controlIdx = crossSpans[0].idx;
-      } else {
-        controlIdx = 0;
-        let maxSpan = 0;
-        for (let i = 0; i < spans.length; i++) {
-          if (spans[i].L > maxSpan) { maxSpan = spans[i].L; controlIdx = i; }
-        }
-      }
-    }
-
-    const controlSpan = spans[controlIdx];
-    let f_max, H_control;
-    if (controlSpan.crossHeight > 0 && controlSpan.crossDist > 0 && controlSpan.crossDist < controlSpan.L) {
-      const x = controlSpan.crossDist;
-      const L = controlSpan.L;
-      const fx_allowed = controlSpan.crossHeight - params.safeDist;
-      if (fx_allowed > 0) {
-        f_max = fx_allowed * L * L / (4 * x * (L - x));
-      } else {
-        f_max = params.safeDist + params.margin;
-        alert(t('msg_warnCross'));
-      }
-    } else {
-      f_max = null;
-      H_control = null;
-    }
-
-    if (f_max !== null && f_max > controlSpan.L / 2) {
-      alert(t('msg_warnSag').replace('{fmax}', f_max.toFixed(2)).replace('{half}', (controlSpan.L/2).toFixed(1)));
-    }
-
-    H_control = f_max !== null ? params.wCond * controlSpan.L * controlSpan.L / (8 * f_max * controlSpan.cosPhi) : null;
-
-    let epsProd = 1.0, cosProd = 1.0;
-    for (let i = 0; i < controlIdx; i++) {
-      epsProd *= params.frictionCond;
-      cosProd *= spans[i].cosPhi;
-    }
-    cosProd *= controlSpan.cosPhi;
-    let T0_calc = H_control !== null ? H_control * cosProd / epsProd : null;
-
-    let T0 = T0_calc;
-    if (params.calcMode === 'manual' || f_max === null) {
-      T0 = params.manualTension;
-      if (f_max === null && params.calcMode !== 'manual') {
-        const spanName = controlSpan.leftTower + '~' + controlSpan.rightTower;
-        alert(t('msg_manualMode').replace('{span}', spanName).replace('{t0}', T0.toFixed(0)));
-      }
-    }
-
-    let H_control_display = H_control;
-    if (H_control_display === null) {
-      let currentH = T0;
-      for (let i = 0; i <= controlIdx; i++) {
-        currentH = currentH * params.frictionCond / spans[i].cosPhi;
-      }
-      H_control_display = currentH / params.frictionCond;
-    }
-
-    let currentT = T0;
-    const condResults = [];
-    for (let i = 0; i < spans.length; i++) {
-      const sp = spans[i];
-      const epsilon = params.frictionCond;
-      const T_in = currentT;
-      const T_out = T_in * epsilon;
-      const T_axial = T_out / sp.cosPhi;
-
-      const H_i = (i === 0) ? T0 / sp.cosPhi : condResults[i-1].H * epsilon / sp.cosPhi;
-      const sag = params.wCond * sp.L * sp.L / (8 * H_i * sp.cosPhi);
-      const lineLength = sp.L / sp.cosPhi + (params.wCond * params.wCond * Math.pow(sp.L, 3)) / (24 * H_i * H_i);
-      const thetaA = Math.atan((params.wCond * sp.L) / (2 * H_i) - sp.h / sp.L);
-      const thetaB = Math.atan((params.wCond * sp.L) / (2 * H_i) + sp.h / sp.L);
-      const angleRad = sp.angle * Math.PI / 180;
-      const wrapAngle = Math.abs(thetaA) + Math.abs(thetaB) + angleRad;
-
-      let safeDistCalc = null;
-      let safeCheck = 'N/A';
-      if (sp.crossDist > 0 && sp.crossHeight > 0) {
-        const x = sp.crossDist;
-        const fx = 4 * sag * x * (sp.L - x) / (sp.L * sp.L);
-        safeDistCalc = sp.crossHeight - fx;
-        safeCheck = safeDistCalc >= params.safeDist ? 'OK' : 'FAIL';
-      }
-
-      condResults.push({
-        ...sp,
-        T_in: T_in,
-        T_out: T_out,
-        T_axial: T_axial,
-        H: H_i,
-        sag: sag,
-        lineLength: lineLength,
-        thetaA: thetaA * 180 / Math.PI,
-        thetaB: thetaB * 180 / Math.PI,
-        wrapAngle: wrapAngle * 180 / Math.PI,
-        doubleSheave: wrapAngle * 180 / Math.PI > 60 ? 'Y' : 'N',
-        safeDistCalc: safeDistCalc,
-        safeCheck: safeCheck,
-        leftT: towerData[i].isTension || false,
-        rightT: towerData[i+1].isTension || false
-      });
-
-      currentT = T_out;
-    }
-
-    const pullerTension = condResults[condResults.length - 1].T_axial;
-    const pullerMax = pullerTension * params.bundle;
-
-    const ropePullerTension = pullerMax / params.bundle;
-    const ropeResults = [];
-    let ropeT = ropePullerTension;
-    for (let i = spans.length - 1; i >= 0; i--) {
-      const sp = spans[i];
-      const ropeT_in = ropeT;
-      const ropeT_out = ropeT_in / params.frictionRope;
-      const ropeH = ropeT_out / sp.cosPhi;
-      const ropeVerticalSpan = sp.L + (2 * ropeH / params.wRope) * (sp.h / sp.L);
-      const ropeUp = ropeVerticalSpan < 0 ? 'Y' : 'N';
-
-      ropeResults.unshift({
-        idx: i,
-        leftTower: sp.leftTower,
-        rightTower: sp.rightTower,
-        L: sp.L,
-        h: sp.h,
-        cosPhi: sp.cosPhi,
-        T_in: ropeT_in,
-        T_out: ropeT_out,
-        H: ropeH,
-        verticalSpan: ropeVerticalSpan,
-        ropeUp: ropeUp
-      });
-
-      ropeT = ropeT_out;
-    }
-
-    calcResults = {
-      params: params,
-      towers: towerData,
-      spans: spans,
-      condResults: condResults,
-      ropeResults: ropeResults,
-      controlIdx: controlIdx,
-      T0: T0,
-      T0_calc: T0_calc,
-      H_control: H_control_display,
-      f_max: f_max,
-      pullerTension: pullerTension,
-      pullerMax: pullerMax,
-      totalLineLength: condResults.reduce((s, r) => s + r.lineLength, 0)
-    };
-    window.wiringResult = null;
-
-    renderResults();
-    showStep(4);
-  } catch (err) {
-    alert(t('msg_calcError') + ': ' + err.message);
-    console.error(err);
-  }
-}
-
-function renderResults() {
-  if (!calcResults) return;
-  const { condResults, ropeResults, spans, T0, T0_calc, H_control, f_max, pullerMax, totalLineLength, controlIdx, params } = calcResults;
-
-  const summary = document.getElementById('resultSummary');
-  const hasCrossing = condResults[controlIdx]?.crossHeight > 0 && condResults[controlIdx]?.crossDist > 0;
-  const calcModeDesc = hasCrossing && params.calcMode !== 'manual'
-    ? `${t('mode_auto')}: ${t('badge_control')} ${condResults[controlIdx]?.leftTower}~${condResults[controlIdx]?.rightTower} ${currentLang==='en'?'has crossing, reverse-calculated tensioner outlet tension':'有跨越物，由跨越参数反算出张力机出口张力'} ${T0.toFixed(0)} N`
-    : `${t('mode_manual')}: ${currentLang==='en'?'Using manual tensioner outlet tension':'使用设定的张力机出口张力'} ${T0.toFixed(0)} N (${currentLang==='en'?'Control span has no crossing data':'控制档无跨越物，无法由安全距离反算'})`;
-
-  summary.innerHTML = `
-    <div style="grid-column:1/-1; margin-bottom:12px; padding:12px 16px; border-radius:8px; background:#e3f2fd; border-left:4px solid #1976d2; font-size:0.9rem;">
-      <strong>${currentLang==='en'?'Calc Mode':'计算模式说明'}：</strong>${calcModeDesc}
-    </div>
-    <div class="result-card"><div class="label">${currentLang==='en'?'Tensioner Outlet Tension':'张力机出口张力'}</div><div class="value">${T0.toFixed(0)}</div><div class="unit">N</div></div>
-    <div class="result-card"><div class="label">${currentLang==='en'?'Control Span Horiz. Tension':'控制档水平张力'}</div><div class="value">${H_control !== null ? H_control.toFixed(0) : 'N/A'}</div><div class="unit">N</div></div>
-    <div class="result-card"><div class="label">${currentLang==='en'?'Control Span Sag Limit':'控制档弧垂限值'}</div><div class="value">${f_max !== null ? f_max.toFixed(2) : (currentLang==='en'?'Manual':'手动设定')}</div><div class="unit">m</div></div>
-    <div class="result-card"><div class="label">${currentLang==='en'?'Puller Max Tension':'牵引机最大牵引力'}</div><div class="value">${(pullerMax/1000).toFixed(2)}</div><div class="unit">kN</div></div>
-    <div class="result-card"><div class="label">${currentLang==='en'?'Control Span':'控制档'}</div><div class="value">${condResults[controlIdx]?.leftTower||''}~${condResults[controlIdx]?.rightTower||''}</div><div class="unit">${currentLang==='en'?'Span':'第'}${controlIdx+1}${currentLang==='en'?'':'档'}</div></div>
-    <div class="result-card"><div class="label">${currentLang==='en'?'Total Line Length':'放线总线长'}</div><div class="value">${totalLineLength.toFixed(1)}</div><div class="unit">m</div></div>
-    <div class="result-card"><div class="label">${currentLang==='en'?'Span Count':'档数'}</div><div class="value">${spans.length}</div><div class="unit">${currentLang==='en'?'spans':'档'}</div></div>`;
-
-  const cBody = document.querySelector('#condTable tbody');
-  cBody.innerHTML = condResults.map((s, i) => {
-    const epsAcc = Math.pow(params.frictionCond, i);
-    const isControl = i === controlIdx ? `<span class="badge badge-yellow">${t('badge_control')}</span>` : '';
-    return `
-    <tr class="${i===controlIdx?'control-row':''}">
-      <td>${i+1}</td>
-      <td>${s.leftTower}~${s.rightTower} ${isControl}</td>
-      <td>${s.L.toFixed(1)}</td>
-      <td>${s.h.toFixed(2)}</td>
-      <td>${s.cosPhi.toFixed(4)}</td>
-      <td>${epsAcc.toFixed(4)}</td>
-      <td>${s.T_in.toFixed(1)}</td>
-      <td>${s.T_out.toFixed(1)}</td>
-      <td>${s.T_axial.toFixed(1)}</td>
-    </tr>`;
-  }).join('');
-
-  const rBody = document.querySelector('#ropeTable tbody');
-  rBody.innerHTML = ropeResults.map((s, i) => {
-    const epsAcc = Math.pow(params.frictionRope, spans.length - i);
-    const isControl = i === controlIdx ? `<span class="badge badge-yellow">${t('badge_control')}</span>` : '';
-    return `
-    <tr class="${i===controlIdx?'control-row':''}">
-      <td>${i+1}</td>
-      <td>${s.rightTower}</td>
-      <td>${spans.length - i}</td>
-      <td>${epsAcc.toFixed(4)}</td>
-      <td>${s.T_out.toFixed(1)}</td>
-      <td>${s.verticalSpan.toFixed(1)}</td>
-      <td><span class="badge ${s.ropeUp==='Y'?'badge-red':'badge-green'}">${s.ropeUp==='Y'?t('badge_up'):t('badge_normal')}</span></td>
-    </tr>`;
-  }).join('');
-
-  const sBody = document.querySelector('#sagTable tbody');
-  sBody.innerHTML = condResults.map((s, i) => {
-    const isControl = i === controlIdx ? `<span class="badge badge-yellow">${t('badge_control')}</span>` : '';
-    return `
-    <tr class="${i===controlIdx?'control-row':''}">
-      <td>${i+1}</td>
-      <td>${s.leftTower}~${s.rightTower} ${isControl}</td>
-      <td>${s.H.toFixed(1)}</td>
-      <td>${s.sag.toFixed(3)}</td>
-      <td>${s.lineLength.toFixed(2)}</td>
-      <td>${s.safeDistCalc !== null ? s.safeDistCalc.toFixed(2) : 'N/A'}</td>
-      <td>${s.crossHeight > 0 ? params.safeDist.toFixed(1) : 'N/A'}</td>
-    </tr>`;
-  }).join('');
-
-  const aBody = document.querySelector('#angleTable tbody');
-  aBody.innerHTML = condResults.map((s, i) => `
-    <tr class="${i===controlIdx?'control-row':''}">
-      <td>${i+1}</td>
-      <td>${s.rightTower}</td>
-      <td>${s.thetaA.toFixed(2)}</td>
-      <td>${s.thetaB.toFixed(2)}</td>
-      <td>${s.angle}</td>
-      <td>${s.wrapAngle.toFixed(2)}</td>
-      <td><span class="badge ${s.doubleSheave==='Y'?'badge-red':'badge-green'}">${s.doubleSheave==='Y'?t('badge_double'):t('badge_single')}</span></td>
-    </tr>`).join('');
-
-  renderCheckReport();
-  renderEquipment();
-  renderCharts();
-  renderWiringAnalysis();
-}
-
-function renderWiringAnalysis() {
-  if (!calcResults) return;
-  const { condResults, towers } = calcResults;
-
-  // Read params
-  const reelLen = parseFloat(document.getElementById('reelLengthInput').value) || 2500;
-  const bundle = parseInt(document.getElementById('bundleCount2').value) || 2;
-  const circuit = parseInt(document.getElementById('circuitCount').value) || 1;
-  const clampClearance = parseFloat(document.getElementById('clampClearance').value) || 7.5;
-  const carryInStr = document.getElementById('carryInInput')?.value || '';
-  const carryIn = carryInStr.split(/[,，;；\s]+/).map(s => parseFloat(s)).filter(x => x > 0);
-
-  // ===================== 1. Line length calculation =====================
-  const segs = [];
-  let accum = 0;
-  for (let i = 0; i < condResults.length; i++) {
-    const s = condResults[i];
-    const lineLen = s.lineLength;
-    const isForbidden = (s.crossDist > 0 && s.crossHeight > 0);
-    segs.push({
-      idx: i,
-      name: s.leftTower + '~' + s.rightTower,
-      L: s.L,
-      h: s.h,
-      len: lineLen,
-      a: accum,
-      b: accum + lineLen,
-      leftT: s.leftT,
-      rightT: s.rightT,
-      forbid: isForbidden,
-      crossDist: s.crossDist,
-      crossHeight: s.crossHeight
-    });
-    accum += lineLen;
-  }
-  const TOTAL = accum;
-
-  // Render line length table
-  const lenBody = document.querySelector('#wiringLenTable tbody');
-  if (lenBody) {
-    lenBody.innerHTML = segs.map((s, i) => `
-      <tr class="${s.forbid ? 'forbidden-row' : ''}">
-        <td>${i + 1}</td>
-        <td>${s.name}</td>
-        <td>${s.L.toFixed(1)}</td>
-        <td>${s.h.toFixed(2)}</td>
-        <td>${Math.sqrt(s.L*s.L + s.h*s.h).toFixed(2)}</td>
-        <td>${s.len.toFixed(2)}</td>
-        <td>${s.b.toFixed(2)}</td>
-      </tr>`).join('');
-  }
-
-  document.getElementById('wiringTotalLen').textContent = TOTAL.toFixed(1);
-
-  // ===================== 2. Legal zones =====================
-  const zones = [];
-  segs.forEach(s => {
-    if (s.forbid) return;
-    const lo = s.a + (s.leftT ? 0 : clampClearance);
-    const hi = s.b - (s.rightT ? 0 : clampClearance);
-    if (hi > lo) zones.push({ t: 'iv', lo, hi });
-    if (s.leftT) zones.push({ t: 'pt', p: s.a, i: s.idx, side: 'L', name: s.leftTower });
-    if (s.rightT) zones.push({ t: 'pt', p: s.b, i: s.idx, side: 'R', name: s.rightTower });
+  if(fmax!==null)Hctrl=P.w*cs.L*cs.L/(8*fmax*cs.cosPhi);
+  let eps=1;for(let i=0;i<ci;i++)eps*=P.ec;
+  const T0calc=Hctrl!==null?Hctrl*spans[0].cosPhi/(eps*cs.cosPhi):null;
+  let T0=P.T0set;
+  if(P.mode==="auto"&&T0calc!==null)T0=T0calc;
+  // conductor recursion (textbook): H0=T0(水平); Hi=eps*H(i-1)*cosPhi_i/cosPhi_(i-1); axial=H/cosPhi
+  const cr1=[];
+  spans.forEach((sp,i)=>{
+   const H=i===0?T0:P.ec*cr1[i-1].H*sp.cosPhi/spans[i-1].cosPhi;
+   const axial=H/sp.cosPhi;
+   const sag=P.w*sp.L*sp.L/(8*H*sp.cosPhi);
+   const lineLen=sp.L/sp.cosPhi+P.w*P.w*Math.pow(sp.L,3)/(24*H*H);
+   const thA=Math.atan(P.w*sp.L/(2*H)-sp.h/sp.L);
+   const thB=Math.atan(P.w*sp.L/(2*H)+sp.h/sp.L);
+   cr1.push({...sp,H,axial,sag,lineLen,thA,thB});
   });
-
-  function latestLegal(cur, cap) {
-    let best = null, bestPt = null;
-    zones.forEach(z => {
-      if (z.t === 'iv') {
-        const p = Math.min(z.hi, cap);
-        if (p > cur && p >= z.lo && (best === null || p > best)) best = p;
-      } else if (cur < z.p && z.p <= cap && (bestPt === null || z.p > bestPt)) {
-        bestPt = z;
-      }
-    });
-    if (best === null && bestPt === null) return null;
-    if (bestPt && best !== null && best > bestPt.p && (best - bestPt.p) <= 150) {
-      return { p: bestPt.p, pt: true, z: bestPt };
-    }
-    if (best !== null) return { p: best, pt: false };
-    return { p: bestPt.p, pt: true, z: bestPt };
+  // per-tower geometry: wrap angle (3D), pulley load
+  const tw=[];
+  for(let j=0;j<=spans.length;j++){
+   const left=j>0?cr1[j-1]:null,right=j<spans.length?cr1[j]:null;
+   const name=j===0?spans[0].lt:(j===spans.length?spans[spans.length-1].rt:spans[j-1].rt);
+   const turn=(j>0&&j<=spans.length)?spans[j-1].turn:(towers[0].angle||0);
+   let b1=null,b2=null,wrap=null,load=null;
+   if(left&&right){
+    b1=left.thB;b2=right.thA;const a=turn*Math.PI/180;
+    const s=Math.pow(Math.sin((b1+b2)/2),2)+Math.cos(b1)*Math.cos(b2)*Math.pow(Math.sin(a/2),2);
+    wrap=2*Math.asin(Math.sqrt(Math.min(1,Math.max(0,s))));
+    const Ta=left.H/Math.cos(b1),Tb=right.H/Math.cos(b2);
+    const cosG=Math.cos(b1)*Math.cos(b2)*Math.cos(a)+Math.sin(b1)*Math.sin(b2);
+    load=Math.sqrt(Ta*Ta+Tb*Tb-2*Ta*Tb*cosG);
+   }
+   const isT=j===0?spans[0].leftT:(j===spans.length?spans[spans.length-1].rightT:spans[j-1].rightT);
+   tw.push({j,name,b1,b2,turn,wrap,load,Ta:left?left.H/Math.cos(b1):null,Tb:right?right.H/Math.cos(b2):null,isTension:isT});
   }
-
-  function segAt(p) {
-    for (const s of segs) if (p >= s.a - 1e-6 && p <= s.b + 1e-6) return s;
-    return segs[segs.length - 1];
+  // rope recursion: axial matches conductor at puller, divide eps crossing each support toward tensioner
+  const pullerAxial=cr1[cr1.length-1].axial,pullerMax=pullerAxial*P.bundle;
+  const ropeAxial=new Array(spans.length).fill(0),ropeH=new Array(spans.length).fill(0);
+  let ra=pullerAxial;
+  for(let i=spans.length-1;i>=0;i--){ropeAxial[i]=ra;ropeH[i]=ra*spans[i].cosPhi;ra=ra/P.er;}
+  // per-tower vertical spans (rope): lv = halves adjusted by slope; negative => uplift
+  const rope=[];
+  for(let j=0;j<=spans.length;j++){
+   let lv=0;
+   if(j>0)lv+=spans[j-1].L/2-ropeH[j-1]*spans[j-1].h/(P.wr*spans[j-1].L);
+   if(j<spans.length)lv+=spans[j].L/2+ropeH[j]*spans[j].h/(P.wr*spans[j].L);
+   const name=j===0?spans[0].lt:(j===spans.length?spans[spans.length-1].rt:spans[j-1].rt);
+   const csp=j<spans.length?spans[j]:spans[j-1];
+   const T=j<spans.length?ropeAxial[j]:(ropeAxial[j-1]/P.er);
+   rope.push({j,name,T,Hr:T*csp.cosPhi,lv,up:lv<0});
   }
+  const total=cr1.reduce((s,r)=>s+r.lineLen,0);
+  window.calcResults={P,spans,cond:cr1,towersGeo:tw,rope,ropeAxial,ci,T0,T0calc,Hctrl,fmax,pullerAxial,pullerMax,total,towers};
+  renderResults();planWiring();renderChecks();renderEquip();goStep(4);
+ }catch(e){alert((lang==="zh"?"计算出错：":"Calc error: ")+e.message);console.error(e);}
+}
 
-  // ===================== 3. Reel planning =====================
-  let pid = 0;
-  const stock = carryIn.map((len, k) => ({
-    id: ++pid, len, origin: `${currentLang==='en'?'Carry-in':'带入'} #${k+1}`,
-    reuse: true, status: 'kept', usedBy: '', bornPhase: 0
-  }));
-  const waste = [];
-  let newCount = 0, reusedLen = 0, genLeftover = 0;
-  const reelRows = [];
-  let problems = [];
-
-  let cur = 0;
-  while (cur < TOTAL - 1e-6) {
-    const remain = TOTAL - cur;
-    const isFinal = remain <= reelLen;
-    const fullTarget = isFinal ? { p: TOTAL } : latestLegal(cur, cur + reelLen);
-
-    // Try stock pieces first
-    const cands = [];
-    stock.forEach(pc => {
-      if (pc.status !== 'kept' || !pc.reuse) return;
-      const cap = Math.min(cur + pc.len, TOTAL);
-      if (cap >= TOTAL - 1e-6) {
-        cands.push({ pc, p: TOTAL, final: true });
-      } else {
-        const r = latestLegal(cur, cap);
-        if (r) cands.push({ pc, p: r.p, pt: r.pt });
-      }
-    });
-
-    let pick = null, pj = null, isPt = false;
-    const ok = fullTarget ? cands.filter(c => c.p >= fullTarget.p - 1e-6) : [];
-    if (ok.length) {
-      ok.sort((a, b) => a.pc.len - b.pc.len);
-      pick = ok[0].pc; pj = ok[0].p; isPt = !!ok[0].pt;
-    } else if (cands.length) {
-      cands.sort((a, b) => a.pc.len - b.pc.len);
-      pick = cands[0].pc; pj = cands[0].p; isPt = !!cands[0].pt;
-    }
-
-    let chosen, src;
-    if (pick) {
-      chosen = pick.len;
-      src = pick.origin;
-      pick.status = 'reused';
-      pick.usedBy = '1';
-      reusedLen += chosen;
-      stock.splice(stock.indexOf(pick), 1);
-    } else {
-      newCount++;
-      chosen = reelLen;
-      src = (currentLang === 'en' ? 'New' : '新盘') + ' ' + newCount;
-      if (isFinal) {
-        pj = TOTAL;
-      } else {
-        const r = latestLegal(cur, cur + reelLen);
-        if (!r) {
-          problems.push({ pos: cur });
-          pj = Math.min(cur + reelLen, TOTAL);
-          isPt = false;
-        } else {
-          pj = r.p; isPt = r.pt;
-        }
-      }
-    }
-
-    const used = pj - cur;
-    const left = Math.max(0, chosen - used);
-    const sg = segAt(pj);
-
-    let kind;
-    if (pj >= TOTAL - 1e-6) kind = 'final';
-    else if (problems.length && Math.abs(problems[problems.length - 1].pos - cur) < 1e-6) kind = 'viol';
-    else if (isPt) kind = 'snap';
-    else if (Math.abs(used - reelLen) < 1e-6) kind = 'full';
-    else kind = 'cut';
-    if (kind === 'cut' && left < 1e-6 && pick) kind = 'reused';
-
-    reelRows.push({
-      reelNo: reelRows.length + 1,
-      src, chosen, used, left,
-      pos: pj, seg: sg,
-      toL: pj - sg.a, toR: sg.b - pj,
-      kind
-    });
-
-    if (left >= 1e-6) {
-      if (left >= 12) { // minimum 12m for jumper reuse
-        genLeftover += left;
-        stock.push({
-          id: ++pid, len: left,
-          origin: `${currentLang==='en'?'Cut':'余线'} #${reelRows.length}`,
-          reuse: left >= 100, status: 'kept', usedBy: '', bornPhase: 1
-        });
-      } else {
-        genLeftover += left;
-        waste.push({ len: left, origin: src });
-      }
-    }
-
-    cur = pj;
+/* =================== results render =================== */
+function badge(ok,t1,t2){return `<span class="badge ${ok?"b-ok":"b-no"}">${ok?(t1||L("ok")):(t2||L("bad"))}</span>`}
+function renderResults(){
+ if(!window.calcResults)return;const R=window.calcResults;
+ const {cond,rope,ci,T0,Hctrl,fmax,pullerMax,total,P}=R;
+ $id("kpiBox").innerHTML=[
+  [L("t0"),T0.toFixed(0),"N"],[lang==="zh"?"控制档水平张力":"Control H",Hctrl!==null?Hctrl.toFixed(0):"--","N"],
+  [lang==="zh"?"控制档弧垂限值":"fmax",fmax!==null?fmt(fmax,2):(lang==="zh"?"手动":"manual"),"m"],
+  [lang==="zh"?"牵引机最大牵引力":"Puller max",(pullerMax/1000).toFixed(2),"kN"],
+  [lang==="zh"?"控制档":"Control",`${cond[ci].lt}~${cond[ci].rt}`,`#${ci+1}`],
+  [lang==="zh"?"单相放线总长":"Length/phase",total.toFixed(1),"m"],
+  [L("sub_total"),P.bundle*P.phaseCount,`${P.bundle}×${P.phaseCount}`],
+  [lang==="zh"?"全线导线净长":"Net total",(total*P.bundle*P.phaseCount).toFixed(0),"m"]
+ ].map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="u">${k[2]}</div></div>`).join("");
+ $id("condBody").innerHTML=cond.map((s,i)=>`<tr class="${i===ci?"ctrl-row":""}"><td>${i+1}</td><td>${s.lt}~${s.rt}${i===ci?` <span class="badge b-w">${L("ctrl")}</span>`:""}</td>
+  <td class="num">${fmt(s.L)}</td><td class="num">${fmt(s.h,2)}</td><td class="num">${s.cosPhi.toFixed(4)}</td><td class="num">${Math.pow(P.ec,i).toFixed(4)}</td>
+  <td class="num">${fmt(s.H,0)}</td><td class="num">${fmt(s.axial,0)}</td><td class="num">${fmt(s.sag,2)}</td><td class="num">${fmt(s.lineLen,2)}</td></tr>`).join("");
+ $id("ropeBody").innerHTML=rope.map((s,i)=>`<tr class="${s.up?"fbid-row":""}"><td>${i+1}</td><td>${s.name}</td><td class="num">${fmt(s.T,0)}</td><td class="num">${fmt(s.Hr,0)}</td><td class="num">${fmt(s.lv,1)}</td>
+  <td>${badge(!s.up,L("normal"),L("up"))}</td></tr>`).join("");
+ $id("sagBody").innerHTML=cond.map((s,i)=>`<tr class="${i===ci?"ctrl-row":""}"><td>${i+1}</td><td>${s.lt}~${s.rt}</td><td class="num">${fmt(s.H,0)}</td><td class="num">${fmt(s.sag,3)}</td>
+  <td class="num">${fmt(s.lineLen,2)}</td><td class="num">${s.crossDist>0&&s.crossHeight>0?fmt(s.crossHeight-4*s.sag*s.crossDist*(s.L-s.crossDist)/(s.L*s.L),2):"--"}</td>
+  <td class="num">${s.crossDist>0?P.safe.toFixed(1):"--"}</td></tr>`).join("");
+ const thr=num("wrapThresh",60);
+ $id("angBody").innerHTML=R.towersGeo.map(g=>{
+  if(g.wrap===null)return `<tr><td>${g.name}</td><td colspan="9" style="color:#8a98a5">${lang==="zh"?"牵/张场端":"section end"}</td></tr>`;
+  const wd=g.wrap*180/Math.PI;const need=wd>thr;
+  return `<tr><td>${g.name}${g.isTension?` <span class="badge b-i">${lang==="zh"?"耐张":"strain"}</span>`:""}</td>
+   <td class="num">${fmt(g.b1*180/Math.PI,2)}</td><td class="num">${fmt(g.b2*180/Math.PI,2)}</td><td class="num">${fmt(g.turn,2)}</td>
+   <td class="num">${fmt(g.Ta,0)}</td><td class="num">${fmt(g.Tb,0)}</td>
+   <td class="num" style="font-weight:700;color:${need?"var(--danger)":"inherit"}">${fmt(wd,2)}</td><td class="num">${fmt(g.load,0)}</td>
+   <td>${badge(!need,L("single_ok"),L("need_double"))}</td></tr>`}).join("");
+ renderCharts();
+}
+/* ---- hand-rolled SVG charts ---- */
+function svgChart(title,series,labels,w,h){
+ w=w||980;h=h||320;const padL=64,padR=14,padT=52,padB=42;
+ const iw=w-padL-padR,ih=h-padT-padB;
+ let max=-Infinity,min=Infinity;series.forEach(s=>s.data.forEach(v=>{if(v===null)return;max=Math.max(max,v);min=Math.min(min,v)}));
+ if(!isFinite(max)){max=1;min=0} min=Math.min(0,min);const rng=max-min||1;
+ const X=i=>padL+(labels.length<=1?iw/2:i*iw/(labels.length-1));
+ const Y=v=>padT+ih-(v-min)*ih/rng;
+ const colors=["#0e4d64","#c8651b","#2f855a"];
+ let g="";
+ for(let k=0;k<=4;k++){const v=min+rng*k/4,y=Y(v);
+  g+=`<line x1="${padL}" y1="${y}" x2="${w-padR}" y2="${y}" stroke="#e4eaee"/>`;
+  g+=`<text x="${padL-7}" y="${y+4}" text-anchor="end" font-size="10" fill="#8a98a5" font-family="ui-monospace,Consolas">${v>=1000?(v/1000).toFixed(1)+"k":v.toFixed(1)}</text>`;}
+ labels.forEach((lb,i)=>{if(labels.length>12&&i%2)return;g+=`<text x="${X(i)}" y="${h-padB+16}" text-anchor="middle" font-size="9.5" fill="#5b6b7b">${lb}</text>`;});
+ series.forEach((s,si)=>{const c=s.color||colors[si%3];
+  if(s.type==="bar"){const bw=Math.max(4,iw/labels.length*0.5);
+   g+=s.data.map((v,i)=>v===null?"":`<rect x="${X(i)-bw/2}" y="${Y(v)}" width="${bw}" height="${padT+ih-Y(v)}" fill="${c}" opacity=".72" rx="1"/>`).join("");
+  }else{
+   const pts=s.data.map((v,i)=>v===null?null:`${X(i)},${Y(v)}`).filter(Boolean).join(" ");
+   g+=`<polyline points="${pts}" fill="none" stroke="${c}" stroke-width="2"/>`;
+   g+=s.data.map((v,i)=>v===null?"":`<circle cx="${X(i)}" cy="${Y(v)}" r="2.6" fill="${c}"/>`).join("");}});
+ let lg=series.map((s,si)=>`<rect x="${padL+si*160}" y="34" width="10" height="10" fill="${s.color||colors[si%3]}"/><text x="${padL+si*160+15}" y="43" font-size="11" fill="#3a4a58">${s.name}</text>`).join("");
+ return `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;font-family:'Noto Sans SC',sans-serif"><text x="${padL}" y="18" font-size="13" font-weight="700" fill="#0e4d64">${title}</text>${g}${lg}</svg>`;
+}
+function renderCharts(){
+ if(!window.calcResults)return;const R=window.calcResults;
+ const labels=R.cond.map(s=>`${s.lt}-${s.rt}`);
+ $id("chartBox").innerHTML=
+  svgChart(lang==="zh"?"导线轴向/水平/牵引绳张力沿段分布":"Tension profile",[
+   {name:lang==="zh"?"轴向张力(N)":"Axial",data:R.cond.map(s=>s.axial)},
+   {name:lang==="zh"?"水平张力H(N)":"Horizontal H",data:R.cond.map(s=>s.H)},
+   {name:lang==="zh"?"牵引绳张力(N)":"Rope",data:R.rope.slice(0,R.cond.length).map(s=>s.T),color:"#c8651b"}
+  ],labels)+
+  svgChart(lang==="zh"?"各档平视弧垂":"Sag by span",[{name:lang==="zh"?"弧垂(m)":"Sag (m)",type:"bar",data:R.cond.map(s=>s.sag),color:"#2f855a"}],labels);
+}
+/* =================== wiring / reel planning engine =================== */
+function planWiring(){
+ if(!window.calcResults){return;}
+ const R=num("reelLength",2500);if(!(R>0)){alert(lang==="zh"?"请输入单盘长度":"Reel length required");return;}
+ const bundle=parseInt($id("wBundle").value)||1,phaseCount=parseInt($id("wPhase").value)||3;
+ const pulls=phaseCount,subTotal=bundle*phaseCount;
+ const d=num("wClamp",7.5),minReuse=num("wMinReuse",100),jumperLen=num("wJumper",12),nextMin=num("wNextMin",300);
+ const snapOn=$id("snapEnable").checked,snapTol=num("snapTol",150),autoFb=$id("autoForbid").checked;
+ const carryRaw=parseCarryIn();
+ const cond=window.calcResults.cond;
+ const segs=cond.map((s,i)=>({i,len:s.lineLen,L:s.L,h:s.h,slant:Math.hypot(s.L,s.h),
+   lt:s.lt,rt:s.rt,leftT:s.leftT,rightT:s.rightT,
+   forbid:s.fbid!=="allow"||(autoFb&&s.crossDist>0&&s.crossHeight>0),
+   fbid:s.fbid,cross:s.crossDist>0&&s.crossHeight>0}));
+ let acc=0;segs.forEach(s=>{s.a=acc;acc+=s.len;s.b=acc;});
+ const TOTAL=acc;
+ const zones=[];
+ segs.forEach(s=>{if(s.forbid)return;
+   const lo=s.a+(s.leftT?0:d),hi=s.b-(s.rightT?0:d);
+   if(hi>lo)zones.push({t:"iv",lo,hi});
+   if(s.leftT)zones.push({t:"pt",p:s.a,i:s.i,side:"L"});
+   if(s.rightT)zones.push({t:"pt",p:s.b,i:s.i,side:"R"});});
+ function latestLegal(cur,cap){
+  let best=null,bestPt=null;
+  zones.forEach(z=>{if(z.t==="iv"){const p=Math.min(z.hi,cap);if(p>cur&&p>=z.lo&&(best===null||p>best))best=p;}
+   else if(cur<z.p&&z.p<=cap&&(bestPt===null||z.p>bestPt))bestPt=z;});
+  if(best===null&&bestPt===null)return null;
+  if(snapOn&&bestPt&&best!==null&&best>bestPt.p&&(best-bestPt.p)<=snapTol)return {p:bestPt.p,pt:true,z:bestPt};
+  if(best!==null)return {p:best,pt:false};
+  return {p:bestPt.p,pt:true,z:bestPt};
+ }
+ function segAt(p){for(const s of segs)if(p>=s.a-1e-6&&p<=s.b+1e-6)return s;return segs[segs.length-1];}
+ // stock pieces carry multiplicity (physical reels of the same length)
+ let pid=0;
+ const stock=[];
+ const carryGroups=[];
+ carryRaw.forEach((len,k)=>{const g=stock.find(p=>Math.abs(p.len-len)<0.01&&p.carry);
+   if(g){g.mult++;g.members.push(k+1);}
+   else{const pc={id:++pid,len,mult:1,members:[k+1],carry:true,origin:`${L("st_carry")} ${len}m`,reuse:true,status:"kept",bornPhase:0};stock.push(pc);carryGroups.push(pc);}});
+ const waste=[];let newPhys=0,reusedLen=0,genLeftover=0;const phasePlans=[];const problems=[];
+ function addLeftover(len,mult,born,label){
+  genLeftover+=len*mult;
+  if(len<jumperLen-1e-9){for(let q=0;q<mult;q++)waste.push({len,origin:label,phase:born});return;}
+  const g=stock.find(p=>Math.abs(p.len-len)<0.01&&p.status==="kept");
+  if(g)g.mult+=mult;else stock.push({id:++pid,len,mult,origin:label,reuse:len>=minReuse,status:"kept",bornPhase:born});
+ }
+ for(let k=0;k<pulls;k++){
+  let cur=0;const rows=[];const ph=phaseLabel(k,phaseCount,bundle);
+  while(cur<TOTAL-1e-6){
+   const remain=TOTAL-cur,isFinal=remain<=R;
+   const fullTarget=isFinal?{p:TOTAL}:latestLegal(cur,cur+R);
+   const cands=[];
+   stock.forEach(pc=>{if(pc.status!=="kept"||!pc.reuse||pc.mult<bundle)return;
+    const cap=Math.min(cur+pc.len,TOTAL);
+    if(cap>=TOTAL-1e-6)cands.push({pc,p:TOTAL});
+    else{const r=latestLegal(cur,cap);if(r)cands.push({pc,p:r.p,pt:r.pt});}});
+   let pick=null,pj=null,isPt=false;
+   const ok=fullTarget?cands.filter(c=>c.p>=fullTarget.p-1e-6):[];
+   if(ok.length){ok.sort((a,b)=>a.pc.len-b.pc.len);pick=ok[0].pc;pj=ok[0].p;isPt=!!ok[0].pt;}
+   else if(cands.length){cands.sort((a,b)=>a.pc.len-b.pc.len);pick=cands[0].pc;pj=cands[0].p;isPt=!!cands[0].pt;}
+   let chosen,src;
+   if(pick){chosen=pick.len;src=`${pick.origin} ×${bundle}`;pick.mult-=bundle;reusedLen+=chosen*bundle;if(pick.mult<=0)stock.splice(stock.indexOf(pick),1);}
+   else{newPhys+=bundle;chosen=R;src=(lang==="zh"?"新盘":"Reel")+` ×${bundle}`;
+    if(isFinal){pj=TOTAL;}else{const r=latestLegal(cur,cur+R);if(!r){problems.push({phase:k+1,pos:cur});pj=Math.min(cur+R,TOTAL);isPt=false;}else{pj=r.p;isPt=r.pt;}}}
+   const used=pj-cur,left=Math.max(0,chosen-used),sg=segAt(pj);
+   let kind;
+   if(pj>=TOTAL-1e-6)kind="final";
+   else if(problems.length&&problems[problems.length-1].phase===k+1&&Math.abs(problems[problems.length-1].pos-cur)<1e-6)kind="viol";
+   else if(isPt)kind="snap";
+   else if(Math.abs(used-R)<1e-6)kind="full";else kind="cut";
+   if(kind==="cut"&&left<1e-6&&pick)kind="reused";
+   rows.push({seq:rows.length+1,src,chosen,used,left,pos:pj,seg:sg,toL:pj-sg.a,toR:sg.b-pj,kind,phys:bundle});
+   if(left>=1e-6)addLeftover(left,bundle,k+1,`${ph}${lang==="zh"?(kind==="final"?"相尾盘":"相余线"):(" "+(kind==="final"?"tail":"cut"))}`);
+   cur=pj;
   }
-
-  // Classify final stock
-  const internalStrain = segs.slice(0, -1).filter(s => s.rightT).length;
-  const jumperNeed = 12 * internalStrain; // 12m per jumper
-  stock.forEach(p => {
-    if (p.status !== 'kept') return;
-    if (p.len >= 300) p.finalClass = 'next';
-    else if (p.len >= 12) p.finalClass = 'jump';
-    else { p.finalClass = 'waste'; waste.push({ len: p.len, origin: p.origin }); p.status = 'waste'; }
-  });
-
-  const finalStock = stock.filter(p => p.status === 'kept');
-  const finalLen = finalStock.reduce((s, p) => s + p.len, 0);
-  const nextLen = finalStock.filter(p => p.finalClass === 'next').reduce((s, p) => s + p.len, 0);
-  const jumpLen = finalStock.filter(p => p.finalClass === 'jump').reduce((s, p) => s + p.len, 0);
-  const wasteLen = waste.reduce((s, p) => s + p.len, 0);
-  const newLen = newCount * reelLen;
-  const carryLen = carryIn.reduce((s, x) => s + x, 0);
-
-  window.wiringResult = {
-    reelLen, segs, TOTAL, reelRows, problems,
-    newCount, newLen, carryLen, reusedLen, finalLen, nextLen, jumpLen, wasteLen,
-    jumperNeed, internalStrain
-  };
-
-  // ===================== 4. Render reel table =====================
-  const reelBody = document.querySelector('#wiringReelTable tbody');
-  if (reelBody) {
-    reelBody.innerHTML = reelRows.map(r => {
-      const okJoint = r.kind === 'final' || (r.kind !== 'viol' && !r.seg.forbid &&
-        (r.kind === 'snap' || (r.toL >= clampClearance - 1e-6 && r.toR >= clampClearance - 1e-6)));
-      const jc = r.kind === 'final' ? '--' : r.seg.name;
-      return `<tr class="${r.kind === 'viol' ? 'forbidden-row' : ''}">
-        <td>${r.reelNo}</td>
-        <td>${r.src}</td>
-        <td>${r.chosen.toFixed(1)}</td>
-        <td>${r.used.toFixed(1)}</td>
-        <td>${r.left.toFixed(1)}</td>
-        <td>${jc}</td>
-        <td>${r.kind === 'final' ? '--' : r.toL.toFixed(2)}</td>
-        <td>${r.kind === 'final' ? '--' : r.toR.toFixed(2)}</td>
-        <td><span class="badge ${okJoint ? 'badge-green' : 'badge-red'}">${okJoint ? (currentLang==='en'?'OK':'合规') : (currentLang==='en'?'VIOL':'不合规')}</span></td>
-      </tr>`;
-    }).join('');
-  }
-
-  // ===================== 5. Strip diagram =====================
-  const diagBox = document.getElementById('wiringDiag');
-  if (diagBox) {
-    const pxW = Math.max(800, TOTAL * 0.12);
-    const pct = p => (p / TOTAL * 100).toFixed(2);
-    let axis = `<div style="width:${pxW}px">
-      <div style="display:flex;position:relative;height:20px">
-        <span style="position:absolute;left:0;top:2px;font-size:.68rem;color:#666;transform:translateX(-2px)">${segs[0].name.split('~')[0]}</span>`;
-    let cum = 0;
-    segs.forEach(s => {
-      cum += s.len;
-      axis += `<span style="position:absolute;left:${pct(cum)}%;top:2px;font-size:.68rem;color:#666;transform:translateX(-50%)">${s.name.split('~')[1]}</span>`;
-    });
-    axis += `</div>`;
-
-    let strip = '';
-    let start = 0;
-    reelRows.forEach((r, ri) => {
-      const alt = ri % 2;
-      strip += `<div class="reel-strip" style="left:${pct(start)}%;width:${pct(r.used)}%;background:${alt ? 'rgba(25,118,210,.13)' : 'rgba(25,118,210,.07)'};border:1px solid rgba(25,118,210,.25)" title="${r.src} | ${currentLang==='en'?'used':'实放'} ${r.used.toFixed(1)}m, ${currentLang==='en'?'left':'余'} ${r.left.toFixed(1)}m">${r.used / TOTAL > 0.04 ? r.reelNo : ''}</div>`;
-      if (r.kind !== 'final') {
-        strip += `<div class="joint-mark ${r.kind === 'viol' ? 'bad' : (r.kind === 'snap' ? 'snap' : '')}" style="left:${pct(r.pos)}%" title="${r.seg.name} | ${currentLang==='en'?'to L':'距左'} ${r.toL.toFixed(1)}m / ${currentLang==='en'?'to R':'距右'} ${r.toR.toFixed(1)}m"></div>`;
-      }
-      start = r.pos;
-    });
-
-    diagBox.innerHTML = axis + `<div style="position:relative;height:36px;margin:4px 0">${strip}</div></div>`;
-  }
-
-  // ===================== 6. Summary =====================
-  const surplus = (finalLen + wasteLen) / TOTAL * 100;
-  const loss = wasteLen / TOTAL * 100;
-
-  const summary = document.getElementById('wiringSummary');
-  if (summary) {
-    summary.innerHTML = `
-      <div class="result-card"><div class="label">${currentLang==='en'?'Length/phase':'单相线长'}</div><div class="value">${TOTAL.toFixed(1)}</div><div class="unit">m</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'New reels':'需新盘数'}</div><div class="value">${newCount}</div><div class="unit">${currentLang==='en'?'reels':'盘'}</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Carry-in used':'带入复用'}</div><div class="value">${carryLen > 0 ? (reusedLen / carryLen * 100).toFixed(0) : 0}</div><div class="unit">%</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'For next section':'可下档利用'}</div><div class="value">${nextLen.toFixed(1)}</div><div class="unit">m</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'For jumpers':'可做跳线'}</div><div class="value">${jumpLen.toFixed(1)}</div><div class="unit">m</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Scrap':'损耗短头'}</div><div class="value">${wasteLen.toFixed(2)}</div><div class="unit">m</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Surplus %':'余量百分比'}</div><div class="value">${surplus.toFixed(2)}</div><div class="unit">%</div></div>
-      <div class="result-card"><div class="label">${currentLang==='en'?'Loss %':'真实损耗率'}</div><div class="value">${loss.toFixed(3)}</div><div class="unit">%</div></div>`;
-  }
-
-  // Alerts
-  const alertBox = document.getElementById('wiringAlerts');
-  if (alertBox) {
-    let ah = '';
-    if (problems.length) {
-      ah += `<div class="alert alert-danger">${currentLang==='en'?('⚠ ' + problems.length + ' unreachable no-joint zones') : ('⚠ 有 ' + problems.length + ' 处禁接区无法避开，需更长盘或人工调整')}</div>`;
-    }
-    const diff = Math.abs((newLen + carryLen) - (TOTAL + finalLen + wasteLen));
-    ah += `<div class="alert alert-info">${currentLang==='en'?'Balance':'物料平衡'}: ${currentLang==='en'?'Input':'投入'} ${(newLen + carryLen).toFixed(1)}m = ${currentLang==='en'?'Net':'净长'} ${TOTAL.toFixed(1)}m + ${currentLang==='en'?'Leftovers':'余线'} ${finalLen.toFixed(1)}m + ${currentLang==='en'?'Scrap':'损耗'} ${wasteLen.toFixed(2)}m (Δ ${diff.toFixed(2)}m)</div>`;
-    alertBox.innerHTML = ah;
-  }
+  phasePlans.push(rows);
+ }
+ const internalStrain=segs.slice(0,-1).filter(s=>s.rightT).length;
+ const jumperNeed=jumperLen*internalStrain*subTotal;
+ stock.forEach(p=>{p.finalClass=p.len>=nextMin?"next":(p.len>=jumperLen?"jump":"waste");if(p.finalClass==="waste"){for(let q=0;q<p.mult;q++)waste.push({len:p.len,origin:p.origin,phase:p.bornPhase});p.status="waste";}});
+ const net=TOTAL*subTotal,newLen=newPhys*R,carryLen=carryRaw.reduce((s,x)=>s+x,0);
+ const finalStock=stock.filter(p=>p.status!=="waste");
+ const sumM=(arr)=>arr.reduce((s,p)=>s+p.len*p.mult,0);
+ const finalCount=finalStock.reduce((s,p)=>s+p.mult,0);
+ const finalLen=sumM(finalStock),nextLen=sumM(finalStock.filter(p=>p.finalClass==="next")),jumpLen=sumM(finalStock.filter(p=>p.finalClass==="jump"));
+ const wasteLen=waste.reduce((s,w)=>s+w.len,0);
+ window.wiring={R,pulls,phases:subTotal,bundle,phaseCount,d,segs,TOTAL,phasePlans,stock,waste,carryGroups,newCount:newPhys,newLen,carryLen,reusedLen,genLeftover,
+  net,finalStock,finalLen,finalCount,nextLen,jumpLen,wasteLen,jumperNeed,internalStrain,problems,
+  input:newLen+carryLen,output:net+finalLen+wasteLen};
+ renderLenTable();renderWiring();
 }
-
-
-
-function exportWiringCSV() {
-  if (!window.wiringResult) { alert(t('msg_needCalc')); return; }
-  const W = window.wiringResult;
-  const rows = [['盘号', '盘来源', '本盘长度m', '实放m', '剩余m', '接头档', '距左塔m', '距右塔m', '状态']];
-  W.reelRows.forEach(r => {
-    rows.push([r.reelNo, r.src, r.chosen.toFixed(1), r.used.toFixed(1), r.left.toFixed(1),
-      r.kind === 'final' ? '' : r.seg.name,
-      r.kind === 'final' ? '' : r.toL.toFixed(2),
-      r.kind === 'final' ? '' : r.toR.toFixed(2),
-      r.kind]);
-  });
-  const blob = new Blob(['\ufeff' + rows.map(r => r.join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'wiring_' + (document.getElementById('sectionName').value || 'section') + '.csv';
-  a.click();
-  URL.revokeObjectURL(a.href);
+function stateBadge(kind){
+ const m={final:["b-i",L("final")],full:["b-ok",L("full")],cut:["b-cu",L("cut")],snap:["b-i",L("snap_pt")],viol:["b-no",L("viol")],reused:["b-ok",L("reused_full")]};
+ const x=m[kind]||m.cut;return `<span class="badge ${x[0]}">${x[1]}</span>`;
 }
-
-function renderCheckReport() {
-  const { condResults, ropeResults, controlIdx, params, spans, f_max } = calcResults;
-  const checks = [];
-
-  const tensionerRated = params.Tp * params.kpTension;
-  checks.push({
-    name: currentLang==='en'?'Tensioner Outlet Tension':'张力机出口张力',
-    pass: true,
-    info: true,
-    desc: `${currentLang==='en'?'Calculated outlet tension':'计算出口张力'} ${calcResults.T0.toFixed(1)} N (${currentLang==='en'?'Tensioner rated brake tension':'主张力机单根额定制动张力选型值'} ${tensionerRated.toFixed(0)} N)`
-  });
-
-  const controlSag = condResults[controlIdx]?.sag || 0;
-  const controlL = condResults[controlIdx]?.L || 0;
-  const sagRatio = controlL > 0 ? controlSag / controlL : 0;
-  checks.push({
-    name: currentLang==='en'?'Control Span Sag Rationality':'控制档弧垂合理性',
-    pass: sagRatio < 0.5,
-    desc: `${currentLang==='en'?'Control span sag':'控制档弧垂'} ${controlSag.toFixed(2)} m / ${currentLang==='en'?'Span':'档距'} ${controlL.toFixed(1)} m = ${(sagRatio*100).toFixed(1)}%, ${currentLang==='en'?'req < 50%':'要求 < 50%'}`
-  });
-
-  const pullerMax = calcResults.pullerMax;
-  checks.push({
-    name: currentLang==='en'?'Puller Tension Check':'牵引机牵引力检查',
-    pass: pullerMax < 200000,
-    desc: `${currentLang==='en'?'Calculated puller tension':'计算牵引力'} ${(pullerMax/1000).toFixed(2)} kN`
-  });
-
-  checks.push({
-    name: currentLang==='en'?'Clearance Control Parameters':'安全距离控制参数',
-    pass: true,
-    info: true,
-    desc: f_max !== null
-      ? `${currentLang==='en'?'Control span req. clearance':'控制档要求安全距'} ${params.safeDist.toFixed(1)} m + ${currentLang==='en'?'margin':'裕度'} ${params.margin.toFixed(1)} m → ${currentLang==='en'?'Sag limit':'控制档弧垂限值'} ${f_max.toFixed(2)} m → ${currentLang==='en'?'Tensioner outlet':'张力机出口张力'} ${calcResults.T0.toFixed(0)} N → ${currentLang==='en'?'Puller max':'牵引机最大牵引力'} ${(calcResults.pullerMax/1000).toFixed(2)} kN`
-      : `${currentLang==='en'?'Manual tensioner outlet':'手动设定张力机出口张力'} ${calcResults.T0.toFixed(0)} N → ${currentLang==='en'?'Puller max':'牵引机最大牵引力'} ${(calcResults.pullerMax/1000).toFixed(2)} kN (${currentLang==='en'?'No crossing data, not reverse-calculated':'控制档无跨越物，未由安全距离反算'})`
-  });
-
-  const ropeUpY = ropeResults.filter(s => s.ropeUp === 'Y');
-  checks.push({
-    name: currentLang==='en'?'Rope Uplift Check':'牵引绳上扬检查',
-    pass: ropeUpY.length === 0,
-    desc: ropeUpY.length > 0 ? `${ropeUpY.length} ${currentLang==='en'?'rope uplift(s) need handling':'处牵引绳上扬需处理'}` : `${currentLang==='en'?'No rope uplift':'无牵引绳上扬'}`
-  });
-
-  const dsY = condResults.filter(s => s.doubleSheave === 'Y');
-  checks.push({
-    name: currentLang==='en'?'Double Sheave Check':'双滑车检查',
-    pass: true,
-    info: true,
-    desc: dsY.length > 0 ? `${dsY.length} ${currentLang==='en'?'locations need double sheave':'处需增设双滑车'}` : `${currentLang==='en'?'None needed':'无需要'}`
-  });
-
-  const container = document.getElementById('checkReport');
-  container.innerHTML = `
-    <div style="margin-bottom:20px"><strong>${currentLang==='en'?'I. Overall Check Conclusion':'一、总体检查结论'}</strong></div>
-    ${checks.map(c => `
-    <div class="check-item ${c.info ? '' : (c.pass ? 'pass' : 'fail')}">
-      <span class="check-icon">${c.info ? t('check_info') : (c.pass ? t('check_pass') : t('check_fail'))}</span>
-      <span class="check-text"><strong>${c.name}</strong> - ${c.desc}</span>
-    </div>`).join('')}
-
-    <div class="section-divider"></div>
-    <div style="margin-bottom:12px"><strong>${currentLang==='en'?'II. Span-by-Span Check Detail':'二、逐档校验明细表'}</strong></div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>${t('th_no')}</th><th>${t('th_spanName')}</th><th>${currentLang==='en'?'Cond. Tension(N)':'导线张力(N)'}</th><th>${t('th_sag')}</th><th>${currentLang==='en'?'Crossing Sag(m)':'跨越悬垂距(m)'}</th><th>${t('th_actualSafe')}</th><th>${t('th_reqSafe2')}</th>
-            <th>${t('th_doubleSheave')}</th><th>${t('th_ropeUp')}</th><th>${currentLang==='en'?'Conclusion':'结论'}</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${condResults.map((s, i) => {
-            const ropeUp = ropeResults[i]?.ropeUp || 'N';
-            const issues = [];
-            if (s.doubleSheave === 'Y') issues.push(currentLang==='en'?'Double Sheave':'需双滑车');
-            if (ropeUp === 'Y') issues.push(currentLang==='en'?'Rope Uplift':'牵引绳上扬');
-            const conclusion = issues.length === 0 ? t('conclusion_normal') : issues.join('、');
-            const actualSafe = s.safeDistCalc !== null ? s.safeDistCalc.toFixed(2) : 'N/A';
-            const crossH = s.crossHeight > 0 ? s.crossHeight.toFixed(1) : 'N/A';
-            return `<tr class="${i===controlIdx?'control-row':''}">
-              <td>${i+1}</td>
-              <td>${s.leftTower}~${s.rightTower}${i===controlIdx?` <span class="badge badge-yellow">${t('badge_control')}</span>`:''}</td>
-              <td>${s.T_axial.toFixed(0)}</td>
-              <td>${s.sag.toFixed(2)}</td>
-              <td>${crossH}</td>
-              <td>${actualSafe}</td>
-              <td>${s.safeCheck !== 'N/A' ? params.safeDist.toFixed(1) : 'N/A'}</td>
-              <td><span class="badge ${s.doubleSheave==='Y'?'badge-red':'badge-green'}">${s.doubleSheave==='Y'?t('badge_double'):t('badge_single')}</span></td>
-              <td><span class="badge ${ropeUp==='Y'?'badge-red':'badge-green'}">${ropeUp==='Y'?t('badge_up'):t('badge_normal')}</span></td>
-              <td><strong>${conclusion}</strong></td>
-            </tr>`;
-          }).join('')}
-        </tbody>
-      </table>
-    </div>
-  `;
+function renderLenTable(){
+ if(!window.calcResults)return;const cond=window.calcResults.cond;let acc=0;
+ $id("lenBody").innerHTML=cond.map((s,i)=>{acc+=s.lineLen;const slant=Math.hypot(s.L,s.h);
+  const fb=s.fbid!=="allow"||($id("autoForbid").checked&&s.crossDist>0&&s.crossHeight>0);
+  return `<tr class="${fb?"fbid-row":""}"><td>${i+1}</td><td>${s.lt}~${s.rt}</td><td class="num">${fmt(s.L)}</td><td class="num">${fmt(s.h,2)}</td>
+   <td class="num">${fmt(slant,2)}</td><td class="num">${fmt(s.lineLen-slant,3)}</td><td class="num">${fmt(s.lineLen,2)}</td><td class="num">${fmt(acc,2)}</td>
+   <td>${fb?`<span class="badge b-no">${fbidLabel(s.fbid!=="allow"?s.fbid:"power")}</span>`:`<span class="badge b-ok">${L("ok")}</span>`}</td></tr>`;}).join("");
 }
-
-function renderEquipment() {
-  const { params } = calcResults;
-  const Tp = params.Tp;
-  const bundle = params.bundle;
-  const kpPull = params.kpPull;
-  const kpTension = params.kpTension;
-
-  const items = [
-    { name: currentLang==='en'?'Main Puller Rated Tension':'主牵引机额定牵引力', formula: 'P >= m*Kp*Tp', req: bundle * kpPull * Tp, unit: 'N', rec: `>= ${(bundle * kpPull * Tp / 1000).toFixed(1)} kN` },
-    { name: currentLang==='en'?'Puller Overload Safety':'牵引机过载保安值', formula: 'Pg = P + 1000', req: bundle * kpPull * Tp + 1000, unit: 'N', rec: `>= ${((bundle * kpPull * Tp + 1000)/1000).toFixed(1)} kN` },
-    { name: currentLang==='en'?'Main Tensioner Brake Tension':'主张力机单根额定制动张力', formula: 'T = Kp*Tp', req: kpTension * Tp, unit: 'N', rec: `>= ${(kpTension * Tp / 1000).toFixed(1)} kN` },
-    { name: currentLang==='en'?'Rope Breaking Load':'牵引绳综合破断力', formula: 'Qp >= 3n*Tp/5', req: 3 * bundle * Tp / 5, unit: 'N', rec: `>= ${(3 * bundle * Tp / 5 / 1000).toFixed(1)} kN` },
-    { name: currentLang==='en'?'Pilot Rope Breaking Load':'导引绳综合破断力', formula: 'Pp >= Qp/4', req: 3 * bundle * Tp / 20, unit: 'N', rec: `>= ${(3 * bundle * Tp / 20 / 1000).toFixed(1)} kN` },
-    { name: currentLang==='en'?'Small Puller Rated Tension':'小牵引机额定牵引力', formula: 'P >= Qp/10', req: 3 * bundle * Tp / 50, unit: 'N', rec: `>= ${(3 * bundle * Tp / 50 / 1000).toFixed(1)} kN` },
-    { name: currentLang==='en'?'Small Tensioner Brake Tension':'小张力机额定制动张力', formula: 't >= Qp/15', req: 3 * bundle * Tp / 75, unit: 'N', rec: `>= ${(3 * bundle * Tp / 75 / 1000).toFixed(1)} kN` }
-  ];
-
-  const tbody = document.querySelector('#equipTable tbody');
-  tbody.innerHTML = items.map((it, i) => `
-    <tr><td>${i+1}</td><td>${it.name}</td><td style="font-family:monospace">${it.formula}</td>
-    <td>${it.req.toFixed(0)} ${it.unit}</td><td>${it.rec}</td></tr>`).join('');
+function renderWiring(){
+ if(!window.wiring||!window.calcResults)return;const W=window.wiring;
+ $id("wireTag").textContent=lang==="zh"
+  ?`${W.bundle}分裂 × ${W.phaseCount}相线 = ${W.phases}根子导线；按 ${W.pulls} 次展放（一牵${W.bundle}，同相${W.bundle}根接头位置一致）`
+  :`${W.bundle}-bundle x ${W.phaseCount} phases = ${W.phases} sub-conductors; ${W.pulls} pulls (one-pull-${W.bundle}, identical sleeve positions within phase)`;
+ let ah="";
+ if(W.problems.length)ah+=`<div class="alert alert-d">${lang==="zh"?`⚠ 有 <b>${W.problems.length}</b> 处即使整盘也无法越过禁接区（禁接档长度可能超过单盘长度），下表红色标记处必须换更长盘或人工调整布线`:`⚠ ${W.problems.length} unreachable zones`}</div>`;
+ const diff=Math.abs(W.input-W.output);
+ ah+=`<div class="alert ${diff>0.5?"alert-d":"alert-i"}">${lang==="zh"?`物料平衡：投入 <b>${fmt(W.input,1)} m</b>（新盘 ${fmt(W.newLen,1)} + 带入 ${fmt(W.carryLen,1)}）＝ 架线净长 <b>${fmt(W.net,1)} m</b> + 期末余线 <b>${fmt(W.finalLen,1)} m</b> + 损耗短头 <b>${fmt(W.wasteLen,1)} m</b>，偏差 ${fmt(diff,2)} m`:`Balance: input ${fmt(W.input,1)} = net ${fmt(W.net,1)} + leftovers ${fmt(W.finalLen,1)} + scrap ${fmt(W.wasteLen,1)} (Δ ${fmt(diff,2)})`}</div>`;
+ $id("wireAlerts").innerHTML=ah;
+ const surplus=(W.finalLen+W.wasteLen)/W.net*100,loss=W.wasteLen/W.net*100;
+ const reuseRate=W.genLeftover>0?W.reusedLen/W.genLeftover*100:100;
+ const k=[
+  [lang==="zh"?"单次展放线长(每根)":"Length/pull/sub",fmt(W.TOTAL,1),"m"],
+  [lang==="zh"?"全线净长":"Net total",fmt(W.net,0),"m"],
+  [lang==="zh"?"需运现场新盘":"New reels",W.newCount,(lang==="zh"?"盘 / "+fmt(W.newLen,0)+"m":"/ "+fmt(W.newLen,0)+"m")],
+  [lang==="zh"?"期末余线盘":"Leftover reels",W.finalCount,(lang==="zh"?"盘 / "+fmt(W.finalLen,1)+"m":"/ "+fmt(W.finalLen,1)+"m")],
+  [lang==="zh"?"可下档利用":"For next sec.",fmt(W.nextLen,1),"m"],
+  [lang==="zh"?"可做跳线":"For jumpers",fmt(W.jumpLen,1),`${lang==="zh"?"需 ":"need "}${fmt(W.jumperNeed,1)}m`],
+  [lang==="zh"?"损耗短头":"Scrap",fmt(W.wasteLen,2),"m"],
+  [lang==="zh"?"导线余量百分比":"Surplus %",fmt(surplus,2),"%"],
+  [lang==="zh"?"真实损耗率":"Loss %",fmt(loss,3),"%","dg"],
+  [lang==="zh"?"余线复用率":"Reuse %",fmt(reuseRate,1),"%","ok"]
+ ];
+ $id("wireKpis").innerHTML=k.map(x=>`<div class="kpi"><div class="l">${x[0]}</div><div class="v ${x[3]||""}">${x[1]}</div><div class="u">${x[2]||""}</div></div>`).join("");
+ const GW=Math.max(1232,W.TOTAL*0.18);const pct=p=>p/W.TOTAL*100;
+ const cols=W.segs.map(s=>s.len.toFixed(3)+"fr").join(" ");
+ // tower ruler aligned to grid
+ let cum=0,prevX=-99,tl=0,ruler=`<div class="lgd-line"><div class="lgd-gutter"></div><div class="lgd-grid lgd-towers" style="width:${GW}px">`;
+ function twLab(x,txt,strain){tl=(x-prevX<4.2)?(tl?0:1):0;prevX=x;
+   ruler+=`<span class="tw-name ${strain?"strain":""} ${tl?"alt":""}" style="left:${x}%">${txt}</span>`;}
+ W.segs.forEach((s,i)=>{twLab(pct(cum),s.lt,!!s.leftT);cum+=s.len;
+   if(i===W.segs.length-1)twLab(pct(cum),s.rt,!!s.rightT);});
+ ruler+="</div></div>";
+ // span header cells (table division by span)
+ let head=`<div class="lgd-line"><div class="lgd-gutter"></div><div class="lgd-grid" style="width:${GW}px;grid-template-columns:${cols}">`+
+  W.segs.map(s=>`<div class="sp-hd ${s.forbid?"fb":""}" title="${s.lt}~${s.rt} ${fmt(s.len,1)}m${s.forbid?" ["+fbidLabel(s.fbid!=="allow"?s.fbid:"power")+"]":""}"><div class="sp-nm">${s.lt}~${s.rt}</div><div class="sp-ln">${fmt(s.len,0)}m${s.forbid?" · "+fbidLabel(s.fbid!=="allow"?s.fbid:"power"):""}</div></div>`).join("")+"</div></div>";
+ let strips="";
+ W.phasePlans.forEach((rows,k)=>{
+  const cells=W.segs.map((s,i)=>`<div class="lgd-cell ${s.forbid?"fb":(i%2?"alt":"")} ${s.rightT?"r-strain":""}"></div>`).join("");
+  let ov="";let start=0;
+  rows.forEach(r=>{const alt=r.seq%2;
+   ov+=`<div class="reel-bg" style="left:${pct(start)}%;width:${pct(r.used)}%;background:${alt?"rgba(14,77,100,.13)":"rgba(14,77,100,.07)"};border:1px solid rgba(14,77,100,.25)" title="${r.src} | ${lang==="zh"?"每根实放":"used/sub"} ${fmt(r.used,1)}m, ${lang==="zh"?"每根余":"left/sub"} ${fmt(r.left,1)}m">${r.used/W.TOTAL>0.055?`${r.src}·${fmt(r.chosen,0)}m`:""}</div>`;
+   start=r.pos;});
+  // joint markers positioned INSIDE their span, exact ratio, labels show to-L/to-R
+  let lastX=-99,lv=0;
+  rows.filter(r=>r.kind!=="final").forEach(r=>{const x=pct(r.pos);lv=(x-lastX<3.2)?(lv?0:1):0;lastX=x;
+   const edge=x<6?"jl-l":(x>94?"jl-r":"");
+   ov+=`<div class="jmk ${r.kind==="viol"?"bad":(r.kind==="snap"?"snap":"")}" style="left:${x}%" title="${r.seg.lt}~${r.seg.rt} | ${lang==="zh"?"距左塔":"to L"} ${fmt(r.toL,1)}m / ${lang==="zh"?"距右塔":"to R"} ${fmt(r.toR,1)}m"><span class="dmd"></span><span class="jlb lv${lv} ${edge}">${fmt(r.toL,0)}<small>/${fmt(r.toR,0)}</small></span></div>`;});
+  strips+=`<div class="lgd-line"><div class="lgd-gutter">${phaseLabel(k,W.phaseCount,W.bundle)}${lang==="zh"?"相":""}</div>
+   <div class="lgd-grid" style="width:${GW}px;grid-template-columns:${cols}">${cells}<div class="lgd-ov">${ov}</div></div></div>`;
+ });
+ const legend=`<div class="lgd-legend">
+  <span><i class="lg-dmd"></i>${lang==="zh"?"压接管（数字=距左塔/距右塔 m）":"Sleeve (to-L/to-R m)"}</span>
+  <span><i class="lg-fb"></i>${lang==="zh"?"禁接档":"No-joint span"}</span>
+  <span><i class="lg-st"></i>${lang==="zh"?"耐张塔分界":"Strain tower"}</span>
+  <span>${lang==="zh"?"纵轴按放线线长比例分格":"Columns proportional to stringing length"}</span></div>`;
+ $id("diagBox").innerHTML=`<div class="lgd-wrap">${ruler}${head}${strips}${legend}</div>`;
+ $id("reelBody").innerHTML=W.phasePlans.map((rows,k)=>rows.map(r=>{
+  const okJoint=r.kind==="final"||(r.kind!=="viol"&&!r.seg.forbid&&(r.kind==="snap"||(r.toL>=W.d-1e-6&&r.toR>=W.d-1e-6)));
+  const jc=r.kind==="final"?"--":`${r.seg.lt}~${r.seg.rt}`;
+  return `<tr class="${r.kind==="viol"?"fbid-row":""}"><td>${phaseLabel(k,W.phaseCount,W.bundle)}${lang==="zh"?"相":""}</td><td class="num">${r.seq}</td><td>${r.src}</td><td class="num">${fmt(r.chosen,1)}</td><td class="num">${fmt(r.used,1)}</td><td class="num">${fmt(r.left,1)}</td><td class="num">×${r.phys}</td>
+   <td>${jc}</td><td class="num">${r.kind==="final"?"--":fmt(r.toL,2)}</td><td class="num">${r.kind==="final"?"--":fmt(r.toR,2)}</td>
+   <td>${stateBadge(r.kind)} ${r.kind==="final"?"":badge(okJoint,L("ok"),L("viol"))}</td></tr>`;}).join("")).join("");
+ // stock ledger from final stock mult + waste aggregation + carry consumption
+ let html="";let idx=1;
+ (W.carryGroups||[]).forEach(g=>{const used=g.members.length-g.mult;
+  const to=used?`<span class="badge b-i">${L("st_reused")} ×${used}</span>`:"";
+  const kept=g.mult>0?` <span class="badge b-w">${lang==="zh"?"结存":"kept"} ×${g.mult}</span>`:"";
+  html+=`<tr><td>${idx++}</td><td>${L("st_carry")} #${g.members.join("/#")}</td><td class="num">${fmt(g.len,1)}</td><td class="num">${g.members.length}</td><td>${to||kept}${to&&kept?kept:""}</td><td>--</td></tr>`;});
+ W.finalStock.forEach(p=>{html+=`<tr><td>${idx++}</td><td>${p.origin}</td><td class="num">${fmt(p.len,1)}</td><td class="num">${p.mult}</td>
+   <td><span class="badge b-w">${lang==="zh"?"期末结存":"kept"}</span></td>
+   <td>${p.finalClass==="next"?`<span class="badge b-ok">${L("st_next")}</span>`:`<span class="badge b-cu">${L("st_jump")}</span>`}</td></tr>`;});
+ const wagg={};W.waste.forEach(w=>{const k=w.origin;wagg[k]=wagg[k]||{len:w.len,n:0};wagg[k].n++;});
+ Object.keys(wagg).forEach(k=>{html+=`<tr><td>${idx++}</td><td>${k} ${lang==="zh"?"短头":"end"}</td><td class="num">${fmt(wagg[k].len,2)}</td><td class="num">${wagg[k].n}</td><td><span class="badge b-no">${L("st_waste")}</span></td><td><span class="badge b-no">${L("st_waste")}</span></td></tr>`;});
+ $id("stockBody").innerHTML=html||`<tr><td colspan="6">${lang==="zh"?"无余线":"none"}</td></tr>`;
 }
-
-function renderCharts() {
-  const { condResults, ropeResults } = calcResults;
-  const labels = condResults.map((s, i) => `${s.leftTower}~${s.rightTower}`);
-  const condData = condResults.map(s => s.T_axial);
-  const ropeData = ropeResults.map(s => s.T_out);
-  const sagData = condResults.map(s => s.sag);
-
-  if (condChart) condChart.destroy();
-  if (ropeChart) ropeChart.destroy();
-  if (sagChart) sagChart.destroy();
-
-  const ctx1 = document.getElementById('condChart').getContext('2d');
-  condChart = new Chart(ctx1, {
-    type: 'line',
-    data: { labels: labels, datasets: [{ label: currentLang==='en'?'Conductor Axial Tension (N)':'导线轴向张力 (N)', data: condData, borderColor: '#1976d2', backgroundColor: 'rgba(25,118,210,0.1)', fill: true, tension: 0.3 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: currentLang==='en'?'Conductor Tension Curve (Tensioner → Puller)':'导线张力递推曲线（张力机→牵引机）' } }, scales: { y: { beginAtZero: false } } }
-  });
-
-  const ctx2 = document.getElementById('ropeChart').getContext('2d');
-  ropeChart = new Chart(ctx2, {
-    type: 'line',
-    data: { labels: labels, datasets: [{ label: currentLang==='en'?'Rope Tension (N)':'牵引绳张力 (N)', data: ropeData, borderColor: '#ed6c02', backgroundColor: 'rgba(237,108,2,0.1)', fill: true, tension: 0.3 }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: currentLang==='en'?'Rope Tension Curve (Puller → Tensioner)':'牵引绳张力递推曲线（牵引机→张力机）' } }, scales: { y: { beginAtZero: false } } }
-  });
-
-  const ctx3 = document.getElementById('sagChart').getContext('2d');
-  sagChart = new Chart(ctx3, {
-    type: 'bar',
-    data: { labels: labels, datasets: [{ label: currentLang==='en'?'Sag (m)':'弧垂 (m)', data: sagData, backgroundColor: 'rgba(46,125,50,0.7)' }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { title: { display: true, text: currentLang==='en'?'Sag Comparison by Span':'各档弧垂对比' } } }
-  });
+/* ---- CSV ---- */
+function dlFile(name,text){const b=new Blob(["\ufeff"+text],{type:"text/csv;charset=utf-8"});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;a.click();URL.revokeObjectURL(a.href);}
+function exportCSV(kind){
+ if(!window.calcResults)return;let rows=[];
+ if(kind==="len"){rows=[["#","线档","档距m","高差m","斜距m","弧垂增量m","放线线长m","累加m","禁接类型"]];let acc=0;
+  window.calcResults.cond.forEach((s,i)=>{acc+=s.lineLen;rows.push([i+1,`${s.lt}~${s.rt}`,s.L.toFixed(2),s.h.toFixed(2),Math.hypot(s.L,s.h).toFixed(2),(s.lineLen-Math.hypot(s.L,s.h)).toFixed(3),s.lineLen.toFixed(2),acc.toFixed(2),s.fbid!=="allow"?fbidLabel(s.fbid):"允许"]);});
+ }else{if(!window.wiring){planWiring();}const W=window.wiring;rows=[["相别","盘序","盘来源","单盘长度m","每根实放m","每根剩余m","投入盘数","压接管所在档","距左塔m","距右塔m","状态"]];
+  W.phasePlans.forEach((pr,k)=>pr.forEach(r=>rows.push([phaseLabel(k,W.phaseCount,W.bundle),r.seq,r.src,r.chosen.toFixed(1),r.used.toFixed(1),r.left.toFixed(1),"x"+r.phys,r.kind==="final"?"":`${r.seg.lt}~${r.seg.rt}`,r.kind==="final"?"":r.toL.toFixed(2),r.kind==="final"?"":r.toR.toFixed(2),r.kind])));}
+ dlFile(kind+".csv",rows.map(r=>r.join(",")).join("\r\n"));
 }
-
-function exportPNG() {
-  if (!calcResults) { alert(t('msg_needCalc')); return; }
-  alert(t('msg_exporting'));
-  const main = document.querySelector('.main');
-  html2canvas(main, { scale: 2, useCORS: true, allowTaint: true }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = `TL_Tension_${document.getElementById('sectionName').value||'data'}_${new Date().toISOString().slice(0,10)}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-  }).catch(err => { alert(t('msg_exportFail') + ': ' + err.message); });
+/* =================== checks & equipment =================== */
+function ckRow(ok,title,detail){return `<div class="ck ${ok?"pass":"fail"}"><b>${title}</b><div>${detail}</div></div>`;}
+function ckInfo(title,detail){return `<div class="ck info"><b>${title}</b><div>${detail}</div></div>`;}
+function renderChecks(){
+ if(!window.calcResults)return;const R=window.calcResults,P=R.P;let h="";
+ // crossings
+ R.cond.forEach((s,i)=>{if(s.crossDist>0&&s.crossHeight>0){
+  const a=s.crossHeight-4*s.sag*s.crossDist*(s.L-s.crossDist)/(s.L*s.L);
+  h+=ckRow(a>=P.safe,`${lang==="zh"?"跨越安全距":"Clearance"} ${s.lt}~${s.rt}`,
+   `${lang==="zh"?"实际":"actual"} ${fmt(a,2)}m ${lang==="zh"?",要求≥":" ≥ req "}${P.safe}m`);}});
+ // conductor strength
+ const maxAx=Math.max(...R.cond.map(s=>s.axial)),allowC=P.Tp/P.bundle;
+ h+=ckRow(maxAx<allowC,lang==="zh"?"导线强度（最大轴向张力/根）":"Conductor strength",`${fmt(maxAx,0)}N < Tp/n=${fmt(allowC,0)}N`);
+ // rope
+ const ropeBr=num("breakRope",350000);
+ h+=ckRow(R.pullerMax*4<ropeBr,lang==="zh"?"牵引绳破断力":"Rope breaking",`4×${fmt(R.pullerMax,0)}=${fmt(R.pullerMax*4,0)}N ${lang==="zh"?"≤ 破断":"≤ br."} ${ropeBr}N`);
+ // uplift
+ const ups=R.rope.filter(s=>s.up);
+ h+=ups.length?ckRow(false,lang==="zh"?"牵引绳上扬":"Rope uplift",ups.map(s=>`${s.name}(${fmt(s.lv,0)}m)`).join(", ")):ckRow(true,lang==="zh"?"牵引绳上扬":"Rope uplift",lang==="zh"?"各塔均无上扬":"No uplift");
+ // wrap
+ const thr=num("wrapThresh",60);const dw=R.towersGeo.filter(g=>g.wrap!==null&&g.wrap*180/Math.PI>thr);
+ h+=dw.length?ckRow(false,lang==="zh"?"包络角（双滑车）":"Wrap angle",dw.map(g=>`${g.name} ${fmt(g.wrap*180/Math.PI,1)}°`).join("；")):ckRow(true,lang==="zh"?"包络角":"Wrap angle",lang==="zh"?`均小于 ${thr}°，单滑车可行`:`All < ${thr}°`);
+ // wiring compliance
+ if(window.wiring){const W=window.wiring;let bad=0;
+  W.phasePlans.forEach(pr=>pr.forEach(r=>{if(r.kind==="final")return;const ok=!r.seg.forbid&&(r.kind==="snap"||(r.toL>=W.d-1e-6&&r.toR>=W.d-1e-6));if(!ok)bad++;}));
+  h+=ckRow(bad===0&&W.problems.length===0,lang==="zh"?"压接管位置合规性":"Sleeve compliance",
+   bad===0&&W.problems.length===0?(lang==="zh"?`全部接头避开禁接档且距线夹≥${W.d}m`:`All clear of no-joint zones, ≥${W.d}m from clamps`):(lang==="zh"?`${bad} 处不合规 / ${W.problems.length} 处不可达`:`${bad} illegal / ${W.problems.length} unreachable`));
+  h+=ckInfo(lang==="zh"?"导线用量平衡":"Material balance",
+   `${lang==="zh"?"投入":"In"} ${fmt(W.input,1)}m = ${lang==="zh"?"净长":"net"} ${fmt(W.net,1)} + ${lang==="zh"?"期末余线":"leftover"} ${fmt(W.finalLen,1)} + ${lang==="zh"?"损耗":"scrap"} ${fmt(W.wasteLen,2)}；${lang==="zh"?"余量":"surplus"} ${fmt((W.finalLen+W.wasteLen)/W.net*100,2)}%，${lang==="zh"?"真实损耗率":"true loss"} ${fmt(W.wasteLen/W.net*100,3)}%`);
+  const jumperAvail=W.finalLen;
+  h+=ckRow(jumperAvail>=W.jumperNeed,lang==="zh"?"跳线用量储备":"Jumper reserve",
+   `${lang==="zh"?"期末余线均可剪跳线":"leftovers for jumpers"} ${fmt(jumperAvail,1)}m ${lang==="zh"?"vs 需求":"vs need"} ${fmt(W.jumperNeed,1)}m（${W.internalStrain} ${lang==="zh"?"处内部耐张 × ":" strain × "}${W.phases} ${lang==="zh"?"根子导线":"sub"}，${lang==="zh"?"单根跳线按":"jumper/set "}${fmt(num("wJumper",12),1)}m）`);
+ }
+ $id("checkBox").innerHTML=h;
 }
-
-function exportJSON() {
-  const data = {
-    project: {
-      name: document.getElementById('projName').value,
-      section: document.getElementById('sectionName').value,
-      voltage: document.getElementById('voltageLevel').value,
-      bundle: document.getElementById('bundleCount').value
-    },
-    towers: getTowerData(),
-    params: {
-      wCond: document.getElementById('wCond').value,
-      Tp: document.getElementById('TpCond').value,
-      friction: document.getElementById('frictionCond').value,
-      safeDistance: document.getElementById('safeDistance').value
-    },
-    results: calcResults
-  };
-  const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `TL_Tension_${document.getElementById('sectionName').value || 'data'}.json`;
-  a.click();
-  URL.revokeObjectURL(url);
+function renderEquip(){
+ if(!window.calcResults)return;const R=window.calcResults,P=R.P;
+ const pullerReq=R.pullerMax/P.kp1/1000,tensionReq=P.Tp*P.kp2/P.bundle/1000;
+ const ropeReq=R.pullerMax*4/1000;
+ const thr=num("wrapThresh",60);const dw=R.towersGeo.filter(g=>g.wrap!==null&&g.wrap*180/Math.PI>thr);
+ const rows=[
+  [lang==="zh"?"主牵引机":"Main puller","Pmax/Kp1",pullerReq.toFixed(1)+" kN",lang==="zh"?`建议额定 ≥ ${Math.ceil(pullerReq/10)*10} kN`:`Rated ≥ ${Math.ceil(pullerReq/10)*10} kN`],
+  [lang==="zh"?"主张力机（单轮）":"Tensioner (wheel)","Tp·Kp2/n",tensionReq.toFixed(1)+" kN",lang==="zh"?`单轮制动 ≥ ${Math.ceil(tensionReq/5)*5} kN`:`≥ ${Math.ceil(tensionReq/5)*5} kN/wheel`],
+  [lang==="zh"?"牵引绳":"Pulling rope","4·Pmax",ropeReq.toFixed(1)+" kN",lang==="zh"?`综合破断 ≥ ${Math.ceil(ropeReq/20)*20} kN`:`Break ≥ ${Math.ceil(ropeReq/20)*20} kN`],
+  [lang==="zh"?"走板/防捻器":"Running board",P.bundle+(lang==="zh"?"分裂":"-bundle"),"--",lang==="zh"?`配 ${P.bundle} 分裂走板，牵引绳过滑车包络角同步校核`:"Match bundle count"],
+  [lang==="zh"?"双滑车配置":"Double sheaves","wrap > "+thr+"°",dw.length?(dw.map(g=>g.name).join(",")):"--",dw.length?(lang==="zh"?`${dw.length} 基塔挂双滑车`:`${dw.length} towers`):lang==="zh"?"无需双滑车":"Not needed"]
+ ];
+ $id("equipBody").innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td style="text-align:left;font-weight:700">${r[0]}</td><td class="num">${r[1]}</td><td class="num" style="font-weight:700;color:var(--pri)">${r[2]}</td><td style="text-align:left">${r[3]}</td></tr>`).join("");
 }
-
-function importJSON() {
-  document.getElementById('importFile').click();
+/* =================== save / load =================== */
+const INPUT_IDS=["projName","sectionName","voltageLevel","conductorType","bundleCount","phaseCount","phasePreset","groundWireType","frictionCond","frictionRope","margin","safeDistance","calcMode","manualTension","reelLengthInput","clampClearance","clampCustom","snapTol","minReuse","jumperLen","nextMin","autoForbid","snapEnable","carryIn","conductorModel","wCond","TpCond","ropeModel","wRope","breakRope","kpPull","kpTension","subSpacing","controlMode","wrapThresh","reportNo","author","checker","approver"];
+function exportJSON(){
+ const data={v:1,inputs:{},towers:getTowers()};
+ INPUT_IDS.forEach(id=>{const e=$id(id);data.inputs[id]=e.type==="checkbox"?e.checked:e.value;});
+ data.lang=lang;
+ dlFile(($id("sectionName").value||"tension-section")+".json",JSON.stringify(data,null,2));
 }
-
-function handleImport(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = JSON.parse(e.target.result);
-      if (data.project) {
-        document.getElementById('projName').value = data.project.name || '';
-        document.getElementById('sectionName').value = data.project.section || '';
-        document.getElementById('voltageLevel').value = data.project.voltage || '500';
-        document.getElementById('bundleCount').value = data.project.bundle || '2';
-      }
-      if (data.towers) {
-        clearTowers();
-        data.towers.forEach(t => addTower(t));
-      }
-      if (data.params) {
-        document.getElementById('wCond').value = data.params.wCond || '14.8';
-        document.getElementById('TpCond').value = data.params.Tp || '123400';
-        document.getElementById('frictionCond').value = data.params.friction || '1.015';
-        document.getElementById('safeDistance').value = data.params.safeDistance || '8';
-      }
-      if (data.results) {
-        calcResults = data.results;
-        renderResults();
-      }
-      alert(t('msg_importOK'));
-    } catch (err) { alert(t('msg_importFail') + ': ' + err.message); }
-  };
-  reader.readAsText(file);
-  input.value = '';
+function importJSON(inp){
+ const f=inp.files[0];if(!f)return;const rd=new FileReader();
+ rd.onload=()=>{try{const d=JSON.parse(rd.result);
+  INPUT_IDS.forEach(id=>{if(d.inputs[id]===undefined)return;const e=$id(id);if(e.type==="checkbox")e.checked=!!d.inputs[id];else e.value=d.inputs[id];});
+  if(d.inputs.phaseCount===undefined&&d.inputs.circuitCount!==undefined){$id("phaseCount").value=String((parseInt(d.inputs.circuitCount)||1)*3);$id("phasePreset").value=$id("phaseCount").value;}
+  if(d.towers)setTowers(d.towers);
+  toggleCalcMode();updateCtrlUI();syncBundle();fillCond();fillRope();
+  alert(lang==="zh"?"工程数据已载入":"Project loaded");goStep(0);
+ }catch(e){alert("JSON "+(lang==="zh"?"解析失败":"parse error")+": "+e.message);}};
+ rd.readAsText(f,"utf-8");inp.value="";
 }
-
-const CONDUCTOR_DATA = {
-  'LGJ-400/50':   { w: 14.8078, Tp: 123400 },
-  'JL/G1A-400/35':{ w: 13.2126, Tp: 100440 },
-  'LGJ-500/45':   { w: 16.8000, Tp: 155000 },
-  'LGJ-300/40':   { w: 11.3000, Tp: 90000  }
-};
-const ROPE_DATA = {
-  'phi24': { w: 22.5, break: 350000 },
-  'phi18': { w: 11.8, break: 190000 },
-  'phi15': { w: 8.2,  break: 140000 },
-  'phi13': { w: 6.5,  break: 100000 }
-};
-function fillConductorParams() {
-  const model = document.getElementById('conductorModel').value;
-  if (model === 'custom') return;
-  const d = CONDUCTOR_DATA[model];
-  if (!d) return;
-  document.getElementById('wCond').value = d.w.toFixed(4);
-  document.getElementById('TpCond').value = d.Tp;
-}
-function fillRopeParams() {
-  const model = document.getElementById('ropeModel').value;
-  if (model === 'custom') return;
-  const d = ROPE_DATA[model];
-  if (!d) return;
-  document.getElementById('wRope').value = d.w;
-  document.getElementById('breakRope').value = d.break;
-}
-
-// Close modal on overlay click
-
-// Init
-const savedLang = localStorage.getItem('tl_lang');
-if (savedLang === 'en' || savedLang === 'zh') {
-  currentLang = savedLang;
-} else {
-  currentLang = navigator.language.startsWith('zh') ? 'zh' : 'en';
-}
-addTower();
-addTower();
+/* =================== init =================== */
+(function init(){
+ const sl=localStorage.getItem("tl_lang");if(sl)lang=sl;
+ document.querySelectorAll(".lang-btn").forEach(b=>b.classList.toggle("active",b.dataset.lang===lang));
+ applyI18n();
+ if(!$id("towerBody").children.length)loadDemo(1);
+ updateCtrlUI();syncBundle();goStep(0);
+})();
 </script>
-
-</body>
-</html>
+</body></html>
