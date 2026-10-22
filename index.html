@@ -238,6 +238,7 @@ textarea.ta{width:100%;min-height:96px;border:1px solid var(--line);border-radiu
           <button class="btn btn-s" onclick="addTower()" data-i18n="b_add">添加杆塔</button>
           <button class="btn btn-o" onclick="loadDemo(1)" data-i18n="b_demo1">示例：老挝 N1~N14（13档）</button>
           <button class="btn btn-o" onclick="loadDemo(2)" data-i18n="b_demo2">示例：尼泊尔16档</button>
+          <button class="btn btn-o" onclick="loadDemo(3)" data-i18n="b_demo3">示例：110kV单导线8档</button>
           <button class="btn btn-o" onclick="togglePaste()" data-i18n="b_paste">批量粘贴</button>
           <button class="btn btn-d" onclick="clearTowers()" data-i18n="b_clear">清空</button>
         </div>
@@ -268,26 +269,58 @@ textarea.ta{width:100%;min-height:96px;border:1px solid var(--line);border-radiu
       <div class="card">
         <div class="ct" data-i18n="s2_t">导线与牵引绳参数</div>
         <div class="fg">
-          <div class="f"><label data-i18n="cond_sel">导线型号（自动填充 w / Tp）</label>
-            <select id="conductorModel" onchange="fillCond()"><option value="custom">手动输入</option>
-              <option value="JL/G1A-400/35" selected>JL/G1A-400/35（13.2126 N/m，100440 N）</option>
-              <option value="LGJ-400/50">LGJ-400/50（14.8078 N/m，123400 N）</option>
-              <option value="LGJ-500/45">LGJ-500/45（16.80 N/m，155000 N）</option>
-              <option value="LGJ-300/40">LGJ-300/40（11.30 N/m，90000 N）</option>
+          <div class="f"><label data-i18n="cond_sel">导线型号（选库型号自动填充，或选手动输入）</label>
+            <select id="conductorModel" onchange="fillCond()">
+              <option value="custom">— 手动输入新型号 —</option>
+              <optgroup label="10kV~110kV 常用">
+                <option value="LGJ-95/15">LGJ-95/15</option>
+                <option value="LGJ-120/20">LGJ-120/20</option>
+                <option value="LGJ-150/25">LGJ-150/25</option>
+                <option value="LGJ-185/25">LGJ-185/25</option>
+                <option value="LGJ-185/30">LGJ-185/30</option>
+                <option value="JL/G1A-240/30">JL/G1A-240/30</option>
+                <option value="JL/G1A-240/40">JL/G1A-240/40</option>
+              </optgroup>
+              <optgroup label="220kV~500kV 常用">
+                <option value="JL/G1A-300/40">JL/G1A-300/40</option>
+                <option value="JL/G1A-400/35" selected>JL/G1A-400/35</option>
+                <option value="LGJ-400/50">LGJ-400/50</option>
+                <option value="LGJ-500/45">LGJ-500/45</option>
+                <option value="JL/G1A-630/45">JL/G1A-630/45</option>
+              </optgroup>
             </select></div>
-          <div class="f"><label data-i18n="w_cond">导线单位重量 w (N/m·根)</label><input id="wCond" type="number" step="0.0001" value="13.2126"></div>
-          <div class="f"><label data-i18n="tp">导线计算拉断力 Tp (N/根)</label><input id="TpCond" type="number" step="100" value="100440"></div>
-          <div class="f"><label data-i18n="rope_sel">牵引绳型号（自动填充）</label>
-            <select id="ropeModel" onchange="fillRope()"><option value="custom">手动输入</option>
-              <option value="phi24" selected>φ24（22.5 N/m，350 kN）</option>
-              <option value="phi18">φ18（11.8 N/m，190 kN）</option>
-              <option value="phi15">φ15（8.2 N/m，140 kN）</option>
-              <option value="phi13">φ13（6.5 N/m，100 kN）</option></select></div>
-          <div class="f"><label data-i18n="w_rope">牵引绳单位重量 (N/m)</label><input id="wRope" type="number" step="0.1" value="22.5"></div>
-          <div class="f"><label data-i18n="q_rope">牵引绳综合破断力 (N)</label><input id="breakRope" type="number" step="1000" value="350000"></div>
-          <div class="f"><label data-i18n="kp_p">主牵引机系数 Kp1</label><input id="kpPull" type="number" step="0.01" value="0.33"><span class="hint" data-i18n="h_kp1">推荐 0.25 ~ 0.33</span></div>
+          <div class="f"><label data-i18n="cond_name">导线型号名称（自定义）</label><input id="condName" value="JL/G1A-400/35"></div>
+          <div class="f"><label data-i18n="cond_area">计算截面 A (mm²)</label><input id="condArea" type="number" step="0.01" value="425.24" oninput="syncCondDerived()"></div>
+          <div class="f"><label data-i18n="cond_dia">导线外径 D (mm)</label><input id="condDia" type="number" step="0.01" value="26.82" oninput="syncCondDerived()"></div>
+          <div class="f"><label data-i18n="cond_mass">单位质量 (kg/km)</label><input id="condMass" type="number" step="0.1" value="1347.5" oninput="syncCondDerived()"></div>
+          <div class="f"><label data-i18n="cond_tp">计算拉断力 Tp (kN/根)</label><input id="condTpKN" type="number" step="0.1" value="100.44" oninput="syncCondDerived()"></div>
+          <div class="f"><label data-i18n="cond_e">弹性模量 E (MPa，选填)</label><input id="condE" type="number" step="100" value="69000"></div>
+          <div class="f"><label data-i18n="cond_alpha">线膨胀系数 α (×10⁻⁶/℃，选填)</label><input id="condAlpha" type="number" step="0.1" value="19.5"></div>
+          <input type="hidden" id="wCond"><input type="hidden" id="TpCond">
+          <div class="f"><label data-i18n="rope_sel">牵引绳（防扭钢丝绳）型号</label>
+            <select id="ropeModel" onchange="fillRope()">
+              <option value="custom">— 手动输入新绳 —</option>
+              <option value="phi9">φ9（四方八股，57 kN）</option>
+              <option value="phi11">φ11（四方八股，76 kN）</option>
+              <option value="phi13">φ13（四方八股，105 kN）</option>
+              <option value="phi15">φ15（四方八股，122 kN）</option>
+              <option value="phi18">φ18（四方八股，204 kN）</option>
+              <option value="phi20">φ20（四方十二股，250 kN）</option>
+              <option value="phi22">φ22（六方十二股，296 kN）</option>
+              <option value="phi24" selected>φ24（六方十八股，350 kN）</option>
+              <option value="phi26">φ26（六方十八股，444 kN）</option>
+              <option value="phi28">φ28（六方十八股，540 kN）</option>
+            </select></div>
+          <div class="f"><label data-i18n="rope_dia">绳径 (mm)</label><input id="ropeDia" type="number" step="0.5" value="24" oninput="syncRopeDerived()"></div>
+          <div class="f"><label data-i18n="rope_mass">单位质量 (kg/km)</label><input id="ropeMass" type="number" step="1" value="2294" oninput="syncRopeDerived()"></div>
+          <div class="f"><label data-i18n="rope_br">综合破断拉力 (kN)</label><input id="ropeBrKN" type="number" step="1" value="350" oninput="syncRopeDerived()"></div>
+          <input type="hidden" id="wRope"><input type="hidden" id="breakRope">
+          <div class="f"><label data-i18n="kp_p">主牵引机系数 Kp1（=1/安全系数）</label><input id="kpPull" type="number" step="0.01" value="0.33"><span class="hint" data-i18n="h_kp1">推荐 0.25 ~ 0.33（绳安全系数 3~4）</span></div>
           <div class="f"><label data-i18n="kp_t">主张力机制动系数 Kp2</label><input id="kpTension" type="number" step="0.01" value="0.20"><span class="hint" data-i18n="h_kp2">推荐 0.17 ~ 0.20</span></div>
           <div class="f"><label data-i18n="sub_sp">子导线间距 (mm)</label><input id="subSpacing" type="number" step="10" value="450"></div>
+          <div class="f"><label data-i18n="eta_t">放线张力限值（最大单根张力 / Tp）</label><input id="condTmaxPct" type="number" step="1" value="40"><span class="hint" data-i18n="h_eta">常取 40%，不停电跨越从严 25%</span></div>
+          <div class="f"><label data-i18n="sheave_d">放线滑车底径 (mm)</label><input id="sheaveDia" type="number" step="10" value="822"></div>
+          <div class="f"><label data-i18n="sheave_r">滑车 D/d 限值（底径/导线外径）</label><input id="sheaveRatio" type="number" step="1" value="20"><span class="hint" data-i18n="h_dr">钢芯铝绞线常取 20，大截面从严 25</span></div>
         </div>
         <div class="btns">
           <button class="btn btn-o" onclick="goStep(1)" data-i18n="b_prev">上一步</button>
@@ -479,7 +512,7 @@ const I18N={zh:{
  paste_h:"每行：杆塔号, 档距m, 高差m, 转角°, 跨越点距右杆m, 跨越悬垂距m, 塔型(直线/耐张), 禁接类型(允许/铁路/高速/河流/电力线/孤立档)；逗号/Tab/空格分隔",paste_do:"解析并填入",
  t_name:"杆塔号",t_span:"与右档距(m)",t_h:"与右高差(m)",t_ang:"本杆转角(°)",t_cd:"跨越点距右杆(m)",t_ch:"跨越悬垂距(m)",t_type:"塔型",t_fbid:"本档禁接类型",t_op:"操作",
  b_prev:"上一步",next_param:"下一步：导线/绳参数",
- s2_t:"导线与牵引绳参数",cond_sel:"导线型号（自动填充 w / Tp）",w_cond:"导线单位重量 w (N/m·根)",tp:"导线计算拉断力 Tp (N/根)",rope_sel:"牵引绳型号（自动填充）",w_rope:"牵引绳单位重量 (N/m)",q_rope:"牵引绳综合破断力 (N)",
+ s2_t:"导线与牵引绳参数",cond_sel:"导线型号（选库型号自动填充，或手动输入）",cond_name:"导线型号名称（自定义）",cond_area:"计算截面 A (mm²)",cond_dia:"导线外径 D (mm)",cond_mass:"单位质量 (kg/km)",cond_tp:"计算拉断力 Tp (kN/根)",cond_e:"弹性模量 E (MPa，选填)",cond_alpha:"线膨胀系数 α (×10⁻⁶/℃，选填)",w_cond:"导线单位重量 w (N/m·根)",tp:"导线计算拉断力 Tp (N/根)",rope_sel:"牵引绳（防扭钢丝绳）型号",rope_dia:"绳径 (mm)",rope_mass:"单位质量 (kg/km)",rope_br:"综合破断拉力 (kN)",w_rope:"牵引绳单位重量 (N/m)",q_rope:"牵引绳综合破断力 (N)",eta_t:"放线张力限值（最大单根张力/Tp）",h_eta:"常取40%，不停电跨越从严25%",sheave_d:"放线滑车底径 (mm)",sheave_r:"滑车 D/d 限值（底径/导线外径）",h_dr:"一般取20；截面≥400取25（选型号自动）",b_demo3:"示例：110kV单导线8档",
  kp_p:"主牵引机系数 Kp1",h_kp1:"推荐 0.25~0.33",kp_t:"主张力机制动系数 Kp2",h_kp2:"推荐 0.17~0.20",sub_sp:"子导线间距 (mm)",next_ctrl:"下一步：控制档与跨越",
  s3_t:"控制档选择与跨越物",s3_alert:"控制档为放线中弧垂控制最严的档（有重要跨越优先，否则取最大档距）。手动给定时按整定 T0 计算；自动模式由跨越物安全距离反算 T0。",
  ctrl_mode:"控制档选择方式",ctrl_auto:"自动推荐（有跨越优先，否则最大档）",ctrl_man:"手动指定",ctrl_sel:"指定控制档",cross_list:"跨越物清单（取自杆塔表，悬垂距可在此修正）",
@@ -514,7 +547,8 @@ const I18N={zh:{
  t_name:"Tower",t_span:"Span Right (m)",t_h:"Height Diff (m)",t_ang:"Turn Angle (°)",t_cd:"Cross Dist (m)",t_ch:"Cross Height (m)",t_type:"Tower Type",t_fbid:"No-Joint Type",t_op:"Action",
  b_prev:"Previous",next_param:"Next: Conductor/Rope",
  s2_t:"Conductor & Pulling Rope",cond_sel:"Conductor (auto-fill)",w_cond:"Conductor Weight w (N/m)",tp:"Conductor Breaking Load Tp (N)",rope_sel:"Pulling Rope (auto-fill)",w_rope:"Rope Weight (N/m)",q_rope:"Rope Breaking Load (N)",
- kp_p:"Puller Coeff. Kp1",h_kp1:"0.25-0.33",kp_t:"Tensioner Coeff. Kp2",h_kp2:"0.17-0.20",sub_sp:"Sub-spacing (mm)",next_ctrl:"Next: Control Span",
+ kp_p:"Puller Coeff. Kp1 (=1/SF)",h_kp1:"0.25-0.33 (rope SF 3-4)",kp_t:"Tensioner Coeff. Kp2",h_kp2:"0.17-0.20",sub_sp:"Sub-spacing (mm)",eta_t:"Max stringing tension / Tp",h_eta:"Typ. 40%; 25% over live lines",sheave_d:"Sheave groove diameter (mm)",sheave_r:"Sheave D/d limit",h_dr:"Typ. 20; 25 for A>=400 (auto)",b_demo3:"Demo: 110kV single 8 spans",
+ cond_sel:"Conductor model (preset or manual)",cond_name:"Conductor name (custom)",cond_area:"Section A (mm²)",cond_dia:"Diameter D (mm)",cond_mass:"Mass (kg/km)",cond_tp:"Rated tensile strength Tp (kN/sub)",cond_e:"Elastic modulus E (MPa, optional)",cond_alpha:"Expansion coeff. α (×10⁻⁶/°C, optional)",rope_sel:"Pulling rope (anti-twist braided)",rope_dia:"Rope dia (mm)",rope_mass:"Mass (kg/km)",rope_br:"Breaking load (kN)",next_ctrl:"Next: Control Span",
  s3_t:"Control Span & Crossings",s3_alert:"Control span = tightest sag constraint (crossing first, else longest span). Manual mode uses T0; auto mode reverse-calculates T0.",
  ctrl_mode:"Control Span Mode",ctrl_auto:"Auto (crossing first)",ctrl_man:"Manual",ctrl_sel:"Select Control Span",cross_list:"Crossing List",
  cross_span:"Span",cross_obj:"Crossed Object",cross_h:"Cross Height (m)",safe_req:"Req. (m)",b_calc:"Calculate",
@@ -615,10 +649,45 @@ function phasePresetChange(){const v=$id("phasePreset").value;if(v){$id("phaseCo
 function phaseLabel(k,phaseCount,bundle){return "ABCDEFGHIJKL"[k%(phaseCount||1)]||(k+1);}
 
 /* =================== demo data =================== */
-const CONDUCTOR_DB={"JL/G1A-400/35":{w:13.2126,Tp:100440},"LGJ-400/50":{w:14.8078,Tp:123400},"LGJ-500/45":{w:16.8,Tp:155000},"LGJ-300/40":{w:11.3,Tp:90000}};
-const ROPE_DB={"phi24":{w:22.5,br:350000},"phi18":{w:11.8,br:190000},"phi15":{w:8.2,br:140000},"phi13":{w:6.5,br:100000}};
-function fillCond(){const d=CONDUCTOR_DB[val("conductorModel")];if(d){$id("wCond").value=d.w;$id("TpCond").value=d.Tp;}}
-function fillRope(){const d=ROPE_DB[val("ropeModel")];if(d){$id("wRope").value=d.w;$id("breakRope").value=d.br;}}
+// 参数依据 GB/T 1179 圆线同心绞架空导线、DL/T 1079 防扭钢丝绳；E、α 为常用参考值，可手动修改
+const GRAV=9.80665;
+const CONDUCTOR_DB={
+ "LGJ-95/15":{A:109.72,D:13.61,m:380.5,Tp:34.93,E:76000,al:19.2},
+ "LGJ-120/20":{A:134.49,D:15.07,m:466.8,Tp:41.0,E:76000,al:19.2},
+ "LGJ-150/25":{A:173.11,D:17.10,m:601.0,Tp:54.1,E:76000,al:19.2},
+ "LGJ-185/25":{A:211.29,D:18.90,m:706.1,Tp:59.42,E:73000,al:19.5},
+ "LGJ-185/30":{A:210.93,D:18.88,m:732.6,Tp:64.32,E:76000,al:19.2},
+ "JL/G1A-240/30":{A:275.96,D:21.60,m:926.8,Tp:75.62,E:73000,al:19.5},
+ "JL/G1A-240/40":{A:277.72,D:21.66,m:969.0,Tp:83.37,E:76000,al:19.2},
+ "JL/G1A-300/40":{A:338.99,D:23.94,m:1133,Tp:92.22,E:73000,al:19.5},
+ "JL/G1A-400/35":{A:425.24,D:26.82,m:1347.5,Tp:100.44,E:69000,al:19.5},
+ "LGJ-400/50":{A:451.55,D:27.63,m:1510.4,Tp:123.4,E:73000,al:19.5},
+ "LGJ-500/45":{A:531.68,D:30.00,m:1713.1,Tp:155.0,E:69000,al:19.5},
+ "JL/G1A-630/45":{A:673.90,D:33.60,m:2060.0,Tp:148.7,E:65000,al:20.0}
+};
+const ROPE_DB={
+ phi9:{d:9,m:288,br:57},phi11:{d:11,m:400,br:76},phi13:{d:13,m:580,br:105},
+ phi15:{d:15,m:691,br:122},phi18:{d:18,m:1040,br:204},phi20:{d:20,m:1290,br:250},
+ phi22:{d:22,m:1480,br:296},phi24:{d:24,m:2294,br:350},phi26:{d:26,m:2220,br:444},phi28:{d:28,m:2700,br:540}
+};
+function syncCondDerived(){
+ if(!$id("condMass"))return;
+ $id("wCond").value=(num("condMass")*GRAV/1000).toFixed(4);
+ $id("TpCond").value=(num("condTpKN")*1000).toFixed(0);
+}
+function syncRopeDerived(){
+ if(!$id("ropeMass"))return;
+ $id("wRope").value=(num("ropeMass")*GRAV/1000).toFixed(4);
+ $id("breakRope").value=(num("ropeBrKN")*1000).toFixed(0);
+}
+function fillCond(){const k=val("conductorModel");const d=CONDUCTOR_DB[k];if(!d)return;
+ $id("condName").value=k;$id("condArea").value=d.A;$id("condDia").value=d.D;
+ $id("condMass").value=d.m;$id("condTpKN").value=d.Tp;$id("condE").value=d.E;$id("condAlpha").value=d.al;
+ if($id("sheaveRatio"))$id("sheaveRatio").value=d.A>=400?25:20;
+ syncCondDerived();}
+function fillRope(){const k=val("ropeModel");const d=ROPE_DB[k];if(!d)return;
+ $id("ropeDia").value=d.d;$id("ropeMass").value=d.m;$id("ropeBrKN").value=d.br;
+ syncRopeDerived();}
 function loadDemo(id){
  let arr,proj;
  if(id===1){
@@ -629,7 +698,16 @@ function loadDemo(id){
    {name:"N8",span:481,height:0.67,angle:9.2,isTension:true},{name:"N9",span:452,height:111.1,angle:0},{name:"N10",span:304,height:-30.1,angle:0},
    {name:"N11",span:622,height:-89.96,angle:0},{name:"N12",span:172,height:-54.82,angle:0},{name:"N13",span:821,height:-71.19,angle:9.48,isTension:true},
    {name:"牵引场",span:0,height:0,angle:0,isTension:true}];
-  proj={proj:"老挝500kV送出线路",sec:"N1~N14",v:"500",bundle:"4",phase:"3",cond:"JL/G1A-400/35",w:13.475,Tp:100440,rope:"phi24",wr:22.5,ec:1.017,er:1.015,T0:15000};
+  proj={proj:"老挝500kV送出线路",sec:"N1~N14",v:"500",bundle:"4",phase:"3",cond:"JL/G1A-400/35",m:1374.1,Tp:100.44,E:69000,rope:"phi24",ec:1.017,er:1.015,T0:15000,mode:"manual",shD:822,sub:450};
+ }else if(id===3){
+  arr=[{name:"张力场",span:215,height:8,angle:12,isTension:true,fbid:"allow"},
+   {name:"N1",span:240,height:12,angle:0},{name:"N2",span:280,height:-6,angle:0},
+   {name:"N3",span:310,height:15,angle:0,crossDist:170,crossHeight:13,fbid:"power"},
+   {name:"N4",span:260,height:-8,angle:0},{name:"N5",span:190,height:10,angle:0},
+   {name:"N6",span:230,height:18,angle:18,isTension:true,fbid:"isolated"},
+   {name:"N7",span:210,height:-10,angle:0},
+   {name:"牵引场",span:0,height:0,angle:0,isTension:true}];
+  proj={proj:"110kV单导线试验段",sec:"N1~N8",v:"110",bundle:"1",phase:"3",cond:"JL/G1A-240/30",m:926.8,Tp:75.62,E:73000,rope:"phi13",ec:1.015,er:1.015,T0:0,mode:"auto",safe:5,shD:560,sub:0};
  }else{
   arr=[{name:"张力场",span:285,height:-9,angle:0},{name:"SP29-3",span:434,height:-61.9,angle:0},{name:"SP29-2",span:253,height:-28.3,angle:0},
    {name:"SP29-1",span:344,height:-65.5,angle:10.36,crossDist:120,crossHeight:37,fbid:"power"},{name:"AP29",span:294,height:-89,angle:0},
@@ -638,14 +716,19 @@ function loadDemo(id){
    {name:"AP26",span:399,height:-152.7,angle:9.15},{name:"AP25",span:82,height:-8.7,angle:0},{name:"SP24-5",span:149,height:-74.9,angle:0},
    {name:"SP24-4",span:245,height:-127.2,angle:0},{name:"SP24-3",span:397,height:-152.7,angle:0},{name:"SP24-2",span:304,height:-42.5,angle:0},
    {name:"牵引场",span:0,height:0,angle:0,isTension:true}];
-  proj={proj:"尼泊尔输变电项目",sec:"SP24~AP29",v:"220",bundle:"2",phase:"3",cond:"LGJ-400/50",w:14.8078,Tp:123400,rope:"phi24",wr:22.5,ec:1.015,er:1.015,T0:18000};
+  proj={proj:"尼泊尔输变电项目",sec:"SP24~AP29",v:"220",bundle:"2",phase:"3",cond:"LGJ-400/50",m:1510.4,Tp:123.4,E:73000,rope:"phi24",ec:1.015,er:1.015,T0:18000,mode:"manual",shD:822,sub:450};
  }
  setTowers(arr);
  $id("projName").value=proj.proj;$id("sectionName").value=proj.sec;$id("voltageLevel").value=proj.v;
  $id("bundleCount").value=proj.bundle;$id("phaseCount").value=proj.phase;$id("phasePreset").value=proj.phase;$id("conductorType").value=proj.cond;
- $id("wCond").value=proj.w;$id("TpCond").value=proj.Tp;$id("ropeModel").value=proj.rope;fillRope();
+ $id("conductorModel").value=proj.cond;fillCond();
+ $id("condMass").value=proj.m;$id("condTpKN").value=proj.Tp;$id("condE").value=proj.E;syncCondDerived();
+ $id("ropeModel").value=proj.rope;fillRope();
  $id("frictionCond").value=proj.ec;$id("frictionRope").value=proj.er;
- $id("calcMode").value="manual";$id("manualTension").value=proj.T0;toggleCalcMode();syncBundle();
+ $id("calcMode").value=proj.mode||"manual";$id("manualTension").value=proj.T0;
+ if(proj.safe)$id("safeDistance").value=proj.safe;
+ $id("sheaveDia").value=proj.shD;$id("subSpacing").value=proj.sub;
+ toggleCalcMode();syncBundle();
  goStep(1);
 }
 /* =================== tension calculation engine =================== */
@@ -671,8 +754,11 @@ function calculateAll(){
  try{
   const towers=getTowers();
   if(towers.length<2){alert(lang==="zh"?"至少需要2基杆塔":"Need ≥2 towers");return;}
+  syncCondDerived();syncRopeDerived();
   const P={w:num("wCond",13.2126),wr:num("wRope",22.5),ec:num("frictionCond",1.015),er:num("frictionRope",1.015),
    bundle:parseInt(val("bundleCount"))||1,phaseCount:parseInt(val("phaseCount"))||3,Tp:num("TpCond",100440),
+   area:num("condArea",0),dia:num("condDia",0),E:num("condE",0),condName:val("condName")||"custom",
+   eta:num("condTmaxPct",40)/100,sheaveDia:num("sheaveDia",0),sheaveRatio:num("sheaveRatio",20),
    safe:num("safeDistance",8),margin:num("margin",0.5),mode:val("calcMode"),T0set:num("manualTension",15000),
    kp1:num("kpPull",0.33),kp2:num("kpTension",0.2)};
   const spans=[];
@@ -1023,18 +1109,30 @@ function renderChecks(){
   const a=s.crossHeight-4*s.sag*s.crossDist*(s.L-s.crossDist)/(s.L*s.L);
   h+=ckRow(a>=P.safe,`${lang==="zh"?"跨越安全距":"Clearance"} ${s.lt}~${s.rt}`,
    `${lang==="zh"?"实际":"actual"} ${fmt(a,2)}m ${lang==="zh"?",要求≥":" ≥ req "}${P.safe}m`);}});
- // conductor strength
- const maxAx=Math.max(...R.cond.map(s=>s.axial)),allowC=P.Tp/P.bundle;
- h+=ckRow(maxAx<allowC,lang==="zh"?"导线强度（最大轴向张力/根）":"Conductor strength",`${fmt(maxAx,0)}N < Tp/n=${fmt(allowC,0)}N`);
- // rope
+ // conductor strength (per sub; Tp is per-sub RTS)
+ const maxAx=Math.max(...R.cond.map(s=>s.axial));
+ const ratio=maxAx/P.Tp;
+ h+=ckRow(maxAx<P.Tp,lang==="zh"?"导线强度（单根最大轴向张力 vs Tp）":"Conductor strength (per sub)",
+  `${fmt(maxAx,0)}N < Tp=${fmt(P.Tp,0)}N（${(ratio*100).toFixed(1)}%）`);
+ h+=ckRow(ratio<=P.eta,lang==="zh"?"放线张力控制（占Tp比例）":"Stringing tension ratio",
+  `${(ratio*100).toFixed(1)}% ${lang==="zh"?"≤ 限值":"≤ limit"} ${(P.eta*100).toFixed(0)}%`);
+ // sheave D/d
+ if(P.dia>0&&P.sheaveDia>0){const dd=P.sheaveDia/P.dia;
+  h+=ckRow(dd>=P.sheaveRatio,lang==="zh"?"放线滑车 D/d 校核":"Sheave D/d",
+   `${fmt(dd,1)} ${lang==="zh"?"(底径":"(D"} ${fmt(P.sheaveDia,0)}mm / ${lang==="zh"?"导线外径":"d"} ${fmt(P.dia,1)}mm) ${lang==="zh"?"≥":"≥"} ${P.sheaveRatio}`);}
+ // rope: one rope pulls the whole phase (pullerMax already = bundle × per-sub); safety factor 3
  const ropeBr=num("breakRope",350000);
- h+=ckRow(R.pullerMax*4<ropeBr,lang==="zh"?"牵引绳破断力":"Rope breaking",`4×${fmt(R.pullerMax,0)}=${fmt(R.pullerMax*4,0)}N ${lang==="zh"?"≤ 破断":"≤ br."} ${ropeBr}N`);
+ h+=ckRow(R.pullerMax*3<=ropeBr,lang==="zh"?"牵引绳破断力（安全系数≥3）":"Rope breaking (SF≥3)",
+  `3×${fmt(R.pullerMax,0)}=${fmt(R.pullerMax*3,0)}N ${lang==="zh"?"≤ 破断":"≤ br."} ${ropeBr}N`);
  // uplift
  const ups=R.rope.filter(s=>s.up);
  h+=ups.length?ckRow(false,lang==="zh"?"牵引绳上扬":"Rope uplift",ups.map(s=>`${s.name}(${fmt(s.lv,0)}m)`).join(", ")):ckRow(true,lang==="zh"?"牵引绳上扬":"Rope uplift",lang==="zh"?"各塔均无上扬":"No uplift");
  // wrap
  const thr=num("wrapThresh",60);const dw=R.towersGeo.filter(g=>g.wrap!==null&&g.wrap*180/Math.PI>thr);
  h+=dw.length?ckRow(false,lang==="zh"?"包络角（双滑车）":"Wrap angle",dw.map(g=>`${g.name} ${fmt(g.wrap*180/Math.PI,1)}°`).join("；")):ckRow(true,lang==="zh"?"包络角":"Wrap angle",lang==="zh"?`均小于 ${thr}°，单滑车可行`:`All < ${thr}°`);
+ // conductor spec archive
+ h+=ckInfo(lang==="zh"?"导线/绳参数存档":"Conductor/rope specs",
+  `${P.condName}：A=${fmt(P.area,2)}mm²，D=${fmt(P.dia,2)}mm，w=${fmt(P.w,3)}N/m，Tp=${fmt(P.Tp/1000,1)}kN，E=${P.E?fmt(P.E,0):"--"}MPa，α=${num("condAlpha")||"--"}×10⁻⁶/℃；${lang==="zh"?"绳":"rope"} φ${num("ropeDia")}mm，w=${fmt(P.wr,3)}N/m，${lang==="zh"?"破断":"br."} ${fmt(ropeBr/1000,0)}kN`);
  // wiring compliance
  if(window.wiring){const W=window.wiring;let bad=0;
   W.phasePlans.forEach(pr=>pr.forEach(r=>{if(r.kind==="final")return;const ok=!r.seg.forbid&&(r.kind==="snap"||(r.toL>=W.d-1e-6&&r.toR>=W.d-1e-6));if(!ok)bad++;}));
@@ -1050,20 +1148,23 @@ function renderChecks(){
 }
 function renderEquip(){
  if(!window.calcResults)return;const R=window.calcResults,P=R.P;
- const pullerReq=R.pullerMax/P.kp1/1000,tensionReq=P.Tp*P.kp2/P.bundle/1000;
- const ropeReq=R.pullerMax*4/1000;
+ const pullerReq=R.pullerMax/P.kp1/1000;
+ const tensionReq=Math.max(R.T0,P.Tp*P.kp2)/1000;
+ const ropeReq=R.pullerMax*3/1000;
  const thr=num("wrapThresh",60);const dw=R.towersGeo.filter(g=>g.wrap!==null&&g.wrap*180/Math.PI>thr);
+ const sheaveNeed=P.dia>0?P.dia*P.sheaveRatio:0;
  const rows=[
   [lang==="zh"?"主牵引机":"Main puller","Pmax/Kp1",pullerReq.toFixed(1)+" kN",lang==="zh"?`建议额定 ≥ ${Math.ceil(pullerReq/10)*10} kN`:`Rated ≥ ${Math.ceil(pullerReq/10)*10} kN`],
-  [lang==="zh"?"主张力机（单轮）":"Tensioner (wheel)","Tp·Kp2/n",tensionReq.toFixed(1)+" kN",lang==="zh"?`单轮制动 ≥ ${Math.ceil(tensionReq/5)*5} kN`:`≥ ${Math.ceil(tensionReq/5)*5} kN/wheel`],
-  [lang==="zh"?"牵引绳":"Pulling rope","4·Pmax",ropeReq.toFixed(1)+" kN",lang==="zh"?`综合破断 ≥ ${Math.ceil(ropeReq/20)*20} kN`:`Break ≥ ${Math.ceil(ropeReq/20)*20} kN`],
+  [lang==="zh"?"主张力机（单轮）":"Tensioner (wheel)","max(T0,Tp·Kp2)",tensionReq.toFixed(1)+" kN",lang==="zh"?`单轮制动 ≥ ${Math.ceil(tensionReq/5)*5} kN（每轮一根）`:`≥ ${Math.ceil(tensionReq/5)*5} kN/wheel`],
+  [lang==="zh"?"牵引绳":"Pulling rope","3·Pmax",ropeReq.toFixed(1)+" kN",lang==="zh"?`综合破断 ≥ ${Math.ceil(ropeReq/20)*20} kN（安全系数3）`:`Break ≥ ${Math.ceil(ropeReq/20)*20} kN (SF 3)`],
   [lang==="zh"?"走板/防捻器":"Running board",P.bundle+(lang==="zh"?"分裂":"-bundle"),"--",lang==="zh"?`配 ${P.bundle} 分裂走板，牵引绳过滑车包络角同步校核`:"Match bundle count"],
+  [lang==="zh"?"放线滑车底径":"Sheave diameter",`${P.sheaveRatio}·d`,sheaveNeed?sheaveNeed.toFixed(0)+" mm":"--",P.sheaveDia>0?(lang==="zh"?`现用底径 ${fmt(P.sheaveDia,0)}mm，${P.sheaveDia>=sheaveNeed?"满足":"偏小"}`:`D=${fmt(P.sheaveDia,0)}mm`):"--"],
   [lang==="zh"?"双滑车配置":"Double sheaves","wrap > "+thr+"°",dw.length?(dw.map(g=>g.name).join(",")):"--",dw.length?(lang==="zh"?`${dw.length} 基塔挂双滑车`:`${dw.length} towers`):lang==="zh"?"无需双滑车":"Not needed"]
  ];
  $id("equipBody").innerHTML=rows.map((r,i)=>`<tr><td>${i+1}</td><td style="text-align:left;font-weight:700">${r[0]}</td><td class="num">${r[1]}</td><td class="num" style="font-weight:700;color:var(--pri)">${r[2]}</td><td style="text-align:left">${r[3]}</td></tr>`).join("");
 }
 /* =================== save / load =================== */
-const INPUT_IDS=["projName","sectionName","voltageLevel","conductorType","bundleCount","phaseCount","phasePreset","groundWireType","frictionCond","frictionRope","margin","safeDistance","calcMode","manualTension","reelLengthInput","clampClearance","clampCustom","snapTol","minReuse","jumperLen","nextMin","autoForbid","snapEnable","carryIn","conductorModel","wCond","TpCond","ropeModel","wRope","breakRope","kpPull","kpTension","subSpacing","controlMode","wrapThresh","reportNo","author","checker","approver"];
+const INPUT_IDS=["projName","sectionName","voltageLevel","conductorType","bundleCount","phaseCount","phasePreset","groundWireType","frictionCond","frictionRope","margin","safeDistance","calcMode","manualTension","reelLengthInput","clampClearance","clampCustom","snapTol","minReuse","jumperLen","nextMin","autoForbid","snapEnable","carryIn","conductorModel","condName","condArea","condDia","condMass","condTpKN","condE","condAlpha","wCond","TpCond","ropeModel","ropeDia","ropeMass","ropeBrKN","wRope","breakRope","kpPull","kpTension","subSpacing","condTmaxPct","sheaveDia","sheaveRatio","controlMode","wrapThresh","reportNo","author","checker","approver"];
 function exportJSON(){
  const data={v:1,inputs:{},towers:getTowers()};
  INPUT_IDS.forEach(id=>{const e=$id(id);data.inputs[id]=e.type==="checkbox"?e.checked:e.value;});
@@ -1075,6 +1176,11 @@ function importJSON(inp){
  rd.onload=()=>{try{const d=JSON.parse(rd.result);
   INPUT_IDS.forEach(id=>{if(d.inputs[id]===undefined)return;const e=$id(id);if(e.type==="checkbox")e.checked=!!d.inputs[id];else e.value=d.inputs[id];});
   if(d.inputs.phaseCount===undefined&&d.inputs.circuitCount!==undefined){$id("phaseCount").value=String((parseInt(d.inputs.circuitCount)||1)*3);$id("phasePreset").value=$id("phaseCount").value;}
+  if((!d.inputs.condMass||+d.inputs.condMass===0)&&d.inputs.wCond){$id("condMass").value=(+d.inputs.wCond*1000/GRAV).toFixed(1);}
+  if((!d.inputs.condTpKN||+d.inputs.condTpKN===0)&&d.inputs.TpCond){$id("condTpKN").value=(+d.inputs.TpCond/1000).toFixed(2);}
+  if((!d.inputs.ropeMass||+d.inputs.ropeMass===0)&&d.inputs.wRope){$id("ropeMass").value=(+d.inputs.wRope*1000/GRAV).toFixed(0);}
+  if((!d.inputs.ropeBrKN||+d.inputs.ropeBrKN===0)&&d.inputs.breakRope){$id("ropeBrKN").value=(+d.inputs.breakRope/1000).toFixed(0);}
+  syncCondDerived();syncRopeDerived();
   if(d.towers)setTowers(d.towers);
   toggleCalcMode();updateCtrlUI();syncBundle();fillCond();fillRope();
   alert(lang==="zh"?"工程数据已载入":"Project loaded");goStep(0);
